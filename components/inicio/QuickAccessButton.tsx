@@ -5,7 +5,7 @@ interface QuickAccessButtonProps {
   title: string;
   subtitle: string;
   icon: React.ReactNode;
-  bgColor: string; // Ex: "bg-[#FDF2EE]"
+  bgColor: string;
 }
 
 export function QuickAccessButton({
@@ -16,12 +16,15 @@ export function QuickAccessButton({
 }: QuickAccessButtonProps) {
   return (
     <TouchableOpacity
-      className={`${bgColor} flex-1 min-w-[46%] rounded-2xl p-4 mb-3`}
+      // items-start inserido e p-5 ajustado para dar simetria perfeita com os Bento Cards do perfil
+      className={`${bgColor} flex-1 min-w-[47%] rounded-3xl p-5 mb-3 border border-[#F0EBE6]/30`}
       activeOpacity={0.8}
     >
       <View className="mb-3">{icon}</View>
-      <Text className="text-[15px] font-bold text-[#444]">{title}</Text>
-      <Text className="text-xs text-[#888] mt-0.5">{subtitle}</Text>
+      <Text className="text-[15px] font-bold text-gray-800">{title}</Text>
+      <Text className="text-xs text-gray-400 mt-0.5 font-medium">
+        {subtitle}
+      </Text>
     </TouchableOpacity>
   );
 }
