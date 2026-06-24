@@ -18,15 +18,26 @@ export const mockBlocksData: ContentArticle[] = [
       "O que comer para apoiar o desenvolvimento do bebê nos primeiros meses.",
     readingTime: "5 min de leitura",
     imageUrl:
-      "https://images.unsplash.com/photo-1540420773420-3366772f4999?q=80&w=300",
+      "https://images.unsplash.com/photo-1490645935967-10de6ba17061?w=500",
   },
   {
     id: "2",
     tag: "Exercício",
-    title: "Exercícios Seguros na Gestação",
-    description: "Movimentos suaves aprovados para o primeiro trimestre.",
+    title: "Exercícios Seguros no Início",
+    description:
+      "Movimentos suaves e alongamentos ideais para o primeiro trimestre.",
     readingTime: "8 min de leitura",
     imageUrl:
-      "https://images.unsplash.com/photo-1518310383802-640c2de311b2?q=80&w=300",
+      "https://images.unsplash.com/photo-1518611012118-696072aa579a?w=500",
+  },
+  {
+    id: "3",
+    tag: "Mental",
+    title: "Gerenciando a Ansiedade",
+    description:
+      "Técnicas de respiração e relaxamento para lidar com as mudanças hormonais.",
+    readingTime: "6 min de leitura",
+    imageUrl:
+      "https://images.unsplash.com/photo-1506126613408-eca07ce68773?w=500",
   },
 ];
