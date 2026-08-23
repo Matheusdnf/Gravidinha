@@ -1,0 +1,648 @@
+[
+  {
+    "semana": 1,
+    "tamanho_aproximado": "0 cm",
+    "comparacao": "Nenhuma (Fase de preparação)",
+    "descricao_visual": "Tecnicamente, você ainda não está grávida. O corpo está se preparando para a ovulação, engrossando o revestimento uterino.",
+    "url_imagem": "https://seu-servidor.com/semana-1.jpg",
+    "descricao_corpo": "Esta é a semana da sua última menstruação. O corpo está descartando o revestimento uterino antigo e começando a preparar um novo para uma possível gravidez.",
+    "sintomas_fisicos": [
+      "Sangramento menstrual",
+      "Cólicas",
+      "Inchaço abdominal",
+      "Sensibilidade nas mamas"
+    ],
+    "sintomas_emocionais": ["Oscilações de humor ligadas ao ciclo menstrual"]
+  },
+  {
+    "semana": 2,
+    "tamanho_aproximado": "0 cm",
+    "comparacao": "Nenhuma (Ovulação e Fecundação)",
+    "descricao_visual": "O óvulo é liberado e a fecundação pelo espermatozoide ocorre. O material genético se une para formar o zigoto.",
+    "url_imagem": "https://seu-servidor.com/semana-2.jpg",
+    "descricao_corpo": "O corpo está se preparando para a ovulação. O revestimento do útero está engrossando para receber o óvulo fecundado.",
+    "sintomas_fisicos": [
+      "Aumento do muco cervical (aspecto de clara de ovo)",
+      "Leve dor pélvica de um dos lados (dor da ovulação)",
+      "Aumento da temperatura basal"
+    ],
+    "sintomas_emocionais": ["Aumento da libido"]
+  },
+  {
+    "semana": 3,
+    "tamanho_aproximado": "Microscópico",
+    "comparacao": "Grão de areia",
+    "descricao_visual": "O zigoto se divide rapidamente em muitas células (blastocisto) e começa a jornada pelas trompas de Falópio em direção ao útero.",
+    "url_imagem": "https://seu-servidor.com/semana-3.jpg",
+    "descricao_corpo": "A fecundação ocorreu. O óvulo fecundado viaja pelas trompas para se implantar no útero. Os hormônios da gravidez começam a ser produzidos.",
+    "sintomas_fisicos": [
+      "Pequeno sangramento de escape (nidação)",
+      "Cólicas muito leves"
+    ],
+    "sintomas_emocionais": [
+      "Ansiedade leve (para quem está tentando engravidar)"
+    ]
+  },
+  {
+    "semana": 4,
+    "tamanho_aproximado": "2 mm",
+    "comparacao": "Semente de mostarda",
+    "descricao_visual": "O blastocisto se implanta na parede uterina. Começam a se formar a placenta e o saco amniótico. O embrião é um pequeno grupo de células.",
+    "url_imagem": "https://seu-servidor.com/semana-4.jpg",
+    "descricao_corpo": "O embrião se implanta no útero. O hormônio hCG começa a subir a níveis detectáveis em testes de gravidez.",
+    "sintomas_fisicos": [
+      "Atraso menstrual",
+      "Seios doloridos ou inchados",
+      "Cansaço inicial",
+      "Leve inchaço"
+    ],
+    "sintomas_emocionais": [
+      "Sensação de que a menstruação vai descer",
+      "Alegria ou choque com o teste positivo"
+    ]
+  },
+  {
+    "semana": 5,
+    "tamanho_aproximado": "3 mm",
+    "comparacao": "Miçanga pequena",
+    "descricao_visual": "O tubo neural, que se tornará o cérebro e a medula espinhal, está se formando. O coração minúsculo começa a bater.",
+    "url_imagem": "https://seu-servidor.com/semana-5.jpg",
+    "descricao_corpo": "A produção de hormônios (hCG e progesterona) acelera drasticamente, iniciando os sintomas clássicos de gravidez.",
+    "sintomas_fisicos": [
+      "Fadiga extrema e sonolência",
+      "Enjoos matinais (que podem ocorrer o dia todo)",
+      "Vontade frequente de urinar",
+      "Aversão a certos cheiros e comidas"
+    ],
+    "sintomas_emocionais": [
+      "Mudanças bruscas de humor (irritabilidade, choro fácil)"
+    ]
+  },
+  {
+    "semana": 6,
+    "tamanho_aproximado": "6 mm",
+    "comparacao": "Ervilha",
+    "descricao_visual": "Começam a surgir pequenos brotos que se tornarão os braços e as pernas. O rosto ganha os primeiros contornos com cavidades para os olhos e nariz.",
+    "url_imagem": "https://seu-servidor.com/semana-6.jpg",
+    "descricao_corpo": "O aumento do fluxo sanguíneo para a região pélvica e a ação dos hormônios intensificam os desconfortos iniciais.",
+    "sintomas_fisicos": [
+      "Náuseas e possíveis vômitos",
+      "Seios pesados e mamilos escurecidos",
+      "Excesso de salivação",
+      "Leve azia ou indigestão"
+    ],
+    "sintomas_emocionais": [
+      "Instabilidade emocional",
+      "Sensação de sobrecarga devido ao cansaço"
+    ]
+  },
+  {
+    "semana": 7,
+    "tamanho_aproximado": "1 cm",
+    "comparacao": "Bolinha de rolamento",
+    "descricao_visual": "O embrião tem uma pequena cauda (que logo desaparecerá). Os hemisférios cerebrais crescem e o fígado começa a produzir glóbulos vermelhos.",
+    "url_imagem": "https://seu-servidor.com/semana-7.jpg",
+    "descricao_corpo": "O útero dobra de tamanho, pressionando um pouco a bexiga. O volume de sangue no corpo da mãe aumenta.",
+    "sintomas_fisicos": [
+      "Idas constantes ao banheiro",
+      "Cansaço persistente",
+      "Desejos ou aversões alimentares intensos",
+      "Pequenas cólicas devido ao crescimento do útero"
+    ],
+    "sintomas_emocionais": ["Ansiedade sobre a saúde do bebê", "Sonhos vívidos"]
+  },
+  {
+    "semana": 8,
+    "tamanho_aproximado": "1,6 cm",
+    "comparacao": "Framboesa",
+    "descricao_visual": "Os dedos das mãos e dos pés começam a se formar, mas ainda são colados por membranas. Os olhos já possuem pigmento.",
+    "url_imagem": "https://seu-servidor.com/semana-8.jpg",
+    "descricao_corpo": "Os hormônios relaxinas começam a afrouxar as articulações. O útero atinge o tamanho de um limão.",
+    "sintomas_fisicos": [
+      "Prisão de ventre",
+      "Inchaço abdominal (gases)",
+      "Enjoos contínuos",
+      "Dores de cabeça leves (devido ao volume de sangue)"
+    ],
+    "sintomas_emocionais": ["Esquecimento leve (o famoso 'pregnancy brain')"]
+  },
+  {
+    "semana": 9,
+    "tamanho_aproximado": "2,3 cm",
+    "comparacao": "Bola de gude",
+    "descricao_visual": "A cauda embrionária sumiu completamente. Os órgãos reprodutores internos começam a se desenvolver e o coração já dividiu suas quatro câmaras.",
+    "url_imagem": "https://seu-servidor.com/semana-9.jpg",
+    "descricao_corpo": "Os níveis do hormônio hCG atingem o seu pico nesta fase, tornando os sintomas gastrointestinais mais fortes.",
+    "sintomas_fisicos": [
+      "Pico das náuseas",
+      "Azia",
+      "Gases",
+      "Veias mais visíveis sob a pele (devido ao aumento do fluxo sanguíneo)"
+    ],
+    "sintomas_emocionais": ["Fadiga mental e física acentuada"]
+  },
+  {
+    "semana": 10,
+    "tamanho_aproximado": "3,1 cm",
+    "comparacao": "Cereja grande",
+    "descricao_visual": "Agora oficialmente considerado um feto. Órgãos vitais como rins, intestinos, cérebro e fígado estão funcionando.",
+    "url_imagem": "https://seu-servidor.com/semana-10.jpg",
+    "descricao_corpo": "O útero começa a sair da pelve, o que pode aliviar um pouco a pressão sobre a bexiga temporariamente.",
+    "sintomas_fisicos": [
+      "Cintura começa a engrossar",
+      "Seios continuam crescendo",
+      "Veias azuladas nas mamas e abdômen",
+      "Tonturas ocasionais"
+    ],
+    "sintomas_emocionais": [
+      "Um leve alívio começa a surgir com a proximidade do fim do primeiro trimestre"
+    ]
+  },
+  {
+    "semana": 11,
+    "tamanho_aproximado": "4,1 cm",
+    "comparacao": "Bola de golfe",
+    "descricao_visual": "A cabeça representa quase metade do tamanho do corpo. Os botões dentários estão se formando sob a gengiva.",
+    "url_imagem": "https://seu-servidor.com/semana-11.jpg",
+    "descricao_corpo": "A placenta está se desenvolvendo rápido e logo assumirá a produção da maioria dos hormônios da gravidez.",
+    "sintomas_fisicos": [
+      "As náuseas podem começar a diminuir",
+      "Crescimento de cabelos e unhas mais fortes",
+      "Aumento da salivação"
+    ],
+    "sintomas_emocionais": ["Humor começa a se estabilizar levemente"]
+  },
+  {
+    "semana": 12,
+    "tamanho_aproximado": "5,4 cm",
+    "comparacao": "Limão Taiti",
+    "descricao_visual": "Os reflexos começam: o feto já pode abrir e fechar os dedos e fazer movimentos de sucção com a boca. Os rins começam a produzir urina.",
+    "url_imagem": "https://seu-servidor.com/semana-12.jpg",
+    "descricao_corpo": "Fim do primeiro trimestre! O risco de aborto cai drasticamente. O útero já pode ser sentido logo acima do osso pélvico.",
+    "sintomas_fisicos": [
+      "Retorno gradual da energia",
+      "Diminuição das náuseas",
+      "Aumento do corrimento vaginal (leucorreia)",
+      "Pele pode ficar mais oleosa ou com brilho ('glow' da gravidez)"
+    ],
+    "sintomas_emocionais": [
+      "Alívio, diminuição do medo de perda",
+      "Sentimentos de empolgação para compartilhar a notícia"
+    ]
+  },
+  {
+    "semana": 13,
+    "tamanho_aproximado": "7,4 cm",
+    "comparacao": "Bola de tênis",
+    "descricao_visual": "As cordas vocais estão se formando. As impressões digitais começam a aparecer nas pequenas pontas dos dedos.",
+    "url_imagem": "https://seu-servidor.com/semana-13.jpg",
+    "descricao_corpo": "Início do segundo trimestre (a 'fase de ouro'). O corpo se adaptou melhor aos níveis hormonais.",
+    "sintomas_fisicos": [
+      "Energia quase normal",
+      "Apetite aumenta",
+      "O abdômen começa a marcar uma leve barriguinha",
+      "Dor do ligamento redondo (fisgadas na lateral da barriga)"
+    ],
+    "sintomas_emocionais": ["Sensação de bem-estar e aumento da libido"]
+  },
+  {
+    "semana": 14,
+    "tamanho_aproximado": "8,7 cm",
+    "comparacao": "Laranja",
+    "descricao_visual": "O feto pode fazer caretas e expressar movimentos faciais. O corpo começa a crescer mais rápido que a cabeça, equilibrando as proporções.",
+    "url_imagem": "https://seu-servidor.com/semana-14.jpg",
+    "descricao_corpo": "O útero continua a subir. Os músculos e ligamentos do abdômen se esticam para acomodar o crescimento.",
+    "sintomas_fisicos": [
+      "Dores nas costas ou fisgadas (ligamento redondo)",
+      "Possível sangramento na gengiva ao escovar",
+      "Congestão nasal (rinite gravídica)"
+    ],
+    "sintomas_emocionais": ["Mais disposição para atividades diárias"]
+  },
+  {
+    "semana": 15,
+    "tamanho_aproximado": "10,1 cm",
+    "comparacao": "Bola de bocha",
+    "descricao_visual": "A pele é muito fina e os vasos sanguíneos são visíveis. O feto já consegue perceber a luz mesmo com as pálpebras fechadas.",
+    "url_imagem": "https://seu-servidor.com/semana-15.jpg",
+    "descricao_corpo": "O ganho de peso começa a ser mais notável. O coração está bombeando 20% a mais de sangue que o normal.",
+    "sintomas_fisicos": [
+      "Falta de ar leve após esforços",
+      "Ganho de peso gradual",
+      "Dores de cabeça tensionais",
+      "Melhora significativa na digestão (sem enjoos)"
+    ],
+    "sintomas_emocionais": ["Menos preocupação, foco na preparação do enxoval"]
+  },
+  {
+    "semana": 16,
+    "tamanho_aproximado": "11,6 cm",
+    "comparacao": "Toranja (Grapefruit)",
+    "descricao_visual": "O sistema nervoso está fazendo conexões, permitindo movimentos mais coordenados. As pernas estão mais desenvolvidas.",
+    "url_imagem": "https://seu-servidor.com/semana-16.jpg",
+    "descricao_corpo": "Algumas mães (especialmente na segunda gravidez) começam a sentir os primeiros movimentos sutis (como borboletas na barriga).",
+    "sintomas_fisicos": [
+      "Pequenos tremores ou 'bolhas' no abdômen (movimentos do bebê)",
+      "Aumento do tamanho dos seios",
+      "Pele radiante",
+      "Cãibras nas pernas"
+    ],
+    "sintomas_emocionais": [
+      "Euforia ao sentir o bebê pela primeira vez",
+      "Conexão mais profunda com a gravidez"
+    ]
+  },
+  {
+    "semana": 17,
+    "tamanho_aproximado": "13 cm",
+    "comparacao": "Mini bola de futebol",
+    "descricao_visual": "O esqueleto, que antes era uma cartilagem macia, começa a se ossificar e ficar firme. A audição está se desenvolvendo rapidamente.",
+    "url_imagem": "https://seu-servidor.com/semana-17.jpg",
+    "descricao_corpo": "O centro de gravidade do corpo muda à medida que a barriga cresce, o que pode alterar a postura da mãe.",
+    "sintomas_fisicos": [
+      "Dores lombares",
+      "Aumento da fome",
+      "Aparecimento de estrias em algumas mulheres",
+      "Possíveis ondas de calor"
+    ],
+    "sintomas_emocionais": ["Possível preocupação com o ganho de peso corporal"]
+  },
+  {
+    "semana": 18,
+    "tamanho_aproximado": "14 cm",
+    "comparacao": "Melão pequeno",
+    "descricao_visual": "A audição está aguçada; o bebê pode ouvir batimentos cardíacos e barulhos externos. Nas meninas, o útero e as trompas estão formados.",
+    "url_imagem": "https://seu-servidor.com/semana-18.jpg",
+    "descricao_corpo": "O sistema cardiovascular está trabalhando a todo vapor. A pressão arterial pode cair ligeiramente.",
+    "sintomas_fisicos": [
+      "Tontura ao levantar rápido",
+      "Os movimentos do bebê ficam mais claros (chutes leves)",
+      "Problemas para dormir (encontrar uma posição confortável)"
+    ],
+    "sintomas_emocionais": [
+      "Desejo intenso de ver o bebê (ansiedade pelo ultrassom morfológico)"
+    ]
+  },
+  {
+    "semana": 19,
+    "tamanho_aproximado": "15,3 cm",
+    "comparacao": "Bola de handebol",
+    "descricao_visual": "Uma substância branca e gordurosa (vérnix caseoso) cobre o bebê, protegendo a pele do contato constante com o líquido amniótico.",
+    "url_imagem": "https://seu-servidor.com/semana-19.jpg",
+    "descricao_corpo": "Pode surgir a 'linea nigra' (uma linha escura vertical na barriga) devido às mudanças na pigmentação causadas por hormônios.",
+    "sintomas_fisicos": [
+      "Manchas escuras na pele (melasma)",
+      "Linea nigra na barriga",
+      "Dor aguda na virilha (ligamento redondo) ao tossir ou levantar rápido"
+    ],
+    "sintomas_emocionais": [
+      "Cuidado emocional redobrado com a aparência devido às manchas na pele"
+    ]
+  },
+  {
+    "semana": 20,
+    "tamanho_aproximado": "16,4 cm (ou 25 cm da cabeça aos pés)",
+    "comparacao": "Coco verde redondo",
+    "descricao_visual": "Chegamos à metade da gestação! O bebê engole mais fluido amniótico, excelente prática para o sistema digestivo.",
+    "url_imagem": "https://seu-servidor.com/semana-20.jpg",
+    "descricao_corpo": "O útero atinge a altura do umbigo. O volume sanguíneo da mãe aumentou consideravelmente.",
+    "sintomas_fisicos": [
+      "Unhas e cabelos crescem muito e ficam fortes",
+      "Falta de ar ocasional",
+      "Inchaço leve nos tornozelos e pés (edema)",
+      "Umbigo pode começar a estufar"
+    ],
+    "sintomas_emocionais": [
+      "Sensação de orgulho e clareza de que chegou à metade do caminho"
+    ]
+  },
+  {
+    "semana": 21,
+    "tamanho_aproximado": "26,7 cm",
+    "comparacao": "Bola de vôlei",
+    "descricao_visual": "O bebê já tem sobrancelhas e pálpebras totalmente formadas. Seus movimentos se tornam cada vez mais parecidos com chutes e socos.",
+    "url_imagem": "https://seu-servidor.com/semana-21.jpg",
+    "descricao_corpo": "O aumento do peso da barriga pode começar a sobrecarregar mais a região lombar e as pernas.",
+    "sintomas_fisicos": [
+      "Maior retenção de líquidos",
+      "Veias varicosas podem aparecer nas pernas",
+      "Aumento na produção de óleo na pele (podendo causar acne gravídica)"
+    ],
+    "sintomas_emocionais": [
+      "Início das preocupações com as responsabilidades maternas"
+    ]
+  },
+  {
+    "semana": 22,
+    "tamanho_aproximado": "27,8 cm",
+    "comparacao": "Melancia pequena redonda",
+    "descricao_visual": "Os lábios estão mais delineados e os olhos estão completamente formados, embora a íris ainda não tenha cor.",
+    "url_imagem": "https://seu-servidor.com/semana-22.jpg",
+    "descricao_corpo": "Os hormônios continuam relaxando as articulações pélvicas, o que pode causar desconforto e mudanças no andar (andar de 'pata').",
+    "sintomas_fisicos": [
+      "Contrações de Braxton Hicks (treinamento, indolor)",
+      "Hemorroidas",
+      "Umbigo protuberante",
+      "Cãibras noturnas nas pernas"
+    ],
+    "sintomas_emocionais": [
+      "Oscilações de humor pontuais e possíveis inseguranças com o parceiro"
+    ]
+  },
+  {
+    "semana": 23,
+    "tamanho_aproximado": "28,9 cm",
+    "comparacao": "Bola de basquete",
+    "descricao_visual": "O bebê está ganhando peso, mas sua pele ainda parece enrugada porque ele precisará acumular mais gordura por baixo dela.",
+    "url_imagem": "https://seu-servidor.com/semana-23.jpg",
+    "descricao_corpo": "A barriga bem visível desloca o centro de gravidade, exigindo cuidado extra para manter o equilíbrio.",
+    "sintomas_fisicos": [
+      "Gengivas sangrando",
+      "Aumento da frequência cardíaca",
+      "Formigamento e dormência nas mãos (síndrome do túnel do carpo induzida pela gravidez)"
+    ],
+    "sintomas_emocionais": [
+      "Sentimento frequente de distração ('pregnancy brain')"
+    ]
+  },
+  {
+    "semana": 24,
+    "tamanho_aproximado": "30 cm",
+    "comparacao": "Repolho grande",
+    "descricao_visual": "Os pulmões estão desenvolvendo ramos chamados bronquíolos. O rosto está quase totalmente formado.",
+    "url_imagem": "https://seu-servidor.com/semana-24.jpg",
+    "descricao_corpo": "O útero ultrapassa a altura do umbigo. A pele da barriga estica bastante, o que pode causar ressecamento.",
+    "sintomas_fisicos": [
+      "Coceira na barriga e seios (devido ao estiramento da pele)",
+      "Olhos secos ou sensíveis",
+      "Desconforto na região das costelas (bebê chutando alto)"
+    ],
+    "sintomas_emocionais": [
+      "Ansiedade e apreensão focadas no parto começam a surgir"
+    ]
+  },
+  {
+    "semana": 25,
+    "tamanho_aproximado": "34,6 cm",
+    "comparacao": "Globo terrestre de mesa",
+    "descricao_visual": "Os capilares (vasos sanguíneos minúsculos) estão se formando sob a pele, dando-lhe um tom mais rosado.",
+    "url_imagem": "https://seu-servidor.com/semana-25.jpg",
+    "descricao_corpo": "O sistema digestivo fica mais lento devido à pressão do útero e ao relaxamento causado pela progesterona.",
+    "sintomas_fisicos": [
+      "Retorno forte da azia e indigestão",
+      "Prisão de ventre acentuada",
+      "Síndrome das pernas inquietas à noite",
+      "Roncos e nariz entupido"
+    ],
+    "sintomas_emocionais": ["Frustração com dificuldades para dormir (insônia)"]
+  },
+  {
+    "semana": 26,
+    "tamanho_aproximado": "35,6 cm",
+    "comparacao": "Abóbora moranga",
+    "descricao_visual": "Os olhos do bebê começam a se abrir, e ele já pisca. Ele responde muito ativamente a sons e luzes externas.",
+    "url_imagem": "https://seu-servidor.com/semana-26.jpg",
+    "descricao_corpo": "As articulações e os ligamentos ficam ainda mais frouxos. A pressão arterial volta a subir para os níveis de antes da gravidez.",
+    "sintomas_fisicos": [
+      "Dores pélvicas (Sínfise Púbica)",
+      "Desajeitamento (tropeços fáceis)",
+      "Dores nas costas constantes",
+      "Aumento dos chutes do bebê (fortes o suficiente para os outros sentirem)"
+    ],
+    "sintomas_emocionais": ["Instinto maternal florescendo mais fortemente"]
+  },
+  {
+    "semana": 27,
+    "tamanho_aproximado": "36,6 cm",
+    "comparacao": "Bola de praia pequena",
+    "descricao_visual": "O cérebro está muito ativo e crescendo. Os pulmões continuam amadurecendo, embora não estejam prontos para o mundo exterior.",
+    "url_imagem": "https://seu-servidor.com/semana-27.jpg",
+    "descricao_corpo": "Final do segundo trimestre. O corpo começa a se preparar ativamente para o aleitamento.",
+    "sintomas_fisicos": [
+      "Leve vazamento de colostro (o primeiro leite) dos seios",
+      "Tonturas se levantar muito rápido",
+      "Cãibras frequentes",
+      "Sensação de estar 'cheia' rapidamente ao comer"
+    ],
+    "sintomas_emocionais": [
+      "Desejo de arrumar o quarto e preparar a casa (instinto de ninho)"
+    ]
+  },
+  {
+    "semana": 28,
+    "tamanho_aproximado": "37,6 cm",
+    "comparacao": "Melão amarelo grande",
+    "descricao_visual": "Início do terceiro trimestre! O bebê já começa a desenvolver ciclos de sono e vigília. O sistema nervoso central consegue regular a temperatura corporal.",
+    "url_imagem": "https://seu-servidor.com/semana-28.jpg",
+    "descricao_corpo": "Início do terceiro trimestre! O útero comprime ainda mais os órgãos internos, incluindo pulmões e estômago.",
+    "sintomas_fisicos": [
+      "Falta de ar mais evidente",
+      "Necessidade de comer porções menores e mais frequentes",
+      "Dificuldade para dormir",
+      "Frequentes contrações de Braxton Hicks"
+    ],
+    "sintomas_emocionais": [
+      "Impaciência para o fim da gestação; cansaço mental"
+    ]
+  },
+  {
+    "semana": 29,
+    "tamanho_aproximado": "38,6 cm",
+    "comparacao": "Cúpula esférica de luminária",
+    "descricao_visual": "Os ossos estão totalmente desenvolvidos, embora ainda flexíveis e macios. O bebê acumula mais gordura e ganha energia.",
+    "url_imagem": "https://seu-servidor.com/semana-29.jpg",
+    "descricao_corpo": "O ganho de peso se acelera nesta fase. As mamas ficam consideravelmente maiores e mais pesadas.",
+    "sintomas_fisicos": [
+      "Veias varicosas mais pronunciadas",
+      "Inchaço (edema) generalizado leve",
+      "Mamas sensíveis",
+      "Hemorroidas frequentes"
+    ],
+    "sintomas_emocionais": [
+      "Sensibilidade extrema; pode chorar com facilidade por motivos bobos"
+    ]
+  },
+  {
+    "semana": 30,
+    "tamanho_aproximado": "39,9 cm",
+    "comparacao": "Melancia redonda média",
+    "descricao_visual": "O líquido amniótico que envolve o bebê atinge o volume máximo. Os pequenos pelos no corpo, conhecidos como lanugo, começam a cair.",
+    "url_imagem": "https://seu-servidor.com/semana-30.jpg",
+    "descricao_corpo": "A postura está completamente alterada, exigindo muito da musculatura lombar.",
+    "sintomas_fisicos": [
+      "Dores severas nas costas (lombar e ciático)",
+      "Aumento de idas ao banheiro (bexiga comprimida novamente)",
+      "Azia forte após as refeições",
+      "Fadiga volta com força"
+    ],
+    "sintomas_emocionais": [
+      "Preocupações práticas (financeiras, creche, licença-maternidade)"
+    ]
+  },
+  {
+    "semana": 31,
+    "tamanho_aproximado": "41,1 cm",
+    "comparacao": "Boia esférica de sinalização",
+    "descricao_visual": "O bebê já consegue virar a cabeça de um lado para o outro. Os pulmões e o trato digestivo estão quase completamente maduros.",
+    "url_imagem": "https://seu-servidor.com/semana-31.jpg",
+    "descricao_corpo": "O útero preenche boa parte da cavidade abdominal. A mãe pode começar a ganhar cerca de 500g por semana.",
+    "sintomas_fisicos": [
+      "Vazamento frequente de colostro",
+      "Mãos inchadas (pode ser difícil usar anéis)",
+      "Aumento da transpiração e ondas de calor",
+      "Dores na bacia (pelve expandindo)"
+    ],
+    "sintomas_emocionais": [
+      "Sonhos intensos ou pesadelos relacionados ao parto e ao bebê"
+    ]
+  },
+  {
+    "semana": 32,
+    "tamanho_aproximado": "42,4 cm",
+    "comparacao": "Abóbora redonda grande",
+    "descricao_visual": "O espaço no útero começa a ficar apertado. O bebê já tem unhas nos dedos das mãos e dos pés.",
+    "url_imagem": "https://seu-servidor.com/semana-32.jpg",
+    "descricao_corpo": "A pressão sobre o estômago atinge o ápice antes que o bebê 'desça' para a pelve.",
+    "sintomas_fisicos": [
+      "Azia intensa",
+      "Refluxo ácido à noite",
+      "Respiração curta contínua",
+      "Mudança na cor dos mamilos (ficam bem escuros)"
+    ],
+    "sintomas_emocionais": [
+      "Sensação de esgotamento e de que 'a barriga não vai caber mais nada'"
+    ]
+  },
+  {
+    "semana": 33,
+    "tamanho_aproximado": "43,7 cm",
+    "comparacao": "Almofada de nó esférica",
+    "descricao_visual": "Os ossos do crânio ainda não estão fundidos para facilitar a passagem pelo canal de parto. O sistema imunológico está sendo reforçado.",
+    "url_imagem": "https://seu-servidor.com/semana-33.jpg",
+    "descricao_corpo": "O volume de líquido amniótico está no máximo. Os chutes e cotoveladas do bebê podem até doer quando pegam nas costelas.",
+    "sintomas_fisicos": [
+      "Dor nas costelas (pés do bebê)",
+      "Desajeitamento motor grande",
+      "Cãibras muito dolorosas",
+      "Sensação de que o abdômen está 'esticado ao máximo'"
+    ],
+    "sintomas_emocionais": ["Ansiedade acentuada para o dia do parto"]
+  },
+  {
+    "semana": 34,
+    "tamanho_aproximado": "45 cm",
+    "comparacao": "Melancia grande",
+    "descricao_visual": "Geralmente, o bebê se posiciona de cabeça para baixo neste período. As unhas já podem passar das pontas dos dedos.",
+    "url_imagem": "https://seu-servidor.com/semana-34.jpg",
+    "descricao_corpo": "O corpo intensifica as 'contrações de treinamento'. A fadiga chega a níveis parecidos com os do primeiro trimestre.",
+    "sintomas_fisicos": [
+      "Visão turva temporária (devido à retenção de fluidos e hormônios)",
+      "Maior inchaço nos tornozelos (piora no fim do dia)",
+      "Constipação severa",
+      "Insônia crônica da gravidez"
+    ],
+    "sintomas_emocionais": [
+      "Urgência em deixar tudo limpo e organizado (Instinto de Ninho muito forte)"
+    ]
+  },
+  {
+    "semana": 35,
+    "tamanho_aproximado": "46,2 cm",
+    "comparacao": "Bola de pilates (45 cm)",
+    "descricao_visual": "Os pulmões estão totalmente desenvolvidos. O bebê ganha até 30 gramas por dia nas últimas semanas.",
+    "url_imagem": "https://seu-servidor.com/semana-35.jpg",
+    "descricao_corpo": "O útero está a cerca de 15 centímetros acima do umbigo. Dormir sem acordar várias vezes torna-se uma raridade.",
+    "sintomas_fisicos": [
+      "Vontade de urinar a cada hora",
+      "Dores agudas na pélvis (pressão da cabeça do bebê)",
+      "Pele da barriga pode coçar intensamente",
+      "Contrações de Braxton Hicks mais frequentes"
+    ],
+    "sintomas_emocionais": [
+      "Perda total de paciência; desejo de conhecer logo o bebê"
+    ]
+  },
+  {
+    "semana": 36,
+    "tamanho_aproximado": "47,4 cm",
+    "comparacao": "Abóbora gigante redonda",
+    "descricao_visual": "A camada de vérnix que cobre o corpo do bebê começa a engrossar e o acúmulo de gordura continua para deixá-lo gordinho.",
+    "url_imagem": "https://seu-servidor.com/semana-36.jpg",
+    "descricao_corpo": "Para muitas mães (principalmente de primeira viagem), ocorre o 'encaixe' (o bebê desce para a pelve), aliviando pulmões e estômago.",
+    "sintomas_fisicos": [
+      "Melhora na respiração e na azia (bebê baixou)",
+      "Aumento da pressão pélvica e dor para caminhar",
+      "Mudança na forma da barriga (mais baixa)",
+      "Dificuldade enorme de encontrar posição na cama"
+    ],
+    "sintomas_emocionais": [
+      "Medo do parto, mas também resignação de que a hora está chegando"
+    ]
+  },
+  {
+    "semana": 37,
+    "tamanho_aproximado": "48,6 cm",
+    "comparacao": "Pufe esférico médio",
+    "descricao_visual": "O bebê é considerado 'a termo'. Ele está praticando a respiração inalando e exalando o líquido amniótico.",
+    "url_imagem": "https://seu-servidor.com/semana-37.jpg",
+    "descricao_corpo": "O corpo está nos preparativos finais. O colo do útero pode começar a afinar (apagamento) e a dilatar discretamente.",
+    "sintomas_fisicos": [
+      "Possível perda do tampão mucoso (corrimento gelatinoso com fios de sangue)",
+      "Aumento dramático do cansaço",
+      "Náuseas e diarreia pontuais (corpo limpando para o parto)",
+      "Choques vaginais leves"
+    ],
+    "sintomas_emocionais": ["Foco exclusivo no parto; isolamento social brando"]
+  },
+  {
+    "semana": 38,
+    "tamanho_aproximado": "49,8 cm",
+    "comparacao": "Melancia gigante",
+    "descricao_visual": "Os órgãos já estão prontos para a vida externa. O bebê já descansa em intervalos consistentes dentro do útero.",
+    "url_imagem": "https://seu-servidor.com/semana-38.jpg",
+    "descricao_corpo": "O corpo aguarda o gatilho hormonal para iniciar o trabalho de parto real. Qualquer contração passa a ser observada com atenção.",
+    "sintomas_fisicos": [
+      "Seios enormes e pesados",
+      "Pés muito inchados",
+      "Dificuldade para caminhar (passo de pinguim)",
+      "Aumento do corrimento vaginal não infeccioso"
+    ],
+    "sintomas_emocionais": [
+      "Irritabilidade com a famosa pergunta de parentes: 'Ainda não nasceu?'"
+    ]
+  },
+  {
+    "semana": 39,
+    "tamanho_aproximado": "50,7 cm",
+    "comparacao": "Bola de exercício (50 cm)",
+    "descricao_visual": "O bebê continua acumulando gordura para ajudar no controle térmico após o parto. A pigmentação da pele e o cabelo variam muito entre recém-nascidos.",
+    "url_imagem": "https://seu-servidor.com/semana-39.jpg",
+    "descricao_corpo": "Cada dia é uma espera. O colo do útero continua se preparando. A mãe para de ganhar peso ou até perde um pouco.",
+    "sintomas_fisicos": [
+      "Contrações de treinamento fortes que podem confundir com parto falso",
+      "Perda de um ou dois quilos (diminuição do líquido amniótico)",
+      "Sensação constante de peso na bacia",
+      "Ruptura da bolsa de águas (pode ocorrer a qualquer momento)"
+    ],
+    "sintomas_emocionais": [
+      "Extremo cansaço mental e físico; contagem regressiva"
+    ]
+  },
+  {
+    "semana": 40,
+    "tamanho_aproximado": "51,2 cm",
+    "comparacao": "Abóbora moranga gigante",
+    "descricao_visual": "Pronto para nascer! O crânio permanece flexível para passar pela pelve. Todo o organismo está preparado para a vida fora do útero.",
+    "url_imagem": "https://seu-servidor.com/semana-40.jpg",
+    "descricao_corpo": "A data prevista do parto chegou! O útero está no seu limite de tamanho. O corpo fará os últimos ajustes hormonais para as contrações rítmicas começarem.",
+    "sintomas_fisicos": [
+      "Sinais iminentes de parto: contrações regulares, ruptura da bolsa, perda do tampão",
+      "Desconforto físico total e incapacidade de dormir profundamente",
+      "Lombar muito dolorida",
+      "Pressão extrema no reto e bexiga"
+    ],
+    "sintomas_emocionais": [
+      "Alívio, choro, muita ansiedade, sensação de entrega total ao processo que vai acontecer"
+    ]
+  }
+]

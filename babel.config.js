@@ -5,6 +5,8 @@ module.exports = function (api) {
       "babel-preset-expo",
       "nativewind/babel", // <- aqui, dentro de presets
     ],
-    // plugins: [] -> remova "nativewind/babel" daqui se estiver
+    plugins: [
+      "react-native-reanimated/plugin",
+    ],
   };
 };
