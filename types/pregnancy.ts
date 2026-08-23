@@ -11,3 +11,9 @@ export interface PregnancyStatus {
   progressPercentage: number;
   offlineSaved: string;
 }
+
+export type Bebe = {
+  nome: string;
+  sexo: 'masculino' | 'feminino' | 'nao_informado';
+  aindaNaoDecidiuNome: boolean;
+};
