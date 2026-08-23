@@ -2,3 +2,15 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer base {
+  input, textarea {
+    outline: none !important;
+    box-shadow: none !important;
+  }
+  
+  input:focus, textarea:focus {
+    outline: none !important;
+    box-shadow: none !important;
+  }
+}
