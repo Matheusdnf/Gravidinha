@@ -1,11 +1,35 @@
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { Tabs } from "expo-router";
-import { View } from "react-native";
+import React, { useEffect, useRef } from "react";
+import { Animated, View } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+
+// Componente separado garante que hooks sejam usados corretamente (fora de callbacks)
+function AnimatedTabIcon({ focused, children }: { focused: boolean; children: React.ReactNode }) {
+  const scale = useRef(new Animated.Value(1)).current;
+
+  useEffect(() => {
+    Animated.spring(scale, {
+      toValue: focused ? 1.12 : 1,
+      useNativeDriver: true,
+      speed: 20,
+      bounciness: 8,
+    }).start();
+  }, [focused]);
+
+  return (
+    <Animated.View style={{ transform: [{ scale }] }}>
+      {children}
+    </Animated.View>
+  );
+}
+
 export default function TabsLayout() {
-  // Configuração de cores baseada no design da imagem
-  const activeColor = "#D97D54"; // Tom terracota/laranja
-  const inactiveColor = "#8A7A75"; // Marrom/cinza neutro suave
-  const tabBgColor = "#FFFDFB"; // Fundo levemente off-white
+  const activeColor = "#D97D54";
+  const inactiveColor = "#8A7A75";
+  const tabBgColor = "#FFFDFB";
+  const { bottom } = useSafeAreaInsets();
+
   return (
     <Tabs
       screenOptions={{
@@ -16,16 +40,16 @@ export default function TabsLayout() {
           backgroundColor: tabBgColor,
           borderTopWidth: 1,
           borderTopColor: "#F0EBE6",
-          height: 70,
-          paddingBottom: 12,
+          height: 70 + bottom,
+          paddingBottom: 8 + bottom,
           paddingTop: 8,
-          elevation: 0, // Remove sombra no Android
-          boxShadow: "none", // Remove sombra no iOS/Web (substitui shadowOpacity: 0)
+          elevation: 0,
+          boxShadow: "none",
         },
         tabBarLabelStyle: {
           fontSize: 12,
           fontWeight: "500",
-          marginTop: 2,
+          paddingBottom: 2,
         },
       }}
     >
@@ -35,38 +59,45 @@ export default function TabsLayout() {
         options={{
           title: "Início",
           tabBarIcon: ({ color, focused }) => (
-            <View
-              className={
-                focused ? "bg-[#FDF2EE] p-2 rounded-full -mt-1" : "p-2"
-              }
-            >
-              <MaterialCommunityIcons
-                name={focused ? "view-dashboard" : "view-dashboard-outline"}
-                size={22}
-                color={color}
-              />
-            </View>
+            <AnimatedTabIcon focused={focused}>
+              <View
+                className={
+                  focused
+                    ? "bg-[#FDF2EE] border border-[#FADCD0] w-11 h-11 rounded-2xl items-center justify-center"
+                    : "w-11 h-11 items-center justify-center"
+                }
+              >
+                <MaterialCommunityIcons
+                  name={focused ? "view-dashboard" : "view-dashboard-outline"}
+                  size={22}
+                  color={color}
+                />
+              </View>
+            </AnimatedTabIcon>
           ),
         }}
       />
-      {/* 2. Aba: Jornada (Selecionada na imagem) */}
+      {/* 2. Aba: Jornada */}
       <Tabs.Screen
         name="jornada"
         options={{
           title: "Jornada",
           tabBarIcon: ({ color, focused }) => (
-            // A classe bg-[#FDF2EE] adiciona o fundo arredondado suave visto na imagem
-            <View
-              className={
-                focused ? "bg-[#FDF2EE] px-4 py-2 rounded-full -mt-1" : "p-2"
-              }
-            >
-              <Ionicons
-                name={focused ? "map" : "map-outline"}
-                size={22}
-                color={color}
-              />
-            </View>
+            <AnimatedTabIcon focused={focused}>
+              <View
+                className={
+                  focused
+                    ? "bg-[#FDF2EE] border border-[#FADCD0] w-11 h-11 rounded-2xl items-center justify-center"
+                    : "w-11 h-11 items-center justify-center"
+                }
+              >
+                <Ionicons
+                  name={focused ? "map" : "map-outline"}
+                  size={22}
+                  color={color}
+                />
+              </View>
+            </AnimatedTabIcon>
           ),
         }}
       />
@@ -76,17 +107,21 @@ export default function TabsLayout() {
         options={{
           title: "Atividades",
           tabBarIcon: ({ color, focused }) => (
-            <View
-              className={
-                focused ? "bg-[#FDF2EE] p-2 rounded-full -mt-1" : "p-2"
-              }
-            >
-              <Ionicons
-                name={focused ? "game-controller" : "game-controller-outline"}
-                size={22}
-                color={color}
-              />
-            </View>
+            <AnimatedTabIcon focused={focused}>
+              <View
+                className={
+                  focused
+                    ? "bg-[#FDF2EE] border border-[#FADCD0] w-11 h-11 rounded-2xl items-center justify-center"
+                    : "w-11 h-11 items-center justify-center"
+                }
+              >
+                <Ionicons
+                  name={focused ? "game-controller" : "game-controller-outline"}
+                  size={22}
+                  color={color}
+                />
+              </View>
+            </AnimatedTabIcon>
           ),
         }}
       />
@@ -96,17 +131,21 @@ export default function TabsLayout() {
         options={{
           title: "Perfil",
           tabBarIcon: ({ color, focused }) => (
-            <View
-              className={
-                focused ? "bg-[#FDF2EE] p-2 rounded-full -mt-1" : "p-2"
-              }
-            >
-              <Ionicons
-                name={focused ? "person" : "person-outline"}
-                size={22}
-                color={color}
-              />
-            </View>
+            <AnimatedTabIcon focused={focused}>
+              <View
+                className={
+                  focused
+                    ? "bg-[#FDF2EE] border border-[#FADCD0] w-11 h-11 rounded-2xl items-center justify-center"
+                    : "w-11 h-11 items-center justify-center"
+                }
+              >
+                <Ionicons
+                  name={focused ? "person" : "person-outline"}
+                  size={22}
+                  color={color}
+                />
+              </View>
+            </AnimatedTabIcon>
           ),
         }}
       />
