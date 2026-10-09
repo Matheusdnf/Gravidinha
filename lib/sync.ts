@@ -4,8 +4,8 @@
 import { useEffect, useRef } from 'react';
 import { AppState, Platform } from 'react-native';
 import { supabase } from './supabase';
-import { db, TABELAS, Tabela, paraRemoto, salvarLocal, lerMeta, gravarMeta } from './db';
-import { deveAplicar } from './syncRegras';
+import { db, TABELAS, Tabela, paraLocal, paraRemoto, salvarLocal, lerMeta, gravarMeta } from './db';
+import { deveAplicar, linhaMudou } from './syncRegras';
 
 // Erros em que o servidor recusa a linha por regra (não adianta reenviar)
 const MOTIVOS: Record<string, string> = {
@@ -140,13 +140,13 @@ async function pull(): Promise<boolean> {
       if (error) throw error;
 
       for (const remota of data) {
-        const local = await db.getFirstAsync<{ pendente: number }>(
-          `SELECT pendente FROM ${t.nome} WHERE ${t.pk} = ?`,
+        const local = await db.getFirstAsync<Record<string, any> & { pendente: number }>(
+          `SELECT * FROM ${t.nome} WHERE ${t.pk} = ?`,
           remota[t.pk],
         );
         if (deveAplicar(local)) {
+          if (linhaMudou(local, paraLocal(t, remota), t.colunas)) mudou = true;
           await salvarLocal(t, remota, 0);
-          mudou = true;
         }
       }
       if (data.length > 0) {

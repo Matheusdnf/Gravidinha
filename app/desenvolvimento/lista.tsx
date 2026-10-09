@@ -5,6 +5,7 @@ import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { useAuth } from "../../state/auth";
 import { listarGestacoes, listarSemanas } from "../../lib/dados";
+import { useDadosAtualizados } from "../../lib/sync";
 import { BottomSheetModal } from "../../components/BottomSheetModal";
 
 export default function DesenvolvimentoListaScreen() {
@@ -18,13 +19,15 @@ export default function DesenvolvimentoListaScreen() {
   const scrollViewRef = useRef<ScrollView>(null);
 
   // Busca todas as gestações do usuário para o seletor
-  useEffect(() => {
+  const carregarGestacoes = () => {
     if (user?.id) {
       listarGestacoes()
         .then(setGestacoes)
         .catch(console.error);
     }
-  }, [user?.id]);
+  };
+  useEffect(carregarGestacoes, [user?.id]);
+  useDadosAtualizados(carregarGestacoes);
 
   // Busca o desenvolvimento da gestação selecionada
   useEffect(() => {

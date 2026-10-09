@@ -21,6 +21,7 @@ import { calcularSemanaAtual, getTrimestre, isoParaBR, parseData } from "../../l
 import { BackButton } from "../../components/BackButton";
 import { SexoSelector } from "../../components/SexoSelector";
 import { atualizarGestacao, listarGestacoes } from "../../lib/dados";
+import { useDadosAtualizados } from "../../lib/sync";
 
 
 export default function DadosGravidezScreen() {
@@ -67,6 +68,7 @@ export default function DadosGravidezScreen() {
       fetchGestacoes();
     }
   }, [user?.id]);
+  useDadosAtualizados(fetchGestacoes);
 
   const openEditModal = (gestacao: any) => {
     setEditingGestacao(JSON.parse(JSON.stringify(gestacao)));

@@ -22,6 +22,7 @@ import { CalendarSkeleton, AppointmentItemSkeleton } from "../../components/Skel
 
 import { Appointment } from "../../types/consultas";
 import { atualizarConsulta, criarConsulta, excluirConsulta, listarConsultas } from "../../lib/dados";
+import { useDadosAtualizados } from "../../lib/sync";
 import { hojeISO, isoParaBR, parseData } from "../../lib/gestacao";
 import { BackButton } from "../../components/BackButton";
 
@@ -89,6 +90,7 @@ export default function ConsultasScreen() {
   useEffect(() => {
     fetchConsultas();
   }, [user?.id, selectedGestacao?.id_gestacao]);
+  useDadosAtualizados(fetchConsultas);
 
   const openEditModal = (item: Appointment) => {
     setSelectedAppointmentId(item.id);

@@ -18,7 +18,7 @@ export type AuthContextType = {
   user: User | null;
   isLoading: boolean;
   signIn: (user: User) => void;
-  signOut: () => void;
+  signOut: () => Promise<void>;
   selectedGestacao: Gestacao | null;
   setSelectedGestacao: (gestacao: Gestacao | null) => void;
 };

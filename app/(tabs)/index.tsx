@@ -15,6 +15,7 @@ import { imagensSemanas } from "../../constants/imagesSemanas";
 import { JourneyCardSkeleton, WeekHighlightSkeleton, QuickAccessSkeleton } from "../../components/Skeleton";
 import { calcularSemanaAtual, getTrimestre, parseData } from "../../lib/gestacao";
 import { buscarDesenvolvimento, listarConsultas, listarGestacoes } from "../../lib/dados";
+import { useDadosAtualizados } from "../../lib/sync";
 import { PregnancyStatus } from "../../types/pregnancy";
 
 export default function DashboardScreen() {
@@ -43,7 +44,7 @@ export default function DashboardScreen() {
 
   // Ao abrir, atualiza a gestação selecionada com os dados do servidor
   // (ou escolhe a ativa, se ainda não houver nenhuma selecionada)
-  useEffect(() => {
+  const carregarGestacoes = () => {
     if (!user) return;
     listarGestacoes()
       .then((lista) => {
@@ -61,7 +62,13 @@ export default function DashboardScreen() {
         console.error(e);
         setIsLoadingDashboard(false);
       });
-  }, [user?.id]);
+  };
+  useEffect(carregarGestacoes, [user?.id]);
+  // Sincronização trouxe novidades: atualiza a gestação selecionada e as consultas
+  useDadosAtualizados(() => {
+    carregarGestacoes();
+    fetchConsultasAsNotifications();
+  });
 
   // Busca desenvolvimento e consultas da gestação selecionada, em paralelo
   useEffect(() => {

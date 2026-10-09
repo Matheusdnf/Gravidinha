@@ -15,6 +15,7 @@ import { FullScreenModal } from "../../components/FullScreenModal";
 import { DiaryItemSkeleton } from "../../components/Skeleton";
 import { useAuth } from "../../state/auth";
 import { criarDiario, listarDiario } from "../../lib/dados";
+import { useDadosAtualizados } from "../../lib/sync";
 import { hojeISO, parseData } from "../../lib/gestacao";
 import { BackButton } from "../../components/BackButton";
 
@@ -82,6 +83,7 @@ export default function DiarioScreen() {
     setVisiveis(POR_PAGINA);
     fetchDiarios();
   }, [user?.id, selectedGestacao?.id_gestacao]);
+  useDadosAtualizados(fetchDiarios);
 
   const handleSalvar = async () => {
     if (!textoRegistro.trim()) return;

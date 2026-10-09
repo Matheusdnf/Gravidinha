@@ -2,7 +2,9 @@ import React, { createContext, useState, useContext, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { User, Gestacao, AuthContextType } from '../types/auth';
 import { isAuthRetryableFetchError } from '@supabase/supabase-js';
+import { Alert } from 'react-native';
 import { supabase } from '../lib/supabase';
+import { contarPendentes, limparBancoLocal, prepararBancoLocal, sincronizar } from '../lib/sync';
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
@@ -25,7 +27,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         // Erro de rede na renovação (app aberto offline) não desloga: o supabase-js mantém a
         // sessão guardada e tenta de novo; se o token for revogado, o SIGNED_OUT abaixo desloga.
         if (storedUser && (data.session || isAuthRetryableFetchError(error))) {
-          setUser(JSON.parse(storedUser));
+          const restaurado: User = JSON.parse(storedUser);
+          setUser(restaurado);
+          // Sem await: o app abre com o que já está no banco local; as telas recarregam quando chegar o pull
+          prepararBancoLocal(restaurado.id);
         } else {
           await AsyncStorage.multiRemove(['gravidinha_user', 'gravidinha_selected_gestacao']);
           return;
@@ -48,6 +53,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setUser(null);
         setSelectedGestacaoState(null);
         AsyncStorage.multiRemove(['gravidinha_user', 'gravidinha_selected_gestacao']);
+        limparBancoLocal();
       }
     });
     return () => data.subscription.unsubscribe();
@@ -59,6 +65,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const signOut = async () => {
+    // Tenta enviar o que foi feito offline; se ainda sobrar algo, a usuária decide se perde
+    await sincronizar();
+    const pendentes = contarPendentes();
+    if (pendentes > 0) {
+      const sair = await new Promise<boolean>((resolve) =>
+        Alert.alert(
+          'Alterações não enviadas',
+          `${pendentes} alterações ainda não foram enviadas e serão perdidas. Sair mesmo assim?`,
+          [
+            { text: 'Cancelar', style: 'cancel', onPress: () => resolve(false) },
+            { text: 'Sair', style: 'destructive', onPress: () => resolve(true) },
+          ],
+          { cancelable: true, onDismiss: () => resolve(false) },
+        ),
+      );
+      if (!sair) return;
+    }
+    await limparBancoLocal();
     await supabase.auth.signOut();
     setUser(null);
     setSelectedGestacaoState(null);

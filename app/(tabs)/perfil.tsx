@@ -10,9 +10,9 @@ import {
 } from "react-native";
 import { useState, useEffect } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { useRouter } from "expo-router";
 import { useAuth } from "../../state/auth";
 import { atualizarUsuario, buscarUsuario } from "../../lib/dados";
+import { useDadosAtualizados } from "../../lib/sync";
 import { mascaraCelular } from "../../lib/formato";
 import * as ImagePicker from "expo-image-picker";
 import { Image } from "react-native";
@@ -25,7 +25,6 @@ import { BottomSheetModal } from "../../components/BottomSheetModal";
 import { MENU_PERFIL } from "../../constants/menuPerfil";
 
 export default function PerfilScreen() {
-  const router = useRouter();
   const { user, signIn, signOut } = useAuth();
 
   const [isModalVisible, setIsModalVisible] = useState(false);
@@ -35,7 +34,7 @@ export default function PerfilScreen() {
   const [isLoading, setIsLoading] = useState(false);
 
   // Busca as informações completas do usuário (incluindo celular e foto) do banco
-  useEffect(() => {
+  const carregar = () => {
     if (user) {
       buscarUsuario()
         .then((data) => {
@@ -49,7 +48,12 @@ export default function PerfilScreen() {
         })
         .catch(console.error);
     }
-  }, [user?.id]);
+  };
+  useEffect(carregar, [user?.id]);
+  // Não sobrescreve o que a usuária está digitando no modal de edição
+  useDadosAtualizados(() => {
+    if (!isModalVisible) carregar();
+  });
 
   const pickImage = async () => {
     let result = await ImagePicker.launchImageLibraryAsync({
@@ -187,10 +191,8 @@ export default function PerfilScreen() {
         <TouchableOpacity
           className="bg-red-50 border border-red-100 rounded-2xl py-4 flex-row items-center justify-center w-full shadow-sm"
           activeOpacity={0.7}
-          onPress={() => {
-            signOut();
-            router.replace("/(auth)/login");
-          }}
+          // O _layout leva para o login quando a sessão acaba (signOut pode ser cancelado)
+          onPress={signOut}
         >
           <Feather name="log-out" size={18} color="#EF4444" className="mr-2" />
           <Text className="text-red-500 font-bold text-sm ml-2">Sair da conta</Text>

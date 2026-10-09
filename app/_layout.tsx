@@ -4,6 +4,7 @@ import { AuthProvider, useAuth } from "../state/auth";
 import { useEffect } from "react";
 import { View, ActivityIndicator, LogBox, Platform, Alert } from "react-native";
 import { registerForPushNotificationsAsync } from "../lib/notifications";
+import { aoAvisar } from "../lib/sync";
 
 // No react-native-web o Alert.alert não faz nada: erros e confirmações sumiam em silêncio
 if (Platform.OS === "web") {
@@ -37,6 +38,15 @@ function RootLayoutNav() {
   useEffect(() => {
     registerForPushNotificationsAsync().catch(console.error);
   }, []);
+
+  // Alteração feita offline que o servidor recusou ao sincronizar
+  useEffect(
+    () =>
+      aoAvisar((avisos) =>
+        Alert.alert("Atenção", "Uma alteração feita offline não pôde ser salva: " + avisos.join("; ")),
+      ),
+    [],
+  );
 
   useEffect(() => {
     if (isLoading) return;
