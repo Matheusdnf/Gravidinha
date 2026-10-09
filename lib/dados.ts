@@ -1,17 +1,23 @@
 // Acesso a dados do app: lê e grava no SQLite local (lib/db.ts), que funciona sem internet.
 // Cada gravação marca a linha como pendente e dispara a sincronização com o Supabase (lib/sync.ts).
-// As regras que o banco do servidor garante (uma gestação ativa, não inserir em gestação
-// finalizada) são checadas aqui antes de gravar, para o erro aparecer na hora mesmo offline.
+// Regras checadas aqui antes de gravar, para o erro aparecer na hora mesmo offline: uma gestação
+// ativa (o servidor também garante) e não criar diário/consulta em gestação finalizada (só o app
+// garante: o registro feito offline antes da finalização precisa ser aceito na sincronização).
 // Toda função lança Error com mensagem pronta para exibir em Alert.
 import { supabase } from './supabase';
-import { db, tabela, salvarLocal, agora, novoId, Tabela } from './db';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { db, tabela, salvarLocal, agora, novoId, lerMeta, Tabela } from './db';
 import { prepararBancoLocal, marcarAlterado } from './sync';
 import { normalizarHorario } from './syncRegras';
 import { calcularSemanaAtual, hojeISO, paraISO } from './gestacao';
 import sintDb from '../sint_db.json';
 import { Gestacao, User } from '../types/auth';
 
+// Dona do banco local (gravada no login). Offline com o token vencido o getSession() vem vazio,
+// e o app precisa continuar funcionando com os dados locais.
 async function meuId(): Promise<string> {
+  const dona = lerMeta('id_user');
+  if (dona) return dona;
   const { data } = await supabase.auth.getSession();
   if (!data.session) throw new Error('Sessão expirada. Entre novamente.');
   return data.session.user.id;
@@ -71,10 +77,12 @@ export async function buscarUsuario(): Promise<User & { profile_image: string | 
   const { data } = await supabase.auth.getSession();
   const u = await db.getFirstAsync<Record<string, any>>('SELECT * FROM usuario WHERE id_user = ?', await meuId());
   if (!u) throw new Error('Erro ao carregar o perfil.');
+  // Sessão vencida offline: e-mail do usuário guardado no login
+  const email = data.session?.user.email ?? JSON.parse((await AsyncStorage.getItem('gravidinha_user')) ?? '{}').email ?? '';
   return {
     id: u.id_user,
     nome: u.name,
-    email: data.session?.user.email ?? '',
+    email,
     celular: String(u.cellphone),
     profile_image: u.profile_image,
   };

@@ -94,6 +94,19 @@ export async function salvarLocal(t: Tabela, linha: Record<string, any>, pendent
   );
 }
 
+// Linha vinda do servidor: grava só se não houver alteração local pendente (checado no mesmo comando,
+// sem janela entre ler e gravar). Devolve se gravou.
+export async function salvarDoServidor(t: Tabela, linha: Record<string, any>): Promise<boolean> {
+  const valores = paraLocal(t, linha);
+  const { changes } = await db.runAsync(
+    `INSERT INTO ${t.nome} (${t.colunas.join(', ')}, pendente) VALUES (${t.colunas.map(() => '?').join(', ')}, 0)
+     ON CONFLICT(${t.pk}) DO UPDATE SET ${t.colunas.map((c) => `${c} = excluded.${c}`).join(', ')}
+     WHERE ${t.nome}.pendente = 0`,
+    t.colunas.map((c) => valores[c]),
+  );
+  return changes > 0;
+}
+
 export const agora = () => new Date().toISOString();
 export const novoId = () => Crypto.randomUUID();
 

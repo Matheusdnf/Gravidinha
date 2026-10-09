@@ -20,3 +20,12 @@ export function linhaMudou(
 ): boolean {
   return !local || colunas.some((c) => c !== 'updated_at' && (local[c] ?? null) !== (remota[c] ?? null));
 }
+
+// Códigos em que o servidor recusa a linha por regra: não adianta reenviar, a versão dele vence
+export const CODIGOS_REJEICAO = ['23505', '42501', '23503', '23514'];
+
+// O que o push faz com um erro: descartar a linha, parar tudo (sem internet) ou pular só esta linha
+export function classificarErro(error: { code?: string }): 'rejeitada' | 'sem_conexao' | 'pular' {
+  if (!error.code) return 'sem_conexao';
+  return CODIGOS_REJEICAO.includes(error.code) ? 'rejeitada' : 'pular';
+}

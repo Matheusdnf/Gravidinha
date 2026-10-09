@@ -4,13 +4,13 @@
 import { useEffect, useRef } from 'react';
 import { AppState, Platform } from 'react-native';
 import { supabase } from './supabase';
-import { db, TABELAS, Tabela, paraLocal, paraRemoto, salvarLocal, lerMeta, gravarMeta } from './db';
-import { deveAplicar, linhaMudou } from './syncRegras';
+import { db, TABELAS, Tabela, paraLocal, paraRemoto, salvarLocal, salvarDoServidor, lerMeta, gravarMeta } from './db';
+import { classificarErro, deveAplicar, linhaMudou } from './syncRegras';
 
-// Erros em que o servidor recusa a linha por regra (não adianta reenviar)
+// Motivo exibido para cada código de rejeição (CODIGOS_REJEICAO em syncRegras.ts)
 const MOTIVOS: Record<string, string> = {
   '23505': 'já existe uma gestação ativa',
-  '42501': 'a gestação já foi finalizada',
+  '42501': 'sem permissão',
   '23503': 'a gestação não existe mais',
   '23514': 'dados inválidos',
 };
@@ -75,9 +75,9 @@ async function ciclo() {
   if (!data.session) return;
 
   const avisos: string[] = [];
-  const enviou = await push(avisos);
-  let mudou = avisos.length > 0; // rejeição trocou a linha local pela do servidor
-  if (enviou) mudou = (await pull()) || mudou;
+  await push(avisos);
+  // Pull mesmo se o push parou: linhas pendentes não são sobrescritas (sem internet, o pull só falha)
+  const mudou = (await pull()) || avisos.length > 0; // rejeição trocou a linha local pela do servidor
 
   if (mudou) ouvintesAtualizar.forEach((cb) => cb());
   if (avisos.length) ouvintesAviso.forEach((cb) => cb(avisos));
@@ -86,9 +86,12 @@ async function ciclo() {
 // ponytail: 1–2 requisições por linha pendente; suficiente para o volume de uma usuária. Agrupar em lote se crescer.
 // update primeiro e insert se não existir: upsert passaria pela regra de insert do RLS (barraria editar
 // consulta de gestação finalizada) e usuario não tem permissão de insert.
-async function push(avisos: string[]): Promise<boolean> {
+async function push(avisos: string[]) {
   for (const t of TABELAS) {
-    const linhas = await db.getAllAsync<Record<string, any>>(`SELECT * FROM ${t.nome} WHERE pendente = 1`);
+    // Em ordem cronológica: finalizar uma gestação vai antes de criar a próxima ativa
+    const linhas = await db.getAllAsync<Record<string, any>>(
+      `SELECT * FROM ${t.nome} WHERE pendente = 1 ORDER BY updated_at`,
+    );
     for (const linha of linhas) {
       const id = linha[t.pk];
       const dados = paraRemoto(t, linha);
@@ -96,15 +99,14 @@ async function push(avisos: string[]): Promise<boolean> {
       if (!error && data?.length === 0) ({ error } = await supabase.from(t.nome).insert(dados));
 
       if (error) {
-        const motivo = MOTIVOS[error.code];
-        if (!motivo) {
-          // Sem internet, sessão expirada etc.: tenta tudo de novo depois
-          console.error(error);
-          return false;
+        const tipo = classificarErro(error);
+        console.error(error);
+        if (tipo === 'sem_conexao') return; // tenta tudo de novo na próxima vez
+        if (tipo === 'rejeitada') {
+          avisos.push(`${ROTULOS[t.nome]} (${MOTIVOS[error.code]})`);
+          await descartarLocal(t, id);
         }
-        avisos.push(`${ROTULOS[t.nome]} (${motivo})`);
-        await descartarLocal(t, id);
-        continue;
+        continue; // 'pular': só esta linha fica pendente; as outras seguem
       }
 
       // Só limpa se a linha não foi editada de novo enquanto era enviada
@@ -115,7 +117,6 @@ async function push(avisos: string[]): Promise<boolean> {
       );
     }
   }
-  return true;
 }
 
 // O servidor venceu: fica a versão dele (ou some, se ele não tem a linha)
@@ -144,9 +145,9 @@ async function pull(): Promise<boolean> {
           `SELECT * FROM ${t.nome} WHERE ${t.pk} = ?`,
           remota[t.pk],
         );
-        if (deveAplicar(local)) {
-          if (linhaMudou(local, paraLocal(t, remota), t.colunas)) mudou = true;
-          await salvarLocal(t, remota, 0);
+        // salvarDoServidor repete a checagem de pendente no próprio SQL (edição pode chegar entre os awaits)
+        if (deveAplicar(local) && (await salvarDoServidor(t, remota)) && linhaMudou(local, paraLocal(t, remota), t.colunas)) {
+          mudou = true;
         }
       }
       if (data.length > 0) {
@@ -175,8 +176,8 @@ export async function limparBancoLocal() {
 
 // Login (ou abertura do app já logada): garante que o banco local é desta usuária e puxa os dados
 export async function prepararBancoLocal(id_user: string) {
-  const dono = lerMeta('id_user');
-  if (dono && dono !== id_user) await limparBancoLocal();
+  // Sem dono registrado também limpa: um sync durante o logout pode ter regravado linhas da conta anterior
+  if (lerMeta('id_user') !== id_user) await limparBancoLocal();
   gravarMeta('id_user', id_user);
   await sincronizar();
 }

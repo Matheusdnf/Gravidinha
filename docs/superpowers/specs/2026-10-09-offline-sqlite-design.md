@@ -31,7 +31,8 @@ As telas acessam dados só via `lib/dados.ts`. As funções exportadas mantêm n
    - `update` liberado em `diario` (política "editar os próprios", mesmo critério de dono), necessário para o push e para o soft delete.
    - `filho` já tem update.
    - Delete físico em `consulta` deixa de ser usado pelo app; exclusão = `update` de `deleted_at`.
-3. As regras continuam no servidor como última barreira: `uq_gestacao_ativa` (só considera linhas com `deleted_at is null` — o índice parcial passa a ser `where status = 'ativa' and deleted_at is null`) e o RLS "criar em gestação ativa".
+3. **Revisado após a revisão final:** o RLS de insert de `diario`/`consulta` deixa de exigir gestação ativa (migration `20261009130000_insert_em_gestacao_finalizada.sql`), só a dona. Motivo: consulta criada offline antes de finalizar a gestação na mesma sessão era recusada e perdida no push. A regra "não criar em gestação finalizada" fica só no app. Texto original a seguir.
+   As regras continuam no servidor como última barreira: `uq_gestacao_ativa` (só considera linhas com `deleted_at is null` — o índice parcial passa a ser `where status = 'ativa' and deleted_at is null`) e o RLS "criar em gestação ativa".
    - Uma consulta/diário criado offline numa gestação que foi finalizada é barrado pelo RLS de insert (`42501`). Tratado como rejeição (ver abaixo).
 4. O RPC `criar_gestacao` deixa de ser chamado (permanece no banco; remoção opcional depois).
 
