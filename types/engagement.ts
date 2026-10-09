@@ -20,12 +20,6 @@ export interface WeeklyDay {
   isCompleted: boolean;
 }
 
-export interface MoodItem {
-  id: string;
-  emoji: string;
-  label: string; // Ex: "Ótima", "Cansada"
-}
-
 export interface ChecklistItem {
   id: string;
   text: string;

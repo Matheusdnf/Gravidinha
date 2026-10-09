@@ -3,6 +3,9 @@ import { useRouter } from "expo-router";
 import { useState } from "react";
 import { Alert, KeyboardAvoidingView, Platform } from "react-native";
 import { setRegistrationData } from "../../state/registrationStore";
+import { mascaraCelular } from "../../lib/formato";
+import { CalendarModal } from "../../components/CalendarModal";
+import { hojeISO, isoParaBR } from "../../lib/gestacao";
 import {
   ScrollView,
   Text,
@@ -11,11 +14,9 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { useAuth } from "../../state/auth";
 
 export default function RegistroScreen() {
   const router = useRouter();
-  const { signIn } = useAuth();
 
   const [nome, setNome] = useState("");
   const [email, setEmail] = useState("");
@@ -26,20 +27,7 @@ export default function RegistroScreen() {
   const [showSenha, setShowSenha] = useState(false);
   const [showConfirmarSenha, setShowConfirmarSenha] = useState(false);
   const [aceitouTermos, setAceitouTermos] = useState(false);
-  const [loading, setLoading] = useState(false);
-
-  const formatCelular = (text: string) => {
-    let val = text.replace(/\D/g, "");
-    if (val.length > 11) val = val.substring(0, 11);
-
-    if (val.length > 2) {
-      val = `(${val.substring(0, 2)}) ${val.substring(2)}`;
-    }
-    if (val.length > 9) {
-      val = `${val.substring(0, 10)}-${val.substring(10)}`;
-    }
-    setCelular(val);
-  };
+  const [isCalendarVisible, setIsCalendarVisible] = useState(false);
 
   const formatDataNascimento = (text: string) => {
     let val = text.replace(/\D/g, "");
@@ -93,10 +81,6 @@ export default function RegistroScreen() {
     // Não salvamos no banco ainda, apenas guardamos na memória
     setRegistrationData({ nome, email, senha, celular, dataNascimento });
     router.replace("/(auth)/gestacao");
-  };
-
-  const handleContinuar = () => {
-    router.push("/(auth)/linha-tempo");
   };
 
   return (
@@ -171,7 +155,7 @@ export default function RegistroScreen() {
             </Text>
             <TextInput
               value={celular}
-              onChangeText={formatCelular}
+              onChangeText={(t) => setCelular(mascaraCelular(t))}
               placeholder="(11) 99999-9999"
               placeholderTextColor="#C2B2AC"
               keyboardType="phone-pad"
@@ -185,15 +169,20 @@ export default function RegistroScreen() {
             <Text className="text-sm font-bold text-[#2C221E] mb-2">
               Data de Nascimento
             </Text>
-            <TextInput
-              value={dataNascimento}
-              onChangeText={formatDataNascimento}
-              placeholder="DD/MM/AAAA"
-              placeholderTextColor="#C2B2AC"
-              keyboardType="number-pad"
-              maxLength={10}
-              className="bg-[#FDF2EE] border border-[#FADCD0] rounded-2xl px-4 py-3.5 text-sm text-[#2C221E]"
-            />
+            <View className="flex-row items-center bg-[#FDF2EE] border border-[#FADCD0] rounded-2xl px-4 py-3.5">
+              <TextInput
+                value={dataNascimento}
+                onChangeText={formatDataNascimento}
+                placeholder="DD/MM/AAAA"
+                placeholderTextColor="#C2B2AC"
+                keyboardType="number-pad"
+                maxLength={10}
+                className="flex-1 text-sm text-[#2C221E] p-0"
+              />
+              <TouchableOpacity onPress={() => setIsCalendarVisible(true)}>
+                <Ionicons name="calendar-outline" size={20} color="#A37262" />
+              </TouchableOpacity>
+            </View>
           </View>
 
           {/* Campo: Senha */}
@@ -274,13 +263,12 @@ export default function RegistroScreen() {
 
           {/* Botão Cadastrar */}
           <TouchableOpacity
-            className={`bg-[#E2B19C] active:bg-[#D97D54] rounded-2xl py-4 items-center justify-center mb-6 shadow-sm ${loading ? 'opacity-70' : ''}`}
+            className="bg-[#D97D54] active:bg-[#C56A43] rounded-2xl py-4 items-center justify-center mb-6 shadow-sm"
             activeOpacity={0.9}
             onPress={handleRegister}
-            disabled={loading}
           >
             <Text className="text-white font-extrabold text-base">
-              {loading ? "Cadastrando..." : "Cadastrar"}
+              Cadastrar
             </Text>
           </TouchableOpacity>
 
@@ -296,6 +284,17 @@ export default function RegistroScreen() {
         </ScrollView>
         </View>
       </KeyboardAvoidingView>
+
+      <CalendarModal
+        visible={isCalendarVisible}
+        onClose={() => setIsCalendarVisible(false)}
+        selectedDate={dataNascimento.length === 10 ? dataNascimento : ""}
+        maxDate={hojeISO()}
+        onDayPress={(day) => {
+          setDataNascimento(isoParaBR(day.dateString));
+          setIsCalendarVisible(false);
+        }}
+      />
     </SafeAreaView>
   );
 }

@@ -1,12 +1,9 @@
-import { Feather, Ionicons } from "@expo/vector-icons";
-import { BlurView } from "expo-blur";
+import { Feather } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { useMemo, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
-  Modal,
-  Pressable,
   ScrollView,
   Switch,
   Text,
@@ -14,21 +11,15 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { Calendar, LocaleConfig } from "react-native-calendars";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useAuth } from "../../state/auth";
 import { clearRegistrationData, getRegistrationData } from "../../state/registrationStore";
 import { Bebe } from "../../types/pregnancy";
-
-// Configuração de Idioma em Português para o Calendário
-LocaleConfig.locales["pt-br"] = {
-  monthNames: ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"],
-  monthNamesShort: ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"],
-  dayNames: ["Domingo", "Segunda-feira", "Terça-feira", "Quarta-feira", "Quinta-feira", "Sexta-feira", "Sábado"],
-  dayNamesShort: ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"],
-  today: "Hoje",
-};
-LocaleConfig.defaultLocale = "pt-br";
+import { cadastrar, criarGestacao } from "../../lib/dados";
+import { getTrimestre, isoParaBR, paraISO } from "../../lib/gestacao";
+import { BackButton } from "../../components/BackButton";
+import { CalendarModal } from "../../components/CalendarModal";
+import { SexoSelector } from "../../components/SexoSelector";
 
 export default function LinhaTempoGestacaoScreen() {
   const router = useRouter();
@@ -50,12 +41,13 @@ export default function LinhaTempoGestacaoScreen() {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isCalendarVisible, setIsCalendarVisible] = useState(false);
 
+  const atualizarBebe = (index: number, patch: Partial<Bebe>) => {
+    setBebes((prev) => prev.map((b, i) => (i === index ? { ...b, ...patch } : b)));
+    if (errors[`bebe_${index}_nome`]) setErrors((prev) => ({ ...prev, [`bebe_${index}_nome`]: "" }));
+  };
+
   // Lógica para calcular o trimestre com base nas semanas
-  const trimestreTexto = useMemo(() => {
-    if (semanas <= 13) return "1º Trimestre";
-    if (semanas <= 27) return "2º Trimestre";
-    return "3º Trimestre";
-  }, [semanas]);
+  const trimestreTexto = useMemo(() => getTrimestre(semanas), [semanas]);
 
   // Controles do contador
   const incrementarSemanas = () => {
@@ -102,79 +94,42 @@ export default function LinhaTempoGestacaoScreen() {
     setErrors({});
     setLoading(true);
     try {
-      let finalUserId = user?.id;
-      let userObj = user;
-
       // 1. Se não houver usuário logado, significa que é um novo cadastro
-      if (!finalUserId) {
+      if (!user) {
         if (!params.nome || !params.email || !params.senha || !params.celular || !params.dataNascimento) {
           Alert.alert("Erro", "Faltam dados do usuário para o cadastro. Volte ao início.");
           setLoading(false);
           return;
         }
 
-        // Converter dataNascimento de DD/MM/AAAA para YYYY-MM-DD
-        const [dia, mes, ano] = params.dataNascimento.split("/");
-        const formattedDataNascimento = `${ano}-${mes}-${dia}`;
-
-        const resUser = await fetch("/api/register", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            nome: params.nome,
-            email: params.email,
-            senha: params.senha,
-            celular: params.celular,
-            dataNascimento: formattedDataNascimento
-          }),
-        });
-
-        const dataUser = await resUser.json();
-        if (!resUser.ok) {
-          Alert.alert("Erro", dataUser.error || "Erro ao realizar o cadastro do usuário.");
-          setLoading(false);
-          return;
-        }
-
-        finalUserId = dataUser.user.id;
-        userObj = { ...dataUser.user, token: dataUser.token };
+        // Loga já aqui: se a criação da gestação falhar, a nova tentativa usa esta conta
+        // em vez de tentar cadastrar o mesmo e-mail de novo
+        await signIn(await cadastrar({
+          nome: params.nome,
+          email: params.email,
+          senha: params.senha,
+          celular: params.celular,
+          dataNascimento: paraISO(params.dataNascimento)!,
+        }));
       }
 
-      // 2. Criar a gestação com o ID do usuário
-      const resGestacao = await fetch("/api/gestacao", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          id_user: finalUserId,
-          nomeGestacao: nomeGestacao,
-          semanas: Number(semanas),
-          dpp: formattedDpp,
-          primeiraGestacao: params.primeiraGestacao === true || params.primeiraGestacao === "true",
-          qtdBebes: params.qtdBebes,
-          bebes: bebes,
-        }),
+      // 2. Criar a gestação (o dono é a usuária da sessão)
+      const gestacao = await criarGestacao({
+        nomeGestacao: nomeGestacao,
+        semanas: Number(semanas),
+        dpp: formattedDpp,
+        primeiraGestacao: params.primeiraGestacao === true || params.primeiraGestacao === "true",
+        qtdBebes: params.qtdBebes,
+        bebes: bebes,
       });
 
-      const dataGestacao = await resGestacao.json();
-      if (resGestacao.ok) {
-        // Agora que ambos foram criados com sucesso, salvamos a sessão e vamos pro app
-        clearRegistrationData();
-        if (!user) {
-          signIn(userObj as any);
-        }
-        if (dataGestacao && dataGestacao.gestacao) {
-          setSelectedGestacao(dataGestacao.gestacao);
-        } else if (dataGestacao && dataGestacao.id_gestacao) {
-          setSelectedGestacao(dataGestacao);
-        }
-        Alert.alert("Sucesso", "Tudo pronto! Bem-vinda ao seu diário de bordo.");
-        router.replace("/(tabs)");
-      } else {
-        Alert.alert("Erro", dataGestacao.error || "Não foi possível salvar os dados da gestação.");
-      }
-    } catch (error) {
-      console.error(error);
-      Alert.alert("Erro", "Falha de conexão com o servidor.");
+      clearRegistrationData();
+      // Devolve a gestação completa (semanas, data_inicio, filhos...)
+      await setSelectedGestacao(gestacao);
+      Alert.alert("Sucesso", "Tudo pronto! Bem-vinda ao seu diário de bordo.");
+      router.replace("/(tabs)");
+    } catch (error: any) {
+      Alert.alert("Erro", error.message);
     } finally {
       setLoading(false);
     }
@@ -192,22 +147,7 @@ export default function LinhaTempoGestacaoScreen() {
         >
           {/* BARRA SUPERIOR: VOLTAR, PASSO & PORCENTAGEM */}
           <View className="flex-row items-center justify-between mb-4">
-            <TouchableOpacity
-              onPress={() => {
-                if (router.canGoBack()) {
-                  router.back();
-                } else {
-                  router.replace("/(auth)/gestacao");
-                }
-              }}
-              className="flex-row items-center"
-              activeOpacity={0.7}
-            >
-              <Ionicons name="arrow-back" size={18} color="#A37262" />
-              <Text className="text-[#A37262] font-semibold text-sm ml-1.5">
-                Voltar
-              </Text>
-            </TouchableOpacity>
+            <BackButton fallback="/(auth)/gestacao" className="" />
 
             <Text className="text-xs font-semibold text-[#8A7A75]">
               Passo 2 de 2
@@ -360,12 +300,9 @@ export default function LinhaTempoGestacaoScreen() {
                   </View>
                   <Switch
                     value={bebe.aindaNaoDecidiuNome}
-                    onValueChange={(val) => {
-                      const novosBebes = [...bebes];
-                      novosBebes[index].aindaNaoDecidiuNome = val;
-                      if (val) novosBebes[index].nome = "";
-                      setBebes(novosBebes);
-                    }}
+                    onValueChange={(val) =>
+                      atualizarBebe(index, val ? { aindaNaoDecidiuNome: true, nome: "" } : { aindaNaoDecidiuNome: false })
+                    }
                     trackColor={{ false: "#E2EDED", true: "#C56A43" }}
                     thumbColor="#FFFFFF"
                   />
@@ -376,14 +313,7 @@ export default function LinhaTempoGestacaoScreen() {
                   <View className="mb-3">
                     <TextInput
                       value={bebe.nome}
-                      onChangeText={(text) => {
-                        const novosBebes = [...bebes];
-                        novosBebes[index].nome = text;
-                        setBebes(novosBebes);
-                        if (errors[`bebe_${index}_nome`]) {
-                          setErrors(prev => ({ ...prev, [`bebe_${index}_nome`]: "" }));
-                        }
-                      }}
+                      onChangeText={(text) => atualizarBebe(index, { nome: text })}
                       placeholder="Ex: Sophia, Lucas..."
                       placeholderTextColor="#C2B2AC"
                       className={`bg-[#FDF2EE] border ${errors[`bebe_${index}_nome`] ? 'border-red-400' : 'border-[#FADCD0]'} rounded-xl px-4 py-3 text-sm text-[#2C221E]`}
@@ -396,64 +326,12 @@ export default function LinhaTempoGestacaoScreen() {
                 <Text className="text-[11px] font-bold text-[#8A7A75] mb-2 uppercase tracking-wider">
                   Sexo do Bebê (Opcional)
                 </Text>
-                <View className={`flex-row items-center bg-[#FDF2EE] border ${errors[`bebe_${index}_sexo`] ? 'border-red-400' : 'border-[#FADCD0]'} rounded-2xl p-1 w-full overflow-hidden`}>
-                  <TouchableOpacity
-                    onPress={() => {
-                      const novosBebes = [...bebes];
-                      novosBebes[index].sexo = 'masculino';
-                      setBebes(novosBebes);
-                      if (errors[`bebe_${index}_sexo`]) {
-                        setErrors(prev => ({ ...prev, [`bebe_${index}_sexo`]: "" }));
-                      }
-                    }}
-                    activeOpacity={0.8}
-                    className={`flex-1 py-3 rounded-xl items-center justify-center ${
-                      bebe.sexo === 'masculino' ? 'bg-[#C56A43]' : 'bg-transparent'
-                    }`}
-                  >
-                    <Text className={`text-xs font-bold ${bebe.sexo === 'masculino' ? 'text-white' : 'text-[#8A7A75]'}`}>Menino</Text>
-                  </TouchableOpacity>
-
-                  {/* Divisória Vertical */}
-                  <View className={`w-[1px] h-6 bg-[#FADCD0] mx-1 ${bebe.sexo !== 'nao_informado' ? 'opacity-0' : 'opacity-100'}`} />
-
-                  <TouchableOpacity
-                    onPress={() => {
-                      const novosBebes = [...bebes];
-                      novosBebes[index].sexo = 'feminino';
-                      setBebes(novosBebes);
-                      if (errors[`bebe_${index}_sexo`]) {
-                        setErrors(prev => ({ ...prev, [`bebe_${index}_sexo`]: "" }));
-                      }
-                    }}
-                    activeOpacity={0.8}
-                    className={`flex-1 py-3 rounded-xl items-center justify-center ${
-                      bebe.sexo === 'feminino' ? 'bg-[#C56A43]' : 'bg-transparent'
-                    }`}
-                  >
-                    <Text className={`text-xs font-bold ${bebe.sexo === 'feminino' ? 'text-white' : 'text-[#8A7A75]'}`}>Menina</Text>
-                  </TouchableOpacity>
-
-                  {/* Divisória Vertical */}
-                  <View className={`w-[1px] h-6 bg-[#FADCD0] mx-1 ${bebe.sexo !== 'nao_informado' ? 'opacity-0' : 'opacity-100'}`} />
-
-                  <TouchableOpacity
-                    onPress={() => {
-                      const novosBebes = [...bebes];
-                      novosBebes[index].sexo = 'nao_informado';
-                      setBebes(novosBebes);
-                      if (errors[`bebe_${index}_sexo`]) {
-                        setErrors(prev => ({ ...prev, [`bebe_${index}_sexo`]: "" }));
-                      }
-                    }}
-                    activeOpacity={0.8}
-                    className={`flex-1 py-3 rounded-xl items-center justify-center ${
-                      bebe.sexo === 'nao_informado' ? 'bg-[#C56A43]' : 'bg-transparent'
-                    }`}
-                  >
-                    <Text className={`text-[11px] font-bold ${bebe.sexo === 'nao_informado' ? 'text-white' : 'text-[#8A7A75]'}`}>Não sei</Text>
-                  </TouchableOpacity>
-                </View>
+                <SexoSelector
+                  value={bebe.sexo}
+                  onChange={(sexo) => atualizarBebe(index, { sexo: sexo as Bebe["sexo"] })}
+                  bg="#FDF2EE"
+                  borda="#FADCD0"
+                />
               </View>
             ))}
           </View>
@@ -476,63 +354,16 @@ export default function LinhaTempoGestacaoScreen() {
         </ScrollView>
       </View>
 
-      {/* Modal do Calendário */}
-      <Modal
+      <CalendarModal
         visible={isCalendarVisible}
-        animationType="none"
-        transparent={true}
-        onRequestClose={() => setIsCalendarVisible(false)}
-      >
-        <BlurView intensity={15} tint="dark" style={{ flex: 1 }}>
-          <Pressable
-            style={{ backgroundColor: "rgba(0,0,0,0.2)" }}
-            className="flex-1 justify-center items-center px-4"
-            onPress={() => setIsCalendarVisible(false)}
-          >
-          <Pressable
-            className="w-full max-w-md bg-white rounded-3xl overflow-hidden shadow-lg p-3"
-            onPress={(e) => e.stopPropagation()}
-          >
-            <Calendar
-              style={{ minHeight: 360 }}
-              current={
-                dpp && dpp.includes('/')
-                  ? (() => {
-                      const parts = dpp.replace(/\s/g, '').split('/');
-                      return `${parts[2]}-${parts[1]}-${parts[0]}`;
-                    })()
-                  : (() => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; })()
-              }
-              onDayPress={(day: any) => {
-                const [ano, mes, dia] = day.dateString.split("-");
-                setDpp(`${dia}/${mes}/${ano}`);
-                if (errors.dpp) setErrors(prev => ({ ...prev, dpp: "" }));
-                setIsCalendarVisible(false);
-              }}
-              theme={{
-                backgroundColor: "#ffffff",
-                calendarBackground: "#ffffff",
-                textSectionTitleColor: "#8A7A75",
-                selectedDayBackgroundColor: "#C56A43",
-                selectedDayTextColor: "#ffffff",
-                todayTextColor: "#C56A43",
-                dayTextColor: "#2C221E",
-                textDisabledColor: "#E0D7D3",
-                arrowColor: "#8A7A75",
-                monthTextColor: "#2C221E",
-                indicatorColor: "#C56A43",
-                textDayFontWeight: "bold",
-                textMonthFontWeight: "800",
-                textDayHeaderFontWeight: "700",
-                textDayFontSize: 13,
-                textMonthFontSize: 16,
-                textDayHeaderFontSize: 11,
-              }}
-            />
-          </Pressable>
-          </Pressable>
-        </BlurView>
-      </Modal>
+        onClose={() => setIsCalendarVisible(false)}
+        selectedDate={dpp}
+        onDayPress={(day) => {
+          setDpp(isoParaBR(day.dateString));
+          if (errors.dpp) setErrors(prev => ({ ...prev, dpp: "" }));
+          setIsCalendarVisible(false);
+        }}
+      />
     </SafeAreaView>
   );
 }

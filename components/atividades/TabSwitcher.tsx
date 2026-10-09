@@ -1,9 +1,5 @@
 import { Text, TouchableOpacity, View } from "react-native";
-
-interface TabSwitcherProps {
-  activeTab: string;
-  setActiveTab: (tab: string) => void;
-}
+import { TabSwitcherProps } from "../../types/components";
 
 export function TabSwitcher({ activeTab, setActiveTab }: TabSwitcherProps) {
   const tabs = ["Quiz", "Registro", "Conquistas"];

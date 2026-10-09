@@ -1,0 +1,172 @@
+diff --git a/node_modules/react-native-ui-datepicker/lib/commonjs/components/header/month-button.js b/node_modules/react-native-ui-datepicker/lib/commonjs/components/header/month-button.js
+index 974894c..9317346 100644
+--- a/node_modules/react-native-ui-datepicker/lib/commonjs/components/header/month-button.js
++++ b/node_modules/react-native-ui-datepicker/lib/commonjs/components/header/month-button.js
+@@ -17,6 +17,7 @@ const MonthButton = () => {
+     currentDate,
+     calendarView,
+     setCalendarView,
++    onChangeYear,
+     calendar = 'gregory',
+     locale,
+     styles,
+@@ -26,7 +27,11 @@ const MonthButton = () => {
+     components
+   } = (0, _calendarContext.useCalendarContext)();
+   const currentMonthText = (0, _dayjs.default)(currentDate).calendar(calendar).locale(calendar === 'jalali' && !(0, _utils.isValidJalaliLocale)(locale) ? 'en' : locale).format(monthCaptionFormat === 'full' ? 'MMMM' : 'MMM');
+-  const handlePress = () => setCalendarView(calendarView === 'month' ? 'day' : 'month');
++  const handlePress = () => {
++    if (calendarView === 'day') return setCalendarView('month');
++    setCalendarView('year');
++    onChangeYear((0, _utils.getDateYear)(currentDate));
++  };
+   if (components !== null && components !== void 0 && components.MonthSelector) {
+     return /*#__PURE__*/_react.default.createElement(_react.default.Fragment, null, components.MonthSelector({
+       text: currentMonthText,
+diff --git a/node_modules/react-native-ui-datepicker/lib/commonjs/components/header/year-button.js b/node_modules/react-native-ui-datepicker/lib/commonjs/components/header/year-button.js
+index f94138a..c2d4f7c 100644
+--- a/node_modules/react-native-ui-datepicker/lib/commonjs/components/header/year-button.js
++++ b/node_modules/react-native-ui-datepicker/lib/commonjs/components/header/year-button.js
+@@ -32,7 +32,8 @@ const YearButton = () => {
+   const yearRange = `${(0, _utils.formatNumber)(years[0] || 0, numerals)} - ${(0, _utils.formatNumber)(years[years.length - 1] || 0, numerals)}`;
+   const label = isYearView ? yearRange : year;
+   const handlePress = () => {
+-    setCalendarView(isYearView ? 'day' : 'year');
++    if (calendarView === 'day') return setCalendarView('month');
++    setCalendarView('year');
+     onChangeYear((0, _utils.getDateYear)(currentDate));
+   };
+   if (components !== null && components !== void 0 && components.YearSelector) {
+diff --git a/node_modules/react-native-ui-datepicker/lib/commonjs/datetime-picker.js b/node_modules/react-native-ui-datepicker/lib/commonjs/datetime-picker.js
+index 2d053cd..b4a8b96 100644
+--- a/node_modules/react-native-ui-datepicker/lib/commonjs/datetime-picker.js
++++ b/node_modules/react-native-ui-datepicker/lib/commonjs/datetime-picker.js
+@@ -398,7 +398,7 @@ const DateTimePicker = props => {
+       type: _enums.CalendarActionKind.CHANGE_CURRENT_DATE,
+       payload: newDate
+     });
+-    setCalendarView('day');
++    setCalendarView('month');
+   }, [setCalendarView, onYearChange]);
+   const onChangeMonth = (0, _react.useCallback)(value => {
+     const newDate = (0, _dayjs.default)(stateRef.current.currentDate).add(value, 'month');
+diff --git a/node_modules/react-native-ui-datepicker/lib/module/components/header/month-button.js b/node_modules/react-native-ui-datepicker/lib/module/components/header/month-button.js
+index c699aaa..056250b 100644
+--- a/node_modules/react-native-ui-datepicker/lib/module/components/header/month-button.js
++++ b/node_modules/react-native-ui-datepicker/lib/module/components/header/month-button.js
+@@ -2,12 +2,13 @@ import React, { memo } from 'react';
+ import dayjs from 'dayjs';
+ import { Pressable, Text, View } from 'react-native';
+ import { useCalendarContext } from '../../calendar-context';
+-import { isValidJalaliLocale } from '../../utils';
++import { getDateYear, isValidJalaliLocale } from '../../utils';
+ const MonthButton = () => {
+   const {
+     currentDate,
+     calendarView,
+     setCalendarView,
++    onChangeYear,
+     calendar = 'gregory',
+     locale,
+     styles,
+@@ -17,7 +18,11 @@ const MonthButton = () => {
+     components
+   } = useCalendarContext();
+   const currentMonthText = dayjs(currentDate).calendar(calendar).locale(calendar === 'jalali' && !isValidJalaliLocale(locale) ? 'en' : locale).format(monthCaptionFormat === 'full' ? 'MMMM' : 'MMM');
+-  const handlePress = () => setCalendarView(calendarView === 'month' ? 'day' : 'month');
++  const handlePress = () => {
++    if (calendarView === 'day') return setCalendarView('month');
++    setCalendarView('year');
++    onChangeYear(getDateYear(currentDate));
++  };
+   if (components !== null && components !== void 0 && components.MonthSelector) {
+     return /*#__PURE__*/React.createElement(React.Fragment, null, components.MonthSelector({
+       text: currentMonthText,
+diff --git a/node_modules/react-native-ui-datepicker/lib/module/components/header/year-button.js b/node_modules/react-native-ui-datepicker/lib/module/components/header/year-button.js
+index 7d208e6..07f202f 100644
+--- a/node_modules/react-native-ui-datepicker/lib/module/components/header/year-button.js
++++ b/node_modules/react-native-ui-datepicker/lib/module/components/header/year-button.js
+@@ -23,7 +23,8 @@ const YearButton = () => {
+   const yearRange = `${formatNumber(years[0] || 0, numerals)} - ${formatNumber(years[years.length - 1] || 0, numerals)}`;
+   const label = isYearView ? yearRange : year;
+   const handlePress = () => {
+-    setCalendarView(isYearView ? 'day' : 'year');
++    if (calendarView === 'day') return setCalendarView('month');
++    setCalendarView('year');
+     onChangeYear(getDateYear(currentDate));
+   };
+   if (components !== null && components !== void 0 && components.YearSelector) {
+diff --git a/node_modules/react-native-ui-datepicker/lib/module/datetime-picker.js b/node_modules/react-native-ui-datepicker/lib/module/datetime-picker.js
+index 1124c40..1f2a911 100644
+--- a/node_modules/react-native-ui-datepicker/lib/module/datetime-picker.js
++++ b/node_modules/react-native-ui-datepicker/lib/module/datetime-picker.js
+@@ -390,7 +390,7 @@ const DateTimePicker = props => {
+       type: CalendarActionKind.CHANGE_CURRENT_DATE,
+       payload: newDate
+     });
+-    setCalendarView('day');
++    setCalendarView('month');
+   }, [setCalendarView, onYearChange]);
+   const onChangeMonth = useCallback(value => {
+     const newDate = dayjs(stateRef.current.currentDate).add(value, 'month');
+diff --git a/node_modules/react-native-ui-datepicker/src/components/header/month-button.tsx b/node_modules/react-native-ui-datepicker/src/components/header/month-button.tsx
+index 70be671..3a95123 100644
+--- a/node_modules/react-native-ui-datepicker/src/components/header/month-button.tsx
++++ b/node_modules/react-native-ui-datepicker/src/components/header/month-button.tsx
+@@ -2,13 +2,14 @@ import React, { memo } from 'react';
+ import dayjs from 'dayjs';
+ import { Pressable, Text, View } from 'react-native';
+ import { useCalendarContext } from '../../calendar-context';
+-import { isValidJalaliLocale } from '../../utils';
++import { getDateYear, isValidJalaliLocale } from '../../utils';
+ 
+ const MonthButton = () => {
+   const {
+     currentDate,
+     calendarView,
+     setCalendarView,
++    onChangeYear,
+     calendar = 'gregory',
+     locale,
+     styles,
+@@ -25,8 +26,11 @@ const MonthButton = () => {
+     )
+     .format(monthCaptionFormat === 'full' ? 'MMMM' : 'MMM');
+ 
+-  const handlePress = () =>
+-    setCalendarView(calendarView === 'month' ? 'day' : 'month');
++  const handlePress = () => {
++    if (calendarView === 'day') return setCalendarView('month');
++    setCalendarView('year');
++    onChangeYear(getDateYear(currentDate));
++  };
+ 
+   if (components?.MonthSelector) {
+     return (
+diff --git a/node_modules/react-native-ui-datepicker/src/components/header/year-button.tsx b/node_modules/react-native-ui-datepicker/src/components/header/year-button.tsx
+index 036e787..7119e5a 100644
+--- a/node_modules/react-native-ui-datepicker/src/components/header/year-button.tsx
++++ b/node_modules/react-native-ui-datepicker/src/components/header/year-button.tsx
+@@ -30,7 +30,8 @@ const YearButton = () => {
+   const label = isYearView ? yearRange : year;
+ 
+   const handlePress = () => {
+-    setCalendarView(isYearView ? 'day' : 'year');
++    if (calendarView === 'day') return setCalendarView('month');
++    setCalendarView('year');
+     onChangeYear(getDateYear(currentDate));
+   };
+ 
+diff --git a/node_modules/react-native-ui-datepicker/src/datetime-picker.tsx b/node_modules/react-native-ui-datepicker/src/datetime-picker.tsx
+index 6dc6d66..3dde6b0 100644
+--- a/node_modules/react-native-ui-datepicker/src/datetime-picker.tsx
++++ b/node_modules/react-native-ui-datepicker/src/datetime-picker.tsx
+@@ -577,7 +577,7 @@ const DateTimePicker = (
+         type: CalendarActionKind.CHANGE_CURRENT_DATE,
+         payload: newDate,
+       });
+-      setCalendarView('day');
++      setCalendarView('month');
+     },
+     [setCalendarView, onYearChange]
+   );

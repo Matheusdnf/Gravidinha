@@ -2,16 +2,6 @@ import { ContentArticle } from "../types/dashboard";
 
 export const mockBlocksData: ContentArticle[] = [
   {
-    id: "destaque",
-    tag: "Desenvolvimento",
-    title: "Seu bebê do tamanho de um pêssego! 🍑",
-    description:
-      "Nesta semana, os dedinhos já começam a se formar e o desenvolvimento cerebral está acelerado. Veja as mudanças no seu corpo e como se preparar.",
-    readingTime: "5 min de leitura",
-    imageUrl:
-      "https://images.unsplash.com/photo-1518611012118-696072aa579a?w=800&q=80",
-  },
-  {
     id: "1",
     tag: "Nutrição",
     title: "Nutrição no 1º Trimestre",

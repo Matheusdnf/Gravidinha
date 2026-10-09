@@ -1,8 +1,9 @@
+import React from "react";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { Text, View } from "react-native";
 import { PregnancyStatus } from "../../types/pregnancy";
 
-export function JourneyCard({
+export const JourneyCard = React.memo(function JourneyCard({
   currentWeek,
   totalWeeks,
   trimester,
@@ -54,4 +55,4 @@ export function JourneyCard({
       </View>
     </View>
   );
-}
+});

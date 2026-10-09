@@ -68,7 +68,7 @@ export function TrimesterAccordion({
 
           {/* Lista de Tarefas/Sub-itens baseados no estado real da sua imagem */}
           <View className="mt-2">
-            {tasks.map((task, index) => {
+            {tasks.map((task) => {
               // Se o card estiver bloqueado, renderiza o número da semana cinza de forma estática
               if (isLocked) {
                 return (

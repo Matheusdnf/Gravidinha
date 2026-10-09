@@ -3,7 +3,6 @@ export type User = {
   nome: string;
   email: string;
   celular?: string;
-  token?: string;
 };
 
 export type Gestacao = {

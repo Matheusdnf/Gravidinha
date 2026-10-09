@@ -1,30 +1,33 @@
+import { useRouter } from "expo-router";
 import React from "react";
 import { Text, TouchableOpacity, View } from "react-native";
+import { QuickAccessButtonProps } from "../../types/components";
 
-interface QuickAccessButtonProps {
-  title: string;
-  subtitle: string;
-  icon: React.ReactNode;
-  bgColor: string;
-}
-
-export function QuickAccessButton({
+export const QuickAccessButton = React.memo(function QuickAccessButton({
   title,
   subtitle,
   icon,
   bgColor,
 }: QuickAccessButtonProps) {
+  const router = useRouter();
+
   return (
     <TouchableOpacity
-      // items-start inserido e p-5 ajustado para dar simetria perfeita com os Bento Cards do perfil
-      className={`${bgColor} flex-1 min-w-[47%] rounded-3xl p-5 mb-3 border border-[#F0EBE6]/30`}
+      className={`${bgColor} flex-1 min-w-[47%] rounded-3xl p-5 mb-3 mx-1 border border-[#F0EBE6]/30`}
       activeOpacity={0.8}
+      onPress={() => {
+        if (title === "Meu Diário") {
+          router.push("/diario" as any);
+        } else if (title === "Consultas") {
+          router.push("/consultas" as any);
+        } else if (title === "Respiração") {
+          router.push("/respiracao" as any);
+        }
+      }}
     >
       <View className="mb-3">{icon}</View>
-      <Text className="text-[15px] font-bold text-gray-800">{title}</Text>
-      <Text className="text-xs text-gray-400 mt-0.5 font-medium">
-        {subtitle}
-      </Text>
+      <Text className="text-base font-bold text-[#222]">{title}</Text>
+      <Text className="text-xs text-[#666] mt-1">{subtitle}</Text>
     </TouchableOpacity>
   );
-}
+});

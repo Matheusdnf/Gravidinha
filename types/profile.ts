@@ -1,10 +1,3 @@
-export interface ProfileStats {
-  currentWeek: number;
-  readArticles: number;
-  doneQuizzes: number;
-  streakDays: number;
-}
-
 export interface ProfileMenuOption {
   id: string;
   title: string;

@@ -1,14 +1,11 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useState } from "react";
 import { Text, TouchableOpacity, View } from "react-native";
-import {
-  mockChecklist,
-  mockMoods,
-  mockWeeklyDays,
-} from "../../state/mockEngagementData";
+import { HUMOR_OPTIONS } from "../../constants/humores";
+import { mockChecklist, mockWeeklyDays } from "../../state/mockEngagementData";
 
 export function DailyTracker() {
-  const [selectedMood, setSelectedMood] = useState("m1");
+  const [selectedMood, setSelectedMood] = useState(HUMOR_OPTIONS[0].id);
   const [checklist, setChecklist] = useState(mockChecklist);
 
   const toggleCheck = (id: string) => {
@@ -53,7 +50,7 @@ export function DailyTracker() {
         Como você está hoje?
       </Text>
       <View className="flex-row justify-between items-center mb-5 w-full">
-        {mockMoods.map((mood) => {
+        {HUMOR_OPTIONS.map((mood) => {
           const isSelected = selectedMood === mood.id;
           return (
             <TouchableOpacity

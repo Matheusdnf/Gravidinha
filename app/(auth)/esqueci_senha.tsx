@@ -87,7 +87,7 @@ export default function EsqueciSenhaScreen() {
 
           {/* Botão Enviar Link */}
           <TouchableOpacity
-            className="bg-[#E2B19C] active:bg-[#D97D54] rounded-2xl py-4 items-center justify-center shadow-sm"
+            className="bg-[#D97D54] active:bg-[#C56A43] rounded-2xl py-4 items-center justify-center shadow-sm"
             activeOpacity={0.9}
             onPress={handleSendLink}
           >

@@ -1,20 +1,19 @@
-import { Feather, Ionicons } from "@expo/vector-icons";
+import { Feather } from "@expo/vector-icons";
 import {
   ScrollView,
   Text,
   TouchableOpacity,
   View,
-  Modal,
-  Pressable,
   TextInput,
   ActivityIndicator,
   Alert,
 } from "react-native";
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
-import { BlurView } from "expo-blur";
 import { useAuth } from "../../state/auth";
+import { atualizarUsuario, buscarUsuario } from "../../lib/dados";
+import { mascaraCelular } from "../../lib/formato";
 import * as ImagePicker from "expo-image-picker";
 import { Image } from "react-native";
 
@@ -23,7 +22,7 @@ import { ProfileMenuOptions } from "../../components/perfil/ProfileMenuOptions";
 import { BottomSheetModal } from "../../components/BottomSheetModal";
 
 // Mocks Isolados
-import { mockMenuOptions } from "../../state/mockProfileData";
+import { MENU_PERFIL } from "../../constants/menuPerfil";
 
 export default function PerfilScreen() {
   const router = useRouter();
@@ -35,33 +34,17 @@ export default function PerfilScreen() {
   const [profileImage, setProfileImage] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
-  const formatCelular = (text: string) => {
-    let val = text.replace(/\D/g, "");
-    if (val.length > 11) val = val.substring(0, 11);
-
-    if (val.length > 2) {
-      val = `(${val.substring(0, 2)}) ${val.substring(2)}`;
-    }
-    if (val.length > 9) {
-      val = `${val.substring(0, 10)}-${val.substring(10)}`;
-    }
-    return val;
-  };
-
   // Busca as informações completas do usuário (incluindo celular e foto) do banco
   useEffect(() => {
-    if (user?.id) {
-      fetch(`/api/user?id=${user.id}`)
-        .then((res) => res.json())
+    if (user) {
+      buscarUsuario()
         .then((data) => {
-          if (data.id) {
-            setNome(data.nome);
-            if (data.celular) {
-              setCelular(formatCelular(data.celular.toString()));
-            }
-            if (data.profile_image) {
-              setProfileImage(data.profile_image);
-            }
+          setNome(data.nome);
+          if (data.celular) {
+            setCelular(mascaraCelular(data.celular));
+          }
+          if (data.profile_image) {
+            setProfileImage(data.profile_image);
           }
         })
         .catch(console.error);
@@ -81,14 +64,9 @@ export default function PerfilScreen() {
       const base64Uri = `data:image/jpeg;base64,${result.assets[0].base64}`;
       setProfileImage(base64Uri);
       
-      // Salva direto no banco pra atualizar a foto rápido
-      if (user?.id) {
-        fetch("/api/user", {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ id: user.id, nome, celular, profile_image: base64Uri }),
-        }).catch(console.error);
-      }
+      // Salva direto no banco pra atualizar a foto rápido (só a foto)
+      atualizarUsuario({ profile_image: base64Uri })
+        .catch(() => Alert.alert("Erro", "Não foi possível salvar a foto."));
     }
   };
 
@@ -100,36 +78,19 @@ export default function PerfilScreen() {
 
     setIsLoading(true);
     try {
-      const res = await fetch("/api/user", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id: user?.id, nome, celular, profile_image: profileImage }),
-      });
-
-      if (res.ok) {
-        Alert.alert("Sucesso", "Informações atualizadas com sucesso!");
-        setIsModalVisible(false);
-        if (user) {
-          signIn({ ...user, nome, celular });
-        }
-      } else {
-        const data = await res.json();
-        Alert.alert("Erro", data.error || "Erro ao atualizar dados.");
+      // A foto já foi salva em pickImage — não reenvia o base64 aqui
+      await atualizarUsuario({ nome, celular });
+      Alert.alert("Sucesso", "Informações atualizadas com sucesso!");
+      setIsModalVisible(false);
+      if (user) {
+        signIn({ ...user, nome, celular });
       }
-    } catch (error) {
-      Alert.alert("Erro", "Falha na conexão.");
+    } catch (error: any) {
+      Alert.alert("Erro", error.message);
     } finally {
       setIsLoading(false);
     }
   };
-
-  // Conquistas rápidas para a fileira horizontal
-  const recentBadges = [
-    { id: "1", label: "Início", emoji: "🌱 ", bg: "bg-[#FDF2EE]" },
-    { id: "2", label: "Quiz Master", emoji: "🎯 ", bg: "bg-[#FDF0F0]" },
-    { id: "3", label: "Leitora", emoji: "📘 ", bg: "bg-[#EEF2FF]" },
-    { id: "4", label: "1° Tri", emoji: "🌸 ", bg: "bg-[#FDF2F8]" },
-  ];
 
   return (
     <SafeAreaView className="flex-1 bg-[#FBF9F6]">
@@ -209,7 +170,7 @@ export default function PerfilScreen() {
           Minha Gestação
         </Text>
         <View className="bg-white border border-[#F0EBE6] rounded-[28px] px-5 py-2 w-full mb-6">
-          {mockMenuOptions.map((option) => (
+          {MENU_PERFIL.map((option) => (
             <ProfileMenuOptions
               key={option.id}
               id={option.id}
@@ -286,7 +247,7 @@ export default function PerfilScreen() {
             </Text>
             <TextInput
               value={celular}
-              onChangeText={(t) => setCelular(formatCelular(t))}
+              onChangeText={(t) => setCelular(mascaraCelular(t))}
               keyboardType="numeric"
               placeholder="(00) 00000-0000"
               placeholderTextColor="#C2B2AC"
@@ -308,7 +269,7 @@ export default function PerfilScreen() {
           <TouchableOpacity
             onPress={handleSave}
             disabled={isLoading}
-            className="bg-[#E2B19C] active:bg-[#D97D54] rounded-2xl py-4 items-center justify-center shadow-sm mt-4"
+            className="bg-[#D97D54] active:bg-[#C56A43] rounded-2xl py-4 items-center justify-center shadow-sm mt-4"
             activeOpacity={0.9}
           >
             {isLoading ? (

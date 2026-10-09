@@ -1,7 +1,6 @@
 import {
   BadgeItem,
   ChecklistItem,
-  MoodItem,
   WeeklyDay,
 } from "../types/engagement";
 
@@ -29,14 +28,6 @@ export const mockWeeklyDays: WeeklyDay[] = [
   { label: "Sex", isCompleted: false },
   { label: "Sáb", isCompleted: false },
   { label: "Dom", isCompleted: false },
-];
-
-export const mockMoods: MoodItem[] = [
-  { id: "m1", emoji: "😊", label: "Ótima" },
-  { id: "m2", emoji: "😐", label: "Normal" },
-  { id: "m3", emoji: "😴", label: "Cansada" },
-  { id: "m4", emoji: "🤢", label: "Enjoada" },
-  { id: "m5", emoji: "😰", label: "Ansiosa" },
 ];
 
 export const mockChecklist: ChecklistItem[] = [

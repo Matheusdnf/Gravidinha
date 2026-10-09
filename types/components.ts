@@ -12,6 +12,8 @@ export interface CalendarModalProps {
   onClose: () => void;
   selectedDate: string;
   onDayPress: (day: any) => void;
+  /** Tela inicial quando não há data selecionada (ex.: "year" para data de nascimento). */
+  maxDate?: string;
 }
 
 export interface StreakCardProps {

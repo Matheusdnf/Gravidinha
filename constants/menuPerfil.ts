@@ -1,17 +1,9 @@
-import { ProfileMenuOption, ProfileStats } from "../types/profile";
-
-export const mockProfileStats: ProfileStats = {
-  currentWeek: 12,
-  readArticles: 18,
-  doneQuizzes: 7,
-  streakDays: 3,
-};
-
-export const mockMenuOptions: ProfileMenuOption[] = [
+import { ProfileMenuOption } from "../types/profile";
+export const MENU_PERFIL: ProfileMenuOption[] = [
   {
     id: "1",
-    title: "Dados da Gravidez",
-    subtitle: "Semana 12 · 1º Trimestre",
+    title: "Minhas Gestações",
+    subtitle: "Gerencie suas gestações",
     iconName: "baby-face-outline",
     iconColor: "#D97D54",
     bgColor: "bg-[#FDF2EE]",
@@ -19,25 +11,41 @@ export const mockMenuOptions: ProfileMenuOption[] = [
   {
     id: "2",
     title: "Agenda de Consultas",
-    subtitle: "Próxima: 15 de junho",
+    subtitle: "Acompanhe suas consultas",
     iconName: "calendar-month-outline",
-    iconColor: "#4FA3A5",
-    bgColor: "bg-[#EEF6F6]",
+    iconColor: "#9C27B0",
+    bgColor: "bg-[#F3E5F5]",
   },
   {
     id: "3",
     title: "Meu Diário",
-    subtitle: "3 registros esta semana",
-    iconName: "heart-outline",
-    iconColor: "#E25C5C",
-    bgColor: "bg-[#FDF0F0]",
+    subtitle: "Registre seus sentimentos",
+    iconName: "notebook-outline",
+    iconColor: "#4FA3A5",
+    bgColor: "bg-[#EEF7F7]",
   },
   {
     id: "4",
+    title: "Respiração Guiada",
+    subtitle: "Exercício de relaxamento",
+    iconName: "flower-outline",
+    iconColor: "#84CC16",
+    bgColor: "bg-[#F4FCE3]",
+  },
+  {
+    id: "5",
     title: "Minhas Conquistas",
-    subtitle: "4 emblemas desbloqueados",
+    subtitle: "Veja seus emblemas",
     iconName: "star-outline",
     iconColor: "#6366F1",
     bgColor: "bg-[#EEF2FF]",
+  },
+  {
+    id: "6",
+    title: "Desenvolvimento da Gestação",
+    subtitle: "Acompanhe as semanas",
+    iconName: "human-pregnant",
+    iconColor: "#C56A43",
+    bgColor: "bg-[#FADCD0]",
   },
 ];

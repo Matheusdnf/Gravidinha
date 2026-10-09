@@ -11,6 +11,7 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useAuth } from "../../state/auth";
+import { entrar } from "../../lib/dados";
 
 export default function LoginScreen() {
   const router = useRouter();
@@ -35,24 +36,10 @@ export default function LoginScreen() {
 
     setLoading(true);
     try {
-      const res = await fetch("/api/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, senha }),
-      });
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        Alert.alert("Erro", data.error || "Ocorreu um erro ao fazer login.");
-        return;
-      }
-
-      // Sucesso!
-      signIn({ ...data.user, token: data.token });
+      await signIn(await entrar(email, senha));
       router.replace("/(tabs)");
-    } catch (error) {
-      Alert.alert("Erro", "Não foi possível conectar ao servidor.");
+    } catch (error: any) {
+      Alert.alert("Erro", error.message);
     } finally {
       setLoading(false);
     }
@@ -131,7 +118,7 @@ export default function LoginScreen() {
 
             {/* Botão Entrar */}
             <TouchableOpacity
-              className={`bg-[#E2B19C] active:bg-[#D97D54] rounded-2xl py-4 items-center justify-center mb-6 shadow-sm ${loading ? 'opacity-70' : ''}`}
+              className={`bg-[#D97D54] active:bg-[#C56A43] rounded-2xl py-4 items-center justify-center mb-6 shadow-sm ${loading ? 'opacity-70' : ''}`}
               activeOpacity={0.9}
               onPress={handleLogin}
               disabled={loading}

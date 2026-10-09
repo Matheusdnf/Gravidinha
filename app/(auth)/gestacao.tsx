@@ -1,10 +1,10 @@
-import { Ionicons } from "@expo/vector-icons";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { useState } from "react";
 import { ScrollView, Text, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useAuth } from "../../state/auth";
 import { setRegistrationData } from "../../state/registrationStore";
+import { BackButton } from "../../components/BackButton";
 
 export default function GestacaoScreen() {
   const router = useRouter();
@@ -53,24 +53,7 @@ export default function GestacaoScreen() {
           {/* BARRA SUPERIOR: VOLTAR, PASSO & PORCENTAGEM */}
           <View className="mb-6">
             <View className="flex-row items-center justify-between mb-2">
-              <TouchableOpacity
-                onPress={() => {
-                  if (router.canGoBack()) {
-                    router.back();
-                  } else if (user) {
-                    router.replace("/(tabs)");
-                  } else {
-                    router.replace("/(auth)/registro");
-                  }
-                }}
-                className="flex-row items-center"
-                activeOpacity={0.7}
-              >
-                <Ionicons name="arrow-back" size={18} color="#A37262" />
-                <Text className="text-[#A37262] font-semibold text-sm ml-1.5">
-                  Voltar
-                </Text>
-              </TouchableOpacity>
+              <BackButton fallback={user ? "/(tabs)" : "/(auth)/registro"} className="" />
 
               <Text className="text-xs font-semibold text-[#8A7A75]">
                 Passo 1 de 2
@@ -260,7 +243,7 @@ export default function GestacaoScreen() {
 
           {/* BOTÃO CONTINUAR */}
           <TouchableOpacity
-            className="bg-[#E2B19C] active:bg-[#D97D54] rounded-2xl py-4 items-center justify-center shadow-sm"
+            className="bg-[#D97D54] active:bg-[#C56A43] rounded-2xl py-4 items-center justify-center shadow-sm"
             activeOpacity={0.9}
             onPress={handleContinuar}
           >

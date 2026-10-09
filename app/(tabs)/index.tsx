@@ -1,6 +1,6 @@
-import { Ionicons, MaterialCommunityIcons, Feather } from "@expo/vector-icons";
+import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { useEffect, useState } from "react";
-import { FlatList, ScrollView, Text, View, TouchableOpacity, ActivityIndicator, Image } from "react-native";
+import { ScrollView, Text, View, TouchableOpacity, ActivityIndicator, Image } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useAuth } from "../../state/auth";
 import { BottomSheetModal } from "../../components/BottomSheetModal";
@@ -8,26 +8,18 @@ import { BottomSheetModal } from "../../components/BottomSheetModal";
 import { useRouter } from "expo-router";
 
 // Componentes Modulares ajustados para o diretório padrão
-import { ContentCard } from "../../components/inicio/ContentCard";
 import { JourneyCard } from "../../components/inicio/JourneyCard";
 import { QuickAccessButton } from "../../components/inicio/QuickAccessButton";
 
-import { mockBlocksData } from "../../state/mockDashboardData";
 import { imagensSemanas } from "../../constants/imagesSemanas";
 import { JourneyCardSkeleton, WeekHighlightSkeleton, QuickAccessSkeleton } from "../../components/Skeleton";
-import { calcularSemanaAtual, getTrimestre } from "../../lib/gestacao";
+import { calcularSemanaAtual, getTrimestre, parseData } from "../../lib/gestacao";
+import { buscarDesenvolvimento, listarConsultas, listarGestacoes } from "../../lib/dados";
+import { PregnancyStatus } from "../../types/pregnancy";
 
 export default function DashboardScreen() {
   const router = useRouter();
   const { user, selectedGestacao, setSelectedGestacao } = useAuth();
-  const [pregnancyData, setPregnancyData] = useState<any>({
-    currentWeek: 0,
-    totalWeeks: 40,
-    trimester: "1º Trimestre",
-    progressPercentage: 0,
-    offlineSaved: "",
-  });
-
   const [desenvolvimento, setDesenvolvimento] = useState<any>(null);
 
   const [isNotificationModalVisible, setIsNotificationModalVisible] = useState(false);
@@ -36,128 +28,112 @@ export default function DashboardScreen() {
 
   const [isLoadingDashboard, setIsLoadingDashboard] = useState(true);
 
+  // Derivado da gestação selecionada (mesma lógica de Minhas Gestações).
+  // Se finalizada, data_finalizacao congela a contagem.
+  const currentWeek = selectedGestacao
+    ? calcularSemanaAtual(selectedGestacao.semanas || 0, selectedGestacao.data_inicio, selectedGestacao.data_finalizacao)
+    : 0;
+  const pregnancyData: PregnancyStatus = {
+    currentWeek,
+    totalWeeks: 40,
+    trimester: getTrimestre(currentWeek),
+    progressPercentage: Math.min(100, (currentWeek / 40) * 100),
+    offlineSaved: selectedGestacao?.status === 'finalizada' ? 'Gestação Finalizada' : 'Dados sincronizados',
+  };
+
+  // Ao abrir, atualiza a gestação selecionada com os dados do servidor
+  // (ou escolhe a ativa, se ainda não houver nenhuma selecionada)
   useEffect(() => {
-    if (selectedGestacao) {
-      setIsLoadingDashboard(true);
-      // Usa o utilitário compartilhado: mesma lógica de Minhas Gestações
-      // Se finalizada, usa data_finalizacao para congelar a contagem
-      const currentWeek = calcularSemanaAtual(
-        selectedGestacao.semanas || 0,
-        selectedGestacao.data_inicio,
-        selectedGestacao.data_finalizacao
-      );
-      const trimesterString = getTrimestre(currentWeek);
-      const progress = Math.min(100, (currentWeek / 40) * 100);
-
-      setPregnancyData({
-        currentWeek,
-        totalWeeks: 40,
-        trimester: trimesterString,
-        progressPercentage: progress,
-        offlineSaved: selectedGestacao.status === 'finalizada' ? 'Gestação Finalizada' : 'Dados sincronizados',
-      });
-
-      // Busca desenvolvimento e consultas em paralelo
-      if (user?.id) {
-        Promise.all([
-          fetch(`/api/desenvolvimento?id_user=${user.id}`).then(r => r.json()).catch(() => null),
-          fetchConsultasAsNotifications(),
-        ]).then(([devJson]) => {
-          if (devJson && !devJson.error && devJson.dados) {
-            setDesenvolvimento(devJson);
-            // Não sobrescreve a semana — apenas atualiza os dados de desenvolvimento
-            // para exibir comparação e descrição corretas para a semana calculada localmente
-          }
-        }).catch(console.error)
-          .finally(() => setIsLoadingDashboard(false));
-      } else {
-        setIsLoadingDashboard(false);
-      }
-
-    } else if (user?.id) {
-      setIsLoadingDashboard(true);
-      fetch(`/api/gestacao?id_user=${user.id}`)
-        .then((res) => res.json())
-        .then((json) => {
-          if (json.gestacoes && json.gestacoes.length > 0) {
-            const ativa =
-              json.gestacoes.find(
-                (g: any) => g.status === "ativa" || !g.status,
-              ) || json.gestacoes[0];
-            setSelectedGestacao(ativa);
-          } else {
-            setIsLoadingDashboard(false);
-          }
-        })
-        .catch((e) => {
-          console.error(e);
+    if (!user) return;
+    listarGestacoes()
+      .then((lista) => {
+        if (lista.length === 0) {
           setIsLoadingDashboard(false);
-        });
-    }
-  }, [user?.id, selectedGestacao]);
+          return;
+        }
+        const atual =
+          lista.find((g: any) => g.id_gestacao === selectedGestacao?.id_gestacao) ||
+          lista.find((g: any) => g.status === "ativa" || !g.status) ||
+          lista[0];
+        setSelectedGestacao(atual);
+      })
+      .catch((e) => {
+        console.error(e);
+        setIsLoadingDashboard(false);
+      });
+  }, [user?.id]);
+
+  // Busca desenvolvimento e consultas da gestação selecionada, em paralelo
+  useEffect(() => {
+    if (!user || !selectedGestacao?.id_gestacao) return;
+    setIsLoadingDashboard(true);
+    Promise.all([
+      buscarDesenvolvimento(undefined, selectedGestacao.id_gestacao).catch(() => null),
+      fetchConsultasAsNotifications(),
+    ]).then(([devJson]) => {
+      setDesenvolvimento(devJson);
+    }).catch(console.error)
+      .finally(() => setIsLoadingDashboard(false));
+  }, [user?.id, selectedGestacao?.id_gestacao]);
 
 
   const fetchConsultasAsNotifications = async () => {
     if (!user?.id || !selectedGestacao?.id_gestacao) return;
     setIsLoadingNotifications(true);
     try {
-      const res = await fetch(`/api/consultas?id_user=${user.id}&id_gestacao=${selectedGestacao.id_gestacao}`);
-      if (res.ok) {
-        const json = await res.json();
-        const consultas = json.consultas || [];
+      const consultas = await listarConsultas(selectedGestacao.id_gestacao);
+      
+      const now = new Date();
+      const notifs = consultas.map((c: any) => {
+        const cDate = parseData(c.data);
+        // Adiciona a hora correta
+        if (c.horario) {
+          const [h, m] = c.horario.split(':');
+          cDate.setHours(Number(h), Number(m));
+        }
         
-        const now = new Date();
-        const notifs = consultas.map((c: any) => {
-          const cDate = new Date(c.data);
-          // Adiciona a hora correta
-          if (c.horario) {
-            const [h, m] = c.horario.split(':');
-            cDate.setHours(Number(h), Number(m));
+        const isPast = cDate < now;
+        const isToday = cDate.toDateString() === now.toDateString();
+        
+        let title = "Nova Consulta";
+        let message = `Consulta ${c.descricao} marcada para ${c.horario}`;
+        let isNew = !isPast;
+        
+        if (isPast && !isToday) {
+          title = "Consulta Concluída";
+          message = `Como foi sua consulta de ${c.descricao}?`;
+          isNew = false;
+        } else if (isToday) {
+          title = "Consulta Hoje!";
+          message = `Lembrete: Você tem ${c.descricao} hoje às ${c.horario}.`;
+          isNew = true;
+        } else if (isNew) {
+          const daysDiff = Math.ceil((cDate.getTime() - now.getTime()) / (1000 * 3600 * 24));
+          if (daysDiff === 1) {
+             title = "Consulta Amanhã!";
+             message = `Prepare-se para ${c.descricao} às ${c.horario}.`;
           }
-          
-          const isPast = cDate < now;
-          const isToday = cDate.toDateString() === now.toDateString();
-          
-          let title = "Nova Consulta";
-          let message = `Consulta ${c.descricao} marcada para ${c.horario}`;
-          let isNew = !isPast;
-          
-          if (isPast && !isToday) {
-            title = "Consulta Concluída";
-            message = `Como foi sua consulta de ${c.descricao}?`;
-            isNew = false;
-          } else if (isToday) {
-            title = "Consulta Hoje!";
-            message = `Lembrete: Você tem ${c.descricao} hoje às ${c.horario}.`;
-            isNew = true;
-          } else if (isNew) {
-            const daysDiff = Math.ceil((cDate.getTime() - now.getTime()) / (1000 * 3600 * 24));
-            if (daysDiff === 1) {
-               title = "Consulta Amanhã!";
-               message = `Prepare-se para ${c.descricao} às ${c.horario}.`;
-            }
-          }
+        }
 
-          return {
-            id: c.id_consulta,
-            title,
-            message,
-            date: cDate,
-            isNew,
-            icon: isPast ? "calendar-check" : "calendar-clock"
-          };
-        });
-        
-        // Ordena para notificações novas ficarem no topo, e depois por data
-        notifs.sort((a: any, b: any) => {
-           if (a.isNew === b.isNew) {
-              return b.date.getTime() - a.date.getTime();
-           }
-           return a.isNew ? -1 : 1;
-        });
-        
-        setNotificationsList(notifs);
-      }
+        return {
+          id: c.id_consulta,
+          title,
+          message,
+          date: cDate,
+          isNew,
+          icon: isPast ? "calendar-check" : "calendar-clock"
+        };
+      });
+      
+      // Ordena para notificações novas ficarem no topo, e depois por data
+      notifs.sort((a: any, b: any) => {
+         if (a.isNew === b.isNew) {
+            return b.date.getTime() - a.date.getTime();
+         }
+         return a.isNew ? -1 : 1;
+      });
+      
+      setNotificationsList(notifs);
     } catch (e) {
       console.log(e);
     } finally {
@@ -339,9 +315,9 @@ export default function DashboardScreen() {
             </View>
           ) : (
             <ScrollView showsVerticalScrollIndicator={false}>
-              {notificationsList.map((notif, index) => (
+              {notificationsList.map((notif) => (
                 <View 
-                  key={index}
+                  key={notif.id}
                   className={`flex-row p-4 mb-3 rounded-2xl border ${notif.isNew ? 'bg-[#FDF2EE] border-[#FADCD0]' : 'bg-white border-[#E8DFDA]'}`}
                 >
                   <View className={`w-10 h-10 rounded-full items-center justify-center mr-3 ${notif.isNew ? 'bg-[#C56A43]' : 'bg-[#F0EBE6]'}`}>

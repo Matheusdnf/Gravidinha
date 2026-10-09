@@ -1,9 +1,6 @@
 import { FontAwesome5 } from "@expo/vector-icons";
 import { Text, View } from "react-native";
-
-interface StreakCardProps {
-  days: number;
-}
+import { StreakCardProps } from "../../types/components";
 
 export function StreakCard({ days }: StreakCardProps) {
   return (
