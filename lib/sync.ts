@@ -133,7 +133,7 @@ async function pull(): Promise<boolean> {
   let mudou = false;
   for (const t of TABELAS) {
     const chave = `ultimo_pull:${t.nome}`;
-    let cursor = lerMeta(chave);
+    let cursor = await lerMeta(chave);
     for (;;) {
       let q = supabase.from(t.nome).select('*').order('updated_at').limit(PAGINA);
       if (cursor) q = q.gt('updated_at', cursor);
@@ -152,7 +152,7 @@ async function pull(): Promise<boolean> {
       }
       if (data.length > 0) {
         cursor = data[data.length - 1].updated_at as string;
-        gravarMeta(chave, cursor);
+        await gravarMeta(chave, cursor);
       }
       if (data.length < PAGINA) break;
     }
@@ -160,11 +160,12 @@ async function pull(): Promise<boolean> {
   return mudou;
 }
 
-export function contarPendentes(): number {
-  return TABELAS.reduce(
-    (soma, t) => soma + (db.getFirstSync<{ n: number }>(`SELECT COUNT(*) AS n FROM ${t.nome} WHERE pendente = 1`)?.n ?? 0),
-    0,
-  );
+export async function contarPendentes(): Promise<number> {
+  let soma = 0;
+  for (const t of TABELAS) {
+    soma += (await db.getFirstAsync<{ n: number }>(`SELECT COUNT(*) AS n FROM ${t.nome} WHERE pendente = 1`))?.n ?? 0;
+  }
+  return soma;
 }
 
 // Logout ou troca de conta: nada da usuária anterior fica no aparelho
@@ -177,8 +178,8 @@ export async function limparBancoLocal() {
 // Login (ou abertura do app já logada): garante que o banco local é desta usuária e puxa os dados
 export async function prepararBancoLocal(id_user: string) {
   // Sem dono registrado também limpa: um sync durante o logout pode ter regravado linhas da conta anterior
-  if (lerMeta('id_user') !== id_user) await limparBancoLocal();
-  gravarMeta('id_user', id_user);
+  if ((await lerMeta('id_user')) !== id_user) await limparBancoLocal();
+  await gravarMeta('id_user', id_user);
   await sincronizar();
 }
 

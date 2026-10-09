@@ -16,7 +16,7 @@ import type { Gestacao, User } from '../types/auth';
 // Dona do banco local (gravada no login). Offline com o token vencido o getSession() vem vazio,
 // e o app precisa continuar funcionando com os dados locais.
 async function meuId(): Promise<string> {
-  const dona = lerMeta('id_user');
+  const dona = await lerMeta('id_user');
   if (dona) return dona;
   const { data } = await supabase.auth.getSession();
   if (!data.session) throw new Error('Sessão expirada. Entre novamente.');

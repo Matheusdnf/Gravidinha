@@ -67,7 +67,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const signOut = async () => {
     // Tenta enviar o que foi feito offline; se ainda sobrar algo, a usuária decide se perde
     await sincronizar();
-    const pendentes = contarPendentes();
+    const pendentes = await contarPendentes();
     if (pendentes > 0) {
       const sair = await new Promise<boolean>((resolve) =>
         Alert.alert(

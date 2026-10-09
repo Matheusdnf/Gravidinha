@@ -1,15 +1,32 @@
 // Banco SQLite local: cópia dos dados da usuária para o app funcionar sem internet.
 // As tabelas espelham as do Supabase (supabase/migrations) + a coluna "pendente"
 // (1 = alteração local ainda não enviada). A sincronização fica em lib/sync.ts.
-import { openDatabaseSync } from 'expo-sqlite';
+import { openDatabaseAsync, type SQLiteDatabase } from 'expo-sqlite';
 import * as Crypto from 'expo-crypto';
 
-export const db = openDatabaseSync('gravidinha.db');
+// Aberto de forma assíncrona: na web o openDatabaseSync estoura o tempo esperando o worker do wa-sqlite subir
+const aberto = openDatabaseAsync('gravidinha.db').then(async (d) => {
+  await criarTabelas(d);
+  return d;
+});
+
+type Banco = Pick<SQLiteDatabase, 'runAsync' | 'getFirstAsync' | 'getAllAsync' | 'withTransactionAsync'>;
+const usar = (m: keyof Banco) => async (...args: any[]) => {
+  const d: any = await aberto;
+  return d[m](...args);
+};
+export const db = {
+  runAsync: usar('runAsync'),
+  getFirstAsync: usar('getFirstAsync'),
+  getAllAsync: usar('getAllAsync'),
+  withTransactionAsync: usar('withTransactionAsync'),
+} as Banco;
 
 // Datas, horários e uuids como texto; booleanos como 0/1. Sem foreign keys:
 // o pull não garante a ordem de chegada entre tabelas.
-if ((db.getFirstSync<{ user_version: number }>('PRAGMA user_version')?.user_version ?? 0) < 1) {
-  db.execSync(`
+async function criarTabelas(d: SQLiteDatabase) {
+  if (((await d.getFirstAsync<{ user_version: number }>('PRAGMA user_version'))?.user_version ?? 0) >= 1) return;
+  await d.execAsync(`
     CREATE TABLE IF NOT EXISTS usuario (
       id_user TEXT PRIMARY KEY, name TEXT, cellphone INTEGER, data_nascimento TEXT, profile_image TEXT,
       updated_at TEXT, deleted_at TEXT, pendente INTEGER NOT NULL DEFAULT 0);
@@ -110,10 +127,10 @@ export async function salvarDoServidor(t: Tabela, linha: Record<string, any>): P
 export const agora = () => new Date().toISOString();
 export const novoId = () => Crypto.randomUUID();
 
-export function lerMeta(chave: string): string | null {
-  return db.getFirstSync<{ valor: string }>('SELECT valor FROM meta WHERE chave = ?', chave)?.valor ?? null;
+export async function lerMeta(chave: string): Promise<string | null> {
+  return (await db.getFirstAsync<{ valor: string }>('SELECT valor FROM meta WHERE chave = ?', chave))?.valor ?? null;
 }
 
-export function gravarMeta(chave: string, valor: string) {
-  db.runSync('INSERT OR REPLACE INTO meta (chave, valor) VALUES (?, ?)', chave, valor);
+export async function gravarMeta(chave: string, valor: string) {
+  await db.runAsync('INSERT OR REPLACE INTO meta (chave, valor) VALUES (?, ?)', chave, valor);
 }
