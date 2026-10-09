@@ -28,11 +28,11 @@ As telas acessam dados só via `lib/dados.ts`. As funções exportadas mantêm n
    - `deleted_at timestamptz` (soft delete).
    - Índice em `updated_at` para o pull incremental.
 2. Grants/RLS:
-   - `update` liberado em `diario` (política "editar os próprios", mesmo critério de dono), necessário para `upsert`.
+   - `update` liberado em `diario` (política "editar os próprios", mesmo critério de dono), necessário para o push e para o soft delete.
    - `filho` já tem update.
    - Delete físico em `consulta` deixa de ser usado pelo app; exclusão = `update` de `deleted_at`.
 3. As regras continuam no servidor como última barreira: `uq_gestacao_ativa` (só considera linhas com `deleted_at is null` — o índice parcial passa a ser `where status = 'ativa' and deleted_at is null`) e o RLS "criar em gestação ativa".
-   - Atenção: com `upsert`, uma consulta/diário criado offline numa gestação que foi finalizada é barrado pelo RLS de insert (`42501`). Tratado como rejeição (ver abaixo).
+   - Uma consulta/diário criado offline numa gestação que foi finalizada é barrado pelo RLS de insert (`42501`). Tratado como rejeição (ver abaixo).
 4. O RPC `criar_gestacao` deixa de ser chamado (permanece no banco; remoção opcional depois).
 
 ## SQLite local (`lib/db.ts`)
@@ -40,7 +40,7 @@ As telas acessam dados só via `lib/dados.ts`. As funções exportadas mantêm n
 - Abre `gravidinha.db` e cria as tabelas na primeira execução (`PRAGMA user_version` para versão do esquema).
 - Mesmas 5 tabelas e colunas do Supabase, com tipos SQLite (datas como texto ISO, booleanos 0/1) + `pendente INTEGER NOT NULL DEFAULT 0`.
 - Tabela `meta (chave TEXT PRIMARY KEY, valor TEXT)` guarda o cursor do pull (`ultimo_pull`) e o `id_user` dono do banco.
-- UUIDs gerados no app com `crypto.randomUUID()` (disponível no Hermes/Expo SDK 56; se não estiver, `expo-crypto`).
+- UUIDs gerados no app com `randomUUID()` do `expo-crypto` (nova dependência).
 - `updated_at` local é gravado com o horário do aparelho apenas para ordenação local; o valor do servidor substitui no pull.
 - Leituras filtram `deleted_at IS NULL`.
 
@@ -57,17 +57,17 @@ Checadas localmente antes de gravar, com as mesmas mensagens de hoje:
 
 `sincronizar(): Promise<void>` — um único ciclo em andamento por vez (chamadas concorrentes reutilizam a promise em curso).
 
-**Push**, na ordem `usuario` → `gestacao` → `filho`, `diario`, `consulta`:
-- Para cada tabela, seleciona linhas com `pendente = 1` e faz `upsert` em lote no Supabase (sem `pendente`, sem `updated_at`; o servidor define).
-- Sucesso → `pendente = 0` para as linhas enviadas, só se não foram alteradas de novo durante o envio (compara o `updated_at` local lido antes do envio).
-- Em lote rejeitado por regra, reenvia linha a linha para isolar a culpada.
+**Push**, na ordem `usuario` → `gestacao` → `filho`, `diario`, `consulta`, linha a linha:
+- Para cada linha com `pendente = 1`: `update` pela chave primária (sem `pendente`, sem `updated_at`; o servidor define). Se nenhuma linha for afetada, `insert`. Não usa `upsert`: o Postgres aplica a checagem de RLS de insert também no `ON CONFLICT`, o que barraria editar/excluir consulta de gestação finalizada, e `usuario` não tem grant de insert.
+- Sucesso → `pendente = 0`, só se a linha não foi alterada de novo durante o envio (compara o `updated_at` local lido antes do envio).
 - Rejeição por regra (`23505`, `42501`, `23503`, `23514`): descarta a versão local (busca a do servidor; se não existir, apaga localmente) e registra um aviso.
 - Erro de rede/auth: interrompe o ciclo; as linhas continuam pendentes.
+- `ponytail:` 1–2 requisições por linha pendente; suficiente para o volume de uma usuária. Agrupar em lote se o volume crescer.
 
 **Pull**, na mesma ordem de tabelas:
 - `select * where updated_at > ultimo_pull` (o RLS já restringe à usuária), paginado.
 - Para cada linha: aplica (insert ou replace) só se a linha local não estiver `pendente = 1`. Essa decisão fica numa função pura `deveAplicar(local, remota)` testável.
-- Novo cursor = maior `updated_at` recebido.
+- Cursor por tabela (`meta` chave `ultimo_pull:<tabela>`) = maior `updated_at` recebido daquela tabela.
 - `ponytail:` cursor por `updated_at` pode perder uma linha cuja transação commitou depois com `now()` anterior; aceitável para uma usuária com poucos aparelhos. Se aparecer, puxar com margem (`ultimo_pull - 1 min`).
 
 **Gatilhos:**
@@ -98,7 +98,7 @@ Checadas localmente antes de gravar, com as mesmas mensagens de hoje:
 - `lib/sync.test.ts` (ou `.mjs`) com `node --test`, cobrindo `deveAplicar`: linha nova, linha local pendente, linha local sincronizada, remota com `deleted_at`.
 - Roteiro manual no emulador Android:
   1. Login online → dados aparecem.
-  2. Modo avião → criar consulta, editar diário, excluir consulta, editar perfil, finalizar gestação e criar nova.
+  2. Modo avião → criar consulta, criar diário, excluir consulta, editar perfil, finalizar gestação e criar nova.
   3. Fechar e reabrir o app offline → tudo continua lá.
   4. Desligar modo avião → voltar ao app → conferir as tabelas no Supabase (`updated_at`, `deleted_at`).
   5. Conflito: com o aparelho offline, criar gestação ativa; criar outra ativa direto no Supabase; reconectar → aviso exibido, servidor vence.
