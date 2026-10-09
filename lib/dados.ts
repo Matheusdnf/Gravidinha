@@ -6,12 +6,12 @@
 // Toda função lança Error com mensagem pronta para exibir em Alert.
 import { supabase } from './supabase';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { db, tabela, salvarLocal, agora, novoId, lerMeta, Tabela } from './db';
+import { db, tabela, salvarLocal, agora, novoId, lerMeta, type Tabela } from './db';
 import { prepararBancoLocal, marcarAlterado } from './sync';
 import { normalizarHorario } from './syncRegras';
 import { calcularSemanaAtual, hojeISO, paraISO } from './gestacao';
 import sintDb from '../sint_db.json';
-import { Gestacao, User } from '../types/auth';
+import type { Gestacao, User } from '../types/auth';
 
 // Dona do banco local (gravada no login). Offline com o token vencido o getSession() vem vazio,
 // e o app precisa continuar funcionando com os dados locais.

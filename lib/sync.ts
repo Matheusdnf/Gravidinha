@@ -4,7 +4,7 @@
 import { useEffect, useRef } from 'react';
 import { AppState, Platform } from 'react-native';
 import { supabase } from './supabase';
-import { db, TABELAS, Tabela, paraLocal, paraRemoto, salvarLocal, salvarDoServidor, lerMeta, gravarMeta } from './db';
+import { db, TABELAS, type Tabela, paraLocal, paraRemoto, salvarLocal, salvarDoServidor, lerMeta, gravarMeta } from './db';
 import { classificarErro, deveAplicar, linhaMudou } from './syncRegras';
 
 // Motivo exibido para cada código de rejeição (CODIGOS_REJEICAO em syncRegras.ts)

@@ -51,7 +51,7 @@
     "ios": "expo start --ios",
     "web": "expo start --web",
     "postinstall": "patch-package",
-    "test": "node --experimental-strip-types --test lib/*.test.mjs"
+    "test": "node --experimental-strip-types --disable-warning=ExperimentalWarning --import ./lib/testes/registrar.mjs --test lib/*.test.mjs"
   },
   "private": true
 }
