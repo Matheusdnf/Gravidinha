@@ -1,31 +1,66 @@
-// Acesso a dados do app, direto no Supabase (substitui as antigas rotas app/api).
-// Não filtra por usuário aqui: o RLS do banco só devolve/aceita linhas da usuária logada.
+// Acesso a dados do app: lê e grava no SQLite local (lib/db.ts), que funciona sem internet.
+// Cada gravação marca a linha como pendente e dispara a sincronização com o Supabase (lib/sync.ts).
+// As regras que o banco do servidor garante (uma gestação ativa, não inserir em gestação
+// finalizada) são checadas aqui antes de gravar, para o erro aparecer na hora mesmo offline.
 // Toda função lança Error com mensagem pronta para exibir em Alert.
 import { supabase } from './supabase';
+import { db, tabela, salvarLocal, agora, novoId, Tabela } from './db';
+import { prepararBancoLocal, marcarAlterado } from './sync';
+import { normalizarHorario } from './syncRegras';
 import { calcularSemanaAtual, hojeISO, paraISO } from './gestacao';
 import sintDb from '../sint_db.json';
-import { User } from '../types/auth';
-
-// Códigos do Postgres que viram mensagem específica
-const DUPLICADO = '23505'; // uq_gestacao_ativa
-const BLOQUEADO_RLS = '42501'; // insert em gestação finalizada
-
-function checar<T>(
-  { data, error }: { data: T; error: { code?: string } | null },
-  mensagem: string,
-  porCodigo: Record<string, string> = {},
-): NonNullable<T> {
-  if (error) {
-    console.error(error);
-    throw new Error(porCodigo[error.code ?? ''] ?? mensagem);
-  }
-  return data as NonNullable<T>;
-}
+import { Gestacao, User } from '../types/auth';
 
 async function meuId(): Promise<string> {
   const { data } = await supabase.auth.getSession();
   if (!data.session) throw new Error('Sessão expirada. Entre novamente.');
   return data.session.user.id;
+}
+
+// Nova linha local, pendente de envio
+async function inserir(nome: Tabela['nome'], linha: Record<string, any>) {
+  await salvarLocal(tabela(nome), { ...linha, updated_at: agora() }, 1);
+}
+
+// Atualiza só os campos informados; devolve quantas linhas mudaram
+async function atualizar(nome: Tabela['nome'], id: string, patch: Record<string, any>): Promise<number> {
+  const { pk } = tabela(nome);
+  const colunas = Object.keys(patch);
+  const { changes } = await db.runAsync(
+    `UPDATE ${nome} SET ${colunas.map((c) => `${c} = ?`).join(', ')}, updated_at = ?, pendente = 1
+     WHERE ${pk} = ? AND deleted_at IS NULL`,
+    [...colunas.map((c) => patch[c] ?? null), agora(), id],
+  );
+  return changes;
+}
+
+// Gestação local: booleanos voltam de 0/1 e os filhos vêm junto, como o select do Supabase fazia
+async function comFilhos(g: Gestacao): Promise<Gestacao> {
+  const filhos = await db.getAllAsync<Record<string, any>>(
+    'SELECT * FROM filho WHERE id_gestacao = ? AND deleted_at IS NULL ORDER BY nome',
+    g.id_gestacao,
+  );
+  return {
+    ...g,
+    primeira_gestacao: g.primeira_gestacao == null ? null : g.primeira_gestacao === 1,
+    ainda_nao_decidiu_nome: g.ainda_nao_decidiu_nome == null ? null : g.ainda_nao_decidiu_nome === 1,
+    filhos,
+  };
+}
+
+async function gestacaoAtiva(excetoId?: string) {
+  return db.getFirstAsync<{ id_gestacao: string }>(
+    "SELECT id_gestacao FROM gestacao WHERE status = 'ativa' AND deleted_at IS NULL AND id_gestacao IS NOT ?",
+    excetoId ?? null,
+  );
+}
+
+async function exigirGestacaoAtiva(id_gestacao: string, mensagem: string) {
+  const g = await db.getFirstAsync<{ status: string }>(
+    'SELECT status FROM gestacao WHERE id_gestacao = ? AND deleted_at IS NULL',
+    id_gestacao,
+  );
+  if (g?.status === 'finalizada') throw new Error(mensagem);
 }
 
 // ---------------------------------------------------------------------------
@@ -34,7 +69,8 @@ async function meuId(): Promise<string> {
 
 export async function buscarUsuario(): Promise<User & { profile_image: string | null }> {
   const { data } = await supabase.auth.getSession();
-  const u = checar(await supabase.from('usuario').select('*').single(), 'Erro ao carregar o perfil.');
+  const u = await db.getFirstAsync<Record<string, any>>('SELECT * FROM usuario WHERE id_user = ?', await meuId());
+  if (!u) throw new Error('Erro ao carregar o perfil.');
   return {
     id: u.id_user,
     nome: u.name,
@@ -50,8 +86,18 @@ async function usuarioDaSessao(): Promise<User> {
   return user;
 }
 
+// Depois do login: traz os dados da usuária para o banco local antes de entrar no app
+async function carregarDadosDaConta(id_user: string, mensagem: string): Promise<User> {
+  await prepararBancoLocal(id_user);
+  try {
+    return await usuarioDaSessao();
+  } catch {
+    throw new Error(mensagem);
+  }
+}
+
 export async function entrar(email: string, senha: string) {
-  const { error } = await supabase.auth.signInWithPassword({ email: email.trim().toLowerCase(), password: senha });
+  const { data, error } = await supabase.auth.signInWithPassword({ email: email.trim().toLowerCase(), password: senha });
   if (error) {
     // Mesma mensagem para e-mail inexistente e senha errada, para não revelar quais e-mails existem
     if (error.code === 'invalid_credentials') throw new Error('E-mail ou senha incorretos');
@@ -59,7 +105,7 @@ export async function entrar(email: string, senha: string) {
     console.error(error);
     throw new Error('Ocorreu um erro ao fazer login.');
   }
-  return usuarioDaSessao();
+  return carregarDadosDaConta(data.user.id, 'Ocorreu um erro ao fazer login.');
 }
 
 // dataNascimento em "aaaa-mm-dd". O perfil (tabela usuario) é criado por trigger a partir de options.data.
@@ -79,7 +125,7 @@ export async function cadastrar(d: { nome: string; email: string; senha: string;
   }
   // Sem sessão = o projeto exige confirmação de e-mail (Auth > Providers > Email > Confirm email)
   if (!data.session) throw new Error('Cadastro criado. Confirme seu e-mail e depois entre no app.');
-  return usuarioDaSessao();
+  return carregarDadosDaConta(data.session.user.id, 'Erro ao realizar o cadastro do usuário.');
 }
 
 // Atualização parcial: só altera os campos enviados (a foto vai sozinha, sem reenviar o resto)
@@ -96,24 +142,19 @@ export async function atualizarUsuario(d: { nome?: string; celular?: string; pro
   }
   if (d.profile_image !== undefined) patch.profile_image = d.profile_image;
 
-  checar(await supabase.from('usuario').update(patch).eq('id_user', await meuId()), 'Erro ao atualizar dados.');
+  if ((await atualizar('usuario', await meuId(), patch)) === 0) throw new Error('Erro ao atualizar dados.');
+  marcarAlterado();
 }
 
 // ---------------------------------------------------------------------------
 // Gestação
 // ---------------------------------------------------------------------------
 
-const GESTACAO_COM_FILHOS = '*, filhos:filho(*)';
-
 export async function listarGestacoes() {
-  return checar(
-    await supabase
-      .from('gestacao')
-      .select(GESTACAO_COM_FILHOS)
-      .order('data_inicio', { ascending: false })
-      .order('nome', { referencedTable: 'filhos' }),
-    'Erro ao carregar os dados da gestação.',
+  const gestacoes = await db.getAllAsync<Gestacao>(
+    'SELECT * FROM gestacao WHERE deleted_at IS NULL ORDER BY data_inicio DESC',
   );
+  return Promise.all(gestacoes.map(comFilhos));
 }
 
 export async function criarGestacao(d: {
@@ -124,30 +165,41 @@ export async function criarGestacao(d: {
   qtdBebes?: string;
   bebes?: { nome?: string; sexo?: string; aindaNaoDecidiuNome?: boolean }[];
 }) {
+  if (await gestacaoAtiva()) {
+    throw new Error('Você já possui uma gestação ativa. Finalize-a antes de criar uma nova.');
+  }
   const bebes = d.bebes ?? [];
-  const id = checar(
-    await supabase.rpc('criar_gestacao', {
-      p_nome: d.nomeGestacao?.trim() || 'Minha Gestação',
-      p_data_inicio: hojeISO(),
-      p_primeira_gestacao: d.primeiraGestacao,
-      p_qtd_bebes: d.qtdBebes ?? null,
-      p_semanas: d.semanas,
-      p_dpp: paraISO(d.dpp),
-      p_ainda_nao_decidiu_nome: bebes.some((b) => b.aindaNaoDecidiuNome),
-      p_filhos: bebes.map((b, i) => ({
+  const id_gestacao = novoId();
+  const id_user = await meuId();
+
+  // Gestação e filhos juntos (ou grava tudo ou nada)
+  await db.withTransactionAsync(async () => {
+    await inserir('gestacao', {
+      id_gestacao,
+      id_user,
+      nome: d.nomeGestacao?.trim() || 'Minha Gestação',
+      data_inicio: hojeISO(),
+      primeira_gestacao: d.primeiraGestacao,
+      qtd_bebes: d.qtdBebes ?? null,
+      semanas: d.semanas,
+      dpp: paraISO(d.dpp),
+      ainda_nao_decidiu_nome: bebes.some((b) => b.aindaNaoDecidiuNome),
+      status: 'ativa',
+    });
+    for (const [i, b] of bebes.entries()) {
+      await inserir('filho', {
+        id_filho: novoId(),
+        id_gestacao,
         nome: b.aindaNaoDecidiuNome || !b.nome?.trim() ? `Bebê ${i + 1}` : b.nome.trim(),
         sexo: b.sexo || 'nao_informado',
-      })),
-    }),
-    'Não foi possível salvar os dados da gestação.',
-    { [DUPLICADO]: 'Você já possui uma gestação ativa. Finalize-a antes de criar uma nova.' },
-  );
+      });
+    }
+  });
+  marcarAlterado();
 
   // Devolve a gestação completa (semanas, data_inicio, filhos...) para virar a selecionada
-  return checar(
-    await supabase.from('gestacao').select(GESTACAO_COM_FILHOS).eq('id_gestacao', id).single(),
-    'Não foi possível carregar a gestação criada.',
-  );
+  const g = await db.getFirstAsync<Gestacao>('SELECT * FROM gestacao WHERE id_gestacao = ?', id_gestacao);
+  return comFilhos(g!);
 }
 
 export async function atualizarGestacao(d: {
@@ -160,29 +212,19 @@ export async function atualizarGestacao(d: {
 }) {
   const patch: Record<string, unknown> = { nome: d.nome, semanas: d.semanas, dpp: paraISO(d.dpp) };
   if (d.status) {
+    if (d.status === 'ativa' && (await gestacaoAtiva(d.id_gestacao))) throw new Error('Você já possui uma gestação ativa.');
     patch.status = d.status;
     // Registra a data de finalização (dia local, igual a data_inicio)
     if (d.status === 'finalizada') patch.data_finalizacao = hojeISO();
   }
 
-  const atualizadas = checar(
-    await supabase.from('gestacao').update(patch).eq('id_gestacao', d.id_gestacao).select('id_gestacao'),
-    'Não foi possível atualizar.',
-    { [DUPLICADO]: 'Você já possui uma gestação ativa.' },
-  );
-  if (atualizadas.length === 0) throw new Error('Gestação não encontrada');
+  if ((await atualizar('gestacao', d.id_gestacao, patch)) === 0) throw new Error('Gestação não encontrada');
 
   for (const filho of d.filhos ?? []) {
     if (!filho.id_filho) continue;
-    checar(
-      await supabase
-        .from('filho')
-        .update({ nome: filho.nome, sexo: filho.sexo || 'nao_informado' })
-        .eq('id_filho', filho.id_filho)
-        .eq('id_gestacao', d.id_gestacao),
-      'Não foi possível atualizar os filhos.',
-    );
+    await atualizar('filho', filho.id_filho, { nome: filho.nome, sexo: filho.sexo || 'nao_informado' });
   }
+  marcarAlterado();
 }
 
 // ---------------------------------------------------------------------------
@@ -194,41 +236,34 @@ type ConsultaForm = { data: string; consulta: string; horario: string; local: st
 const consultaParaLinha = (c: ConsultaForm) => ({
   data: paraISO(c.data),
   descricao: c.consulta,
-  horario: c.horario,
+  horario: normalizarHorario(c.horario),
   local: c.local,
   medico: c.medico || null,
 });
 
 export async function listarConsultas(id_gestacao: string) {
-  return checar(
-    await supabase.from('consulta').select('*').eq('id_gestacao', id_gestacao).order('data').order('horario'),
-    'Erro ao carregar as consultas.',
+  return db.getAllAsync<Record<string, any>>(
+    'SELECT * FROM consulta WHERE id_gestacao = ? AND deleted_at IS NULL ORDER BY data, horario',
+    id_gestacao,
   );
 }
 
 export async function criarConsulta(id_gestacao: string | undefined, c: ConsultaForm) {
   if (!id_gestacao) throw new Error('Nenhuma gestação selecionada.');
-  checar(
-    await supabase.from('consulta').insert({ id_gestacao, ...consultaParaLinha(c) }),
-    'Não foi possível agendar a consulta.',
-    { [BLOQUEADO_RLS]: 'Gestação finalizada. Não é possível adicionar novas consultas.' },
-  );
+  await exigirGestacaoAtiva(id_gestacao, 'Gestação finalizada. Não é possível adicionar novas consultas.');
+  await inserir('consulta', { id_consulta: novoId(), id_gestacao, ...consultaParaLinha(c) });
+  marcarAlterado();
 }
 
 export async function atualizarConsulta(id_consulta: string, c: ConsultaForm) {
-  const linhas = checar(
-    await supabase.from('consulta').update(consultaParaLinha(c)).eq('id_consulta', id_consulta).select('id_consulta'),
-    'Não foi possível atualizar.',
-  );
-  if (linhas.length === 0) throw new Error('Consulta não encontrada');
+  if ((await atualizar('consulta', id_consulta, consultaParaLinha(c))) === 0) throw new Error('Consulta não encontrada');
+  marcarAlterado();
 }
 
+// Exclusão vira marcação (deleted_at), para a sincronização levar a exclusão ao servidor
 export async function excluirConsulta(id_consulta: string) {
-  const linhas = checar(
-    await supabase.from('consulta').delete().eq('id_consulta', id_consulta).select('id_consulta'),
-    'Não foi possível excluir.',
-  );
-  if (linhas.length === 0) throw new Error('Consulta não encontrada');
+  if ((await atualizar('consulta', id_consulta, { deleted_at: agora() })) === 0) throw new Error('Consulta não encontrada');
+  marcarAlterado();
 }
 
 // ---------------------------------------------------------------------------
@@ -236,24 +271,17 @@ export async function excluirConsulta(id_consulta: string) {
 // ---------------------------------------------------------------------------
 
 export async function listarDiario(id_gestacao: string) {
-  return checar(
-    await supabase
-      .from('diario')
-      .select('*')
-      .eq('id_gestacao', id_gestacao)
-      .order('data', { ascending: false })
-      .order('hora', { ascending: false, nullsFirst: false }),
-    'Erro ao carregar o diário.',
+  return db.getAllAsync<Record<string, any>>(
+    'SELECT * FROM diario WHERE id_gestacao = ? AND deleted_at IS NULL ORDER BY data DESC, hora IS NULL, hora DESC',
+    id_gestacao,
   );
 }
 
 export async function criarDiario(d: { id_gestacao?: string; data: string; hora?: string; reacao: string; descricao: string }) {
   if (!d.id_gestacao) throw new Error('Nenhuma gestação selecionada.');
-  checar(
-    await supabase.from('diario').insert({ ...d, data: paraISO(d.data), hora: d.hora || null }),
-    'Não foi possível salvar.',
-    { [BLOQUEADO_RLS]: 'Gestação finalizada. Não é possível adicionar novos registros.' },
-  );
+  await exigirGestacaoAtiva(d.id_gestacao, 'Gestação finalizada. Não é possível adicionar novos registros.');
+  await inserir('diario', { ...d, id_diario: novoId(), data: paraISO(d.data), hora: d.hora || null });
+  marcarAlterado();
 }
 
 // ---------------------------------------------------------------------------
@@ -263,16 +291,16 @@ export async function criarDiario(d: { id_gestacao?: string; data: string; hora?
 const limitarSemana = (s: number) => Math.min(40, Math.max(1, s));
 
 // A gestação informada ou, sem id, a ativa da usuária (null se não houver)
-async function gestacaoParaSemana(id_gestacao?: string): Promise<{
-  semanas: number;
-  data_inicio: string;
-  data_finalizacao: string | null;
-  status: string;
-} | null> {
-  const q = supabase.from('gestacao').select('semanas, data_inicio, data_finalizacao, status');
-  return checar(
-    await (id_gestacao ? q.eq('id_gestacao', id_gestacao) : q.eq('status', 'ativa')).maybeSingle(),
-    'Erro ao carregar a gestação.',
+async function gestacaoParaSemana(id_gestacao?: string) {
+  return db.getFirstAsync<{
+    semanas: number;
+    data_inicio: string;
+    data_finalizacao: string | null;
+    status: string;
+  }>(
+    `SELECT semanas, data_inicio, data_finalizacao, status FROM gestacao
+     WHERE deleted_at IS NULL AND ${id_gestacao ? 'id_gestacao = ?' : "status = 'ativa'"}`,
+    id_gestacao ? [id_gestacao] : [],
   );
 }
 
