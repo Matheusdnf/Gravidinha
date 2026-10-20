@@ -21,10 +21,12 @@ import { BackButton } from "../../components/BackButton";
 
 import { DiarioEntry } from "../../types/diario";
 import { HUMOR_OPTIONS } from "../../constants/humores";
+import { useCores } from "../../lib/tema";
 
 const POR_PAGINA = 20;
 
 export default function DiarioScreen() {
+  const cores = useCores();
   const { user, selectedGestacao } = useAuth();
 
   // Estados locais do formulário
@@ -111,10 +113,10 @@ export default function DiarioScreen() {
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-[#FBF9F6] items-center">
+    <SafeAreaView className="flex-1 bg-fundo items-center">
       <View className="w-full max-w-xl flex-1 px-5 relative overflow-hidden">
         {/* Círculo Orgânico Decorativo */}
-        <View className="absolute top-[-40px] right-[-20px] w-48 h-48 rounded-full bg-[#F3E2D4] opacity-70 pointer-events-none" />
+        <View className="absolute top-[-40px] right-[-20px] w-48 h-48 rounded-full bg-areia opacity-70 pointer-events-none" />
         <ScrollView
           showsVerticalScrollIndicator={false}
           contentContainerStyle={{ paddingTop: 16, paddingBottom: 40 }}
@@ -123,17 +125,17 @@ export default function DiarioScreen() {
           <BackButton fallback="/(tabs)" />
 
           {/* Cabeçalho */}
-          <Text className="text-3xl font-extrabold text-[#2C221E] tracking-tight">
+          <Text className="text-3xl font-extrabold text-texto tracking-tight">
             Meu Diário
           </Text>
-          <Text className="text-sm font-medium text-[#8A7A75] mt-1 mb-6">
+          <Text className="text-sm font-medium text-texto-suave mt-1 mb-6">
             {dataHoje}
           </Text>
 
           {/* CARD DE CRIAÇÃO DO REGISTRO - Oculto se não houver gestação ativa */}
           {selectedGestacao && (!selectedGestacao.status || selectedGestacao.status === 'ativa') && (
-            <View className="bg-white border border-[#F0EBE6] rounded-3xl p-5 mb-8 w-full">
-              <Text className="text-sm font-bold text-[#2C221E] mb-4">
+            <View className="bg-cartao border border-borda rounded-3xl p-5 mb-8 w-full">
+              <Text className="text-sm font-bold text-texto mb-4">
                 Como você está se sentindo hoje?
               </Text>
 
@@ -147,8 +149,8 @@ export default function DiarioScreen() {
                       onPress={() => setSelectedHumorId(humor.id)}
                       className={`w-14 h-14 rounded-2xl items-center justify-center border shrink-0 mx-3 my-2 ${
                         isSelected
-                          ? "bg-[#FDF2EE] border-[#FADCD0]"
-                          : "bg-[#F9F6F3] border-transparent"
+                          ? "bg-pessego border-pessego-borda"
+                          : "bg-suave border-transparent"
                       }`}
                       activeOpacity={0.8}
                     >
@@ -165,21 +167,21 @@ export default function DiarioScreen() {
               </View>
 
               {/* Campo de Texto */}
-              <View className="bg-[#FDF2EE] border border-[#FADCD0] rounded-2xl p-4 mb-2">
+              <View className="bg-pessego border border-pessego-borda rounded-2xl p-4 mb-2">
                 <TextInput
                   value={textoRegistro}
                   onChangeText={setTextoRegistro}
                   placeholder="Escreva aqui seus pensamentos, sentimentos, sintomas ou qualquer coisa que queira guardar de hoje..."
-                  placeholderTextColor="#C2B2AC"
+                  placeholderTextColor={cores.textoFraco}
                   multiline
                   numberOfLines={5}
                   textAlignVertical="top"
-                  className="text-sm text-[#2C221E] min-h-[100px] p-0 leading-relaxed"
+                  className="text-sm text-texto min-h-[100px] p-0 leading-relaxed"
                 />
               </View>
 
               {/* Contador de Caracteres */}
-              <Text className="text-[11px] text-[#A37262] font-medium mb-5">
+              <Text className="text-[11px] text-marrom font-medium mb-5">
                 {textoRegistro.length} caracteres
               </Text>
 
@@ -206,10 +208,10 @@ export default function DiarioScreen() {
 
           {/* SEÇÃO REGISTROS ANTERIORES */}
           <View className="flex-row justify-between items-center mb-4 w-full">
-            <Text className="text-lg font-bold text-[#2C221E]">
+            <Text className="text-lg font-bold text-texto">
               Registros Anteriores
             </Text>
-            <Text className="text-xs font-semibold text-[#8A7A75]">
+            <Text className="text-xs font-semibold text-texto-suave">
               {registros.length} entradas
             </Text>
           </View>
@@ -222,12 +224,12 @@ export default function DiarioScreen() {
               ))}
             </View>
           ) : registros.length === 0 ? (
-            <View className="bg-white border border-[#F0EBE6] rounded-3xl p-6 items-center w-full">
+            <View className="bg-cartao border border-borda rounded-3xl p-6 items-center w-full">
               <Ionicons name="journal-outline" size={40} color="#D97D54" />
-              <Text className="text-[#2C221E] font-bold text-center mt-3">
+              <Text className="text-texto font-bold text-center mt-3">
                 Nenhum registro ainda
               </Text>
-              <Text className="text-[#8A7A75] text-xs text-center mt-1">
+              <Text className="text-texto-suave text-xs text-center mt-1">
                 Como você está se sentindo hoje?
               </Text>
             </View>
@@ -236,28 +238,28 @@ export default function DiarioScreen() {
               <TouchableOpacity
                 key={item.id}
                 onPress={() => setSelectedEntry(item)}
-                className="bg-white border border-[#F0EBE6] rounded-3xl p-5 mb-4 w-full"
+                className="bg-cartao border border-borda rounded-3xl p-5 mb-4 w-full"
                 activeOpacity={0.8}
               >
                 <View className="flex-row items-center justify-between mb-3">
                   <View className="flex-row items-center">
-                    <View className="bg-[#FDF2EE] border border-[#FADCD0] w-14 h-14 rounded-2xl items-center justify-center mr-4 shrink-0">
+                    <View className="bg-pessego border border-pessego-borda w-14 h-14 rounded-2xl items-center justify-center mr-4 shrink-0">
                       <Text className="text-2xl pr-1 overflow-visible">{item.humor.emoji}</Text>
                     </View>
                     <View>
                       <Text className="text-sm font-bold text-[#C56A43]">
                         {item.humor.label}
                       </Text>
-                      <Text className="text-[11px] text-[#8A7A75] font-medium mt-0.5">
+                      <Text className="text-[11px] text-texto-suave font-medium mt-0.5">
                         {item.data}{item.hora ? ` às ${item.hora}` : ''}
                       </Text>
                     </View>
                   </View>
-                  <Ionicons name="chevron-forward" size={16} color="#CCC" />
+                  <Ionicons name="chevron-forward" size={16} color={cores.bordaForte} />
                 </View>
 
                 <Text
-                  className="text-xs text-[#554944] leading-relaxed font-medium"
+                  className="text-xs text-texto-2 leading-relaxed font-medium"
                   numberOfLines={3}
                 >
                   {item.texto}
@@ -288,33 +290,33 @@ export default function DiarioScreen() {
             onPress={() => setSelectedEntry(null)}
           >
             <Pressable
-              style={{ backgroundColor: "#FFFDFB", boxShadow: "0 0 20px rgba(0,0,0,0.1)", width: "100%", maxWidth: 576, borderRadius: 32, padding: 24, borderWidth: 1, borderColor: "#F0EBE6" }}
+              style={{ backgroundColor: cores.cartao, boxShadow: "0 0 20px rgba(0,0,0,0.1)", width: "100%", maxWidth: 576, borderRadius: 32, padding: 24, borderWidth: 1, borderColor: cores.borda }}
               onPress={(e) => e.stopPropagation()}
             >
             {selectedEntry && (
               <>
                 <View className="flex-row items-center justify-between mb-6">
                   <View className="flex-row items-center flex-1 pr-4">
-                    <View className="bg-[#FDF2EE] border border-[#FADCD0] w-16 h-16 rounded-2xl items-center justify-center mr-4 shrink-0">
+                    <View className="bg-pessego border border-pessego-borda w-16 h-16 rounded-2xl items-center justify-center mr-4 shrink-0">
                       <Text className="text-3xl pr-1 overflow-visible">{selectedEntry.humor.emoji}</Text>
                     </View>
                     <View>
                       <Text className="text-lg font-extrabold text-[#C56A43]">
                         {selectedEntry.humor.label}
                       </Text>
-                      <Text className="text-xs text-[#8A7A75] font-medium mt-0.5">
+                      <Text className="text-xs text-texto-suave font-medium mt-0.5">
                         {selectedEntry.data}{selectedEntry.hora ? ` às ${selectedEntry.hora}` : ''}
                       </Text>
                     </View>
                   </View>
                   <TouchableOpacity
                     onPress={() => setSelectedEntry(null)}
-                    className="w-8 h-8 rounded-full bg-[#F3ECE6]/60 items-center justify-center"
+                    className="w-8 h-8 rounded-full bg-creme/60 items-center justify-center"
                   >
-                    <Ionicons name="close" size={18} color="#2C221E" />
+                    <Ionicons name="close" size={18} color={cores.texto} />
                   </TouchableOpacity>
                 </View>
-                <Text className="text-sm text-[#554944] leading-relaxed font-medium">
+                <Text className="text-sm text-texto-2 leading-relaxed font-medium">
                   {selectedEntry.texto}
                 </Text>
               </>

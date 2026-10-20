@@ -5,6 +5,10 @@ import { useEffect } from "react";
 import { View, ActivityIndicator, LogBox, Platform, Alert } from "react-native";
 import { registerForPushNotificationsAsync } from "../lib/notifications";
 import { aoAvisar } from "../lib/sync";
+import { carregarTema, useCores } from "../lib/tema";
+import { StatusBar } from "expo-status-bar";
+
+carregarTema();
 
 // No react-native-web o Alert.alert não faz nada: erros e confirmações sumiam em silêncio
 if (Platform.OS === "web") {
@@ -30,6 +34,7 @@ LogBox.ignoreLogs([
 ]);
 
 function RootLayoutNav() {
+  const cores = useCores();
   const { user, isLoading } = useAuth();
   const segments = useSegments();
   const router = useRouter();
@@ -63,7 +68,7 @@ function RootLayoutNav() {
 
   if (isLoading) {
     return (
-      <View style={{ flex: 1, justifyContent: "center", alignItems: "center", backgroundColor: "#FBF9F6" }}>
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center", backgroundColor: cores.fundo }}>
         <ActivityIndicator size="large" color="#D97D54" />
       </View>
     );
@@ -75,7 +80,7 @@ function RootLayoutNav() {
       // Animações do iOS quebram no Expo Go Android — no iOS usa a animação nativa padrão
       animation: Platform.OS === 'android' ? 'fade_from_bottom' : 'default',
       animationDuration: 250,
-      contentStyle: { backgroundColor: '#FBF9F6' },
+      contentStyle: { backgroundColor: cores.fundo },
     }}>
       <Stack.Screen name="index" />
       <Stack.Screen name="(tabs)" />
@@ -87,6 +92,7 @@ function RootLayoutNav() {
 export default function RootLayout() {
   return (
     <AuthProvider>
+      <StatusBar style="auto" />
       <RootLayoutNav />
     </AuthProvider>
   );

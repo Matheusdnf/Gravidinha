@@ -16,8 +16,10 @@ import Animated, {
   cancelAnimation,
 } from "react-native-reanimated";
 import * as Haptics from "expo-haptics";
+import { useCores } from "../../lib/tema";
 
 export default function RespiracaoScreen() {
+  const cores = useCores();
   const router = useRouter();
   
   // Estados do temporizador e fluxo
@@ -155,20 +157,20 @@ export default function RespiracaoScreen() {
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-[#FBF9F6] items-center">
+    <SafeAreaView className="flex-1 bg-fundo items-center">
       <View className="w-full max-w-xl flex-1 px-5 relative overflow-hidden">
         
         {/* Círculo Orgânico Decorativo - Fundo da Tela */}
-        <View className="absolute top-[-80px] right-[-60px] w-64 h-64 rounded-full bg-[#F3E2D4] opacity-50 pointer-events-none" />
-        <View className="absolute bottom-[-100px] left-[-60px] w-80 h-80 rounded-full bg-[#E8DFDA] opacity-30 pointer-events-none" />
+        <View className="absolute top-[-80px] right-[-60px] w-64 h-64 rounded-full bg-areia opacity-50 pointer-events-none" />
+        <View className="absolute bottom-[-100px] left-[-60px] w-80 h-80 rounded-full bg-borda-forte opacity-30 pointer-events-none" />
 
         <TouchableOpacity
           onPress={() => router.back()}
           className="flex-row items-center mt-4 mb-4 z-20"
           activeOpacity={0.7}
         >
-          <Ionicons name="arrow-back" size={18} color="#A37262" />
-          <Text className="text-[#A37262] font-semibold text-sm ml-1.5">
+          <Ionicons name="arrow-back" size={18} color={cores.marrom} />
+          <Text className="text-marrom font-semibold text-sm ml-1.5">
             Voltar
           </Text>
         </TouchableOpacity>
@@ -207,11 +209,11 @@ export default function RespiracaoScreen() {
 
         {/* Textos Informativos Abaixo da Animação */}
         <View className="h-32 items-center justify-start mt-8 z-20">
-           <Text className={`text-3xl font-extrabold text-center tracking-tight ${isActive ? 'text-[#D97D54]' : 'text-[#2C221E]'}`}>
+           <Text className={`text-3xl font-extrabold text-center tracking-tight ${isActive ? 'text-[#D97D54]' : 'text-texto'}`}>
              {isActive ? instruction : "Técnica 4-7-8"}
            </Text>
            
-           <Text className="text-center text-[#8A7A75] text-base mt-2 font-medium px-4 leading-relaxed">
+           <Text className="text-center text-texto-suave text-base mt-2 font-medium px-4 leading-relaxed">
              {isActive 
                 ? (instruction.includes("Inspirar") ? "Puxe o ar pelo nariz contando até 4." 
                    : instruction.includes("Segurar") ? "Retenha o ar nos pulmões contando até 7." 
@@ -223,7 +225,7 @@ export default function RespiracaoScreen() {
         {/* Opções de Tempo */}
         {!isActive && (
           <View className="mb-6 w-full z-20">
-            <Text className="text-xs font-bold text-[#A37262] mb-3 text-center uppercase tracking-widest">
+            <Text className="text-xs font-bold text-marrom mb-3 text-center uppercase tracking-widest">
               Escolha a Duração
             </Text>
             <View className="flex-row justify-between">
@@ -233,14 +235,14 @@ export default function RespiracaoScreen() {
                   onPress={() => setDuration(time)}
                   className={`flex-1 mx-1.5 py-3.5 rounded-[20px] items-center border ${
                     duration === time
-                      ? "bg-[#FDF2EE] border-[#C56A43]"
-                      : "bg-white border-[#F0EBE6]"
+                      ? "bg-pessego border-[#C56A43]"
+                      : "bg-cartao border-borda"
                   }`}
                   activeOpacity={0.7}
                 >
                   <Text
                     className={`font-bold text-sm ${
-                      duration === time ? "text-[#C56A43]" : "text-[#8A7A75]"
+                      duration === time ? "text-[#C56A43]" : "text-texto-suave"
                     }`}
                   >
                     {time / 60} min
@@ -253,7 +255,7 @@ export default function RespiracaoScreen() {
 
         <TouchableOpacity
           onPress={toggleTimer}
-          className={`rounded-3xl py-4 items-center justify-center shadow-sm w-full mb-10 z-20 ${isActive ? 'bg-[#2C221E]' : 'bg-[#C56A43]'}`}
+          className={`rounded-3xl py-4 items-center justify-center shadow-sm w-full mb-10 z-20 ${isActive ? 'bg-texto' : 'bg-[#C56A43]'}`}
           activeOpacity={0.9}
         >
           <Text className="text-white font-extrabold text-lg">

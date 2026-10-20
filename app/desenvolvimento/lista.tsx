@@ -7,8 +7,10 @@ import { useAuth } from "../../state/auth";
 import { listarGestacoes, listarSemanas } from "../../lib/dados";
 import { useDadosAtualizados } from "../../lib/sync";
 import { BottomSheetModal } from "../../components/BottomSheetModal";
+import { useCores } from "../../lib/tema";
 
 export default function DesenvolvimentoListaScreen() {
+  const cores = useCores();
   const router = useRouter();
   const { user, selectedGestacao, setSelectedGestacao } = useAuth();
   const [data, setData] = useState<any>(null);
@@ -62,7 +64,7 @@ export default function DesenvolvimentoListaScreen() {
 
   if (loading) {
     return (
-      <SafeAreaView className="flex-1 bg-[#FBF9F6] justify-center items-center">
+      <SafeAreaView className="flex-1 bg-fundo justify-center items-center">
         <ActivityIndicator size="large" color="#C56A43" />
       </SafeAreaView>
     );
@@ -70,9 +72,9 @@ export default function DesenvolvimentoListaScreen() {
 
   if (!data || !data.lista) {
     return (
-      <SafeAreaView className="flex-1 bg-[#FBF9F6] justify-center items-center px-6">
+      <SafeAreaView className="flex-1 bg-fundo justify-center items-center px-6">
         <Ionicons name="alert-circle-outline" size={48} color="#C56A43" />
-        <Text className="text-lg text-center font-bold text-[#2C221E] mb-2 mt-4">
+        <Text className="text-lg text-center font-bold text-texto mb-2 mt-4">
           Não foi possível carregar as semanas
         </Text>
         <TouchableOpacity
@@ -88,14 +90,14 @@ export default function DesenvolvimentoListaScreen() {
   const { lista, semana_atual } = data;
 
   return (
-    <SafeAreaView className="flex-1 bg-[#FBF9F6]">
+    <SafeAreaView className="flex-1 bg-fundo">
       {/* Header */}
-      <View className="flex-row items-center px-5 py-4 border-b border-[#F0EBE6] bg-white">
+      <View className="flex-row items-center px-5 py-4 border-b border-borda bg-cartao">
         <TouchableOpacity
           onPress={() => router.canGoBack() ? router.back() : router.replace('/')}
           className="mr-4"
         >
-          <Ionicons name="arrow-back" size={24} color="#2C221E" />
+          <Ionicons name="arrow-back" size={24} color={cores.texto} />
         </TouchableOpacity>
 
         {/* Nome da gestação — toca para abrir seletor */}
@@ -105,23 +107,23 @@ export default function DesenvolvimentoListaScreen() {
           onPress={() => gestacoes.length > 1 && setSeletorVisible(true)}
         >
           <View className="flex-1">
-            <Text className="text-base font-extrabold text-[#2C221E]" numberOfLines={1}>
+            <Text className="text-base font-extrabold text-texto" numberOfLines={1}>
               {nomeGestacaoAtual}
             </Text>
             <View className="flex-row items-center mt-0.5">
-              <Text className="text-xs text-[#8A7A75]">
+              <Text className="text-xs text-texto-suave">
                 {isFinalizada ? "Finalizada na" : "Semana atual:"}{" "}
                 <Text className="font-bold text-[#C56A43]">{semana_atual}</Text>
               </Text>
               {isFinalizada && (
-                <View className="ml-2 bg-[#FDF2EE] px-2 py-0.5 rounded-full">
+                <View className="ml-2 bg-pessego px-2 py-0.5 rounded-full">
                   <Text className="text-[10px] font-bold text-[#C56A43] uppercase">Finalizada</Text>
                 </View>
               )}
             </View>
           </View>
           {gestacoes.length > 1 && (
-            <MaterialCommunityIcons name="chevron-down" size={20} color="#8A7A75" />
+            <MaterialCommunityIcons name="chevron-down" size={20} color={cores.textoSuave} />
           )}
         </TouchableOpacity>
       </View>
@@ -132,14 +134,14 @@ export default function DesenvolvimentoListaScreen() {
         contentContainerStyle={{ padding: 20, paddingBottom: 40 }}
       >
         {isFinalizada ? (
-          <View className="bg-[#FDF2EE] border border-[#FADCD0] rounded-2xl p-4 mb-5 flex-row items-center">
+          <View className="bg-pessego border border-pessego-borda rounded-2xl p-4 mb-5 flex-row items-center">
             <MaterialCommunityIcons name="baby-face-outline" size={24} color="#C56A43" />
             <Text className="text-sm text-[#C56A43] font-medium ml-3 flex-1 leading-relaxed">
               Esta gestação foi finalizada na semana {semana_atual}. Você pode rever toda a jornada!
             </Text>
           </View>
         ) : (
-          <Text className="text-[#8A7A75] text-sm mb-6 text-center">
+          <Text className="text-texto-suave text-sm mb-6 text-center">
             Reviva as semanas que passaram e acompanhe seu progresso!
           </Text>
         )}
@@ -158,14 +160,14 @@ export default function DesenvolvimentoListaScreen() {
                 }
               }}
               className={`flex-row items-center p-4 mb-4 rounded-2xl border 
-                ${isCurrent ? 'bg-[#FDF2EE] border-[#FADCD0]' : item.bloqueada ? 'bg-white border-[#F0EBE6] opacity-60' : 'bg-white border-[#E8DFDA]'}
+                ${isCurrent ? 'bg-pessego border-pessego-borda' : item.bloqueada ? 'bg-cartao border-borda opacity-60' : 'bg-cartao border-borda-forte'}
               `}
             >
               <View className={`w-14 h-14 rounded-xl items-center justify-center mr-4 
-                ${isCurrent ? 'bg-[#C56A43]' : item.bloqueada ? 'bg-[#F0EBE6]' : 'bg-[#E2B19C]'}
+                ${isCurrent ? 'bg-[#C56A43]' : item.bloqueada ? 'bg-borda' : 'bg-[#E2B19C]'}
               `}>
                 {item.bloqueada ? (
-                  <Ionicons name="lock-closed" size={20} color="#C2B2AC" />
+                  <Ionicons name="lock-closed" size={20} color={cores.textoFraco} />
                 ) : (
                   <Text className="text-white font-bold text-lg">{item.semana}</Text>
                 )}
@@ -173,17 +175,17 @@ export default function DesenvolvimentoListaScreen() {
 
               <View className="flex-1">
                 <Text className={`font-bold text-base mb-1
-                  ${isCurrent ? 'text-[#C56A43]' : item.bloqueada ? 'text-[#A39691]' : 'text-[#2C221E]'}
+                  ${isCurrent ? 'text-[#C56A43]' : item.bloqueada ? 'text-texto-suave' : 'text-texto'}
                 `}>
                   Semana {item.semana}{isCurrent && (isFinalizada ? ' (Final)' : ' (Atual)')}
                 </Text>
 
                 {!item.bloqueada ? (
-                  <Text className="text-sm text-[#8A7A75]">
+                  <Text className="text-sm text-texto-suave">
                     Tamanho de {item.comparacao}
                   </Text>
                 ) : (
-                  <Text className="text-sm text-[#C2B2AC]">
+                  <Text className="text-sm text-texto-fraco">
                     Conteúdo ainda indisponível
                   </Text>
                 )}
@@ -215,15 +217,15 @@ export default function DesenvolvimentoListaScreen() {
                     setSeletorVisible(false);
                   }}
                   className={`flex-row items-center justify-between p-4 mb-3 rounded-2xl border ${
-                    isSelected ? 'bg-[#FDF2EE] border-[#FADCD0]' : 'bg-white border-[#F0EBE6]'
+                    isSelected ? 'bg-pessego border-pessego-borda' : 'bg-cartao border-borda'
                   }`}
                 >
                   <View className="flex-1">
-                    <Text className={`text-base font-bold ${isSelected ? 'text-[#C56A43]' : 'text-[#2C221E]'}`}>
+                    <Text className={`text-base font-bold ${isSelected ? 'text-[#C56A43]' : 'text-texto'}`}>
                       {g.nome || `Gestação ${idx + 1}`}
                     </Text>
                     {g.status === 'finalizada' && (
-                      <Text className="text-xs text-[#8A7A75] mt-0.5">Finalizada</Text>
+                      <Text className="text-xs text-texto-suave mt-0.5">Finalizada</Text>
                     )}
                   </View>
                   {isSelected && <Ionicons name="checkmark" size={20} color="#C56A43" />}

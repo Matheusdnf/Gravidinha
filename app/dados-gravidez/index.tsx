@@ -22,9 +22,11 @@ import { BackButton } from "../../components/BackButton";
 import { SexoSelector } from "../../components/SexoSelector";
 import { atualizarGestacao, listarGestacoes } from "../../lib/dados";
 import { useDadosAtualizados } from "../../lib/sync";
+import { useCores } from "../../lib/tema";
 
 
 export default function DadosGravidezScreen() {
+  const cores = useCores();
   const router = useRouter();
   const { user, selectedGestacao, setSelectedGestacao } = useAuth();
   const [gestacoes, setGestacoes] = useState<any[]>([]);
@@ -134,27 +136,27 @@ export default function DadosGravidezScreen() {
   ) => (
     <View key={rowKey} className="flex-row items-center justify-between py-3">
       <View className="flex-row items-center flex-1">
-        <View className="w-8 h-8 rounded-full bg-[#FDF2EE] items-center justify-center mr-3">
+        <View className="w-8 h-8 rounded-full bg-pessego items-center justify-center mr-3">
           <MaterialCommunityIcons
             name={icon as any}
             size={16}
             color="#D97D54"
           />
         </View>
-        <Text className="text-[14px] font-bold text-[#2C221E] flex-1 pr-2">
+        <Text className="text-[14px] font-bold text-texto flex-1 pr-2">
           {label}
         </Text>
       </View>
-      <Text className="text-[13px] font-medium text-[#8A7A75] text-right shrink-0 max-w-[50%]">
+      <Text className="text-[13px] font-medium text-texto-suave text-right shrink-0 max-w-[50%]">
         {value}
       </Text>
     </View>
   );
 
   return (
-    <SafeAreaView className="flex-1 bg-[#FBF9F6] items-center relative overflow-hidden">
+    <SafeAreaView className="flex-1 bg-fundo items-center relative overflow-hidden">
       {/* Decoração orgânica fundo */}
-      <View className="absolute top-[-40px] right-[-40px] w-48 h-48 rounded-full bg-[#F3E2D4] opacity-70 pointer-events-none" />
+      <View className="absolute top-[-40px] right-[-40px] w-48 h-48 rounded-full bg-areia opacity-70 pointer-events-none" />
 
       <View className="w-full max-w-xl flex-1 px-6 overflow-hidden">
         <ScrollView
@@ -171,7 +173,7 @@ export default function DadosGravidezScreen() {
               onPress={() => gestacoes.length > 1 && setSelectGestacaoModalVisible(true)}
               className="flex-row items-center flex-1 pr-2"
             >
-              <Text className="text-3xl font-extrabold text-[#2C221E] tracking-tight" numberOfLines={1}>
+              <Text className="text-3xl font-extrabold text-texto tracking-tight" numberOfLines={1}>
                 {selectedGestacao?.nome || "Minhas Gestações"}
               </Text>
             </TouchableOpacity>
@@ -179,13 +181,13 @@ export default function DadosGravidezScreen() {
             {gestacoes.length > 1 && (
               <TouchableOpacity
                 onPress={() => setSelectGestacaoModalVisible(true)}
-                className="w-10 h-10 items-center justify-center rounded-full bg-white border border-[#F0EBE6] shadow-sm ml-2"
+                className="w-10 h-10 items-center justify-center rounded-full bg-cartao border border-borda shadow-sm ml-2"
               >
-                <Feather name="more-vertical" size={20} color="#8A7A75" />
+                <Feather name="more-vertical" size={20} color={cores.textoSuave} />
               </TouchableOpacity>
             )}
           </View>
-          <Text className="text-sm font-medium text-[#8A7A75] mb-6 leading-relaxed">
+          <Text className="text-sm font-medium text-texto-suave mb-6 leading-relaxed">
             Aqui você encontra e gerencia o seu histórico de gestações no aplicativo.
           </Text>
 
@@ -193,25 +195,25 @@ export default function DadosGravidezScreen() {
           {loading ? (
             <View className="py-20 items-center justify-center">
               <ActivityIndicator size="large" color="#D97D54" />
-              <Text className="text-[#8A7A75] mt-4 font-bold text-sm">
+              <Text className="text-texto-suave mt-4 font-bold text-sm">
                 Buscando informações...
               </Text>
             </View>
           ) : error ? (
-            <View className="py-10 items-center justify-center bg-white rounded-3xl border border-red-100 p-6">
+            <View className="py-10 items-center justify-center bg-cartao rounded-3xl border border-vermelho-borda p-6">
               <Ionicons name="alert-circle" size={40} color="#E25C5C" />
               <Text className="text-center text-[#E25C5C] font-bold mt-3">
                 {error}
               </Text>
             </View>
           ) : gestacoes.length === 0 ? (
-            <View className="py-12 items-center justify-center bg-white rounded-3xl border border-[#F0EBE6] p-6 shadow-sm">
+            <View className="py-12 items-center justify-center bg-cartao rounded-3xl border border-borda p-6 shadow-sm">
               <MaterialCommunityIcons
                 name="baby-carriage"
                 size={48}
-                color="#C2B2AC"
+                color={cores.textoFraco}
               />
-              <Text className="text-center text-[#8A7A75] font-bold mt-4 text-base">
+              <Text className="text-center text-texto-suave font-bold mt-4 text-base">
                 Nenhuma gestação encontrada
               </Text>
             </View>
@@ -299,9 +301,9 @@ export default function DadosGravidezScreen() {
                       </View>
 
                       {/* ================= DETALHES COMPLEMENTARES DA GESTAÇÃO ================= */}
-                      <View className="bg-white border border-[#F0EBE6] rounded-3xl overflow-hidden shadow-sm">
+                      <View className="bg-cartao border border-borda rounded-3xl overflow-hidden shadow-sm">
                         {/* Card Header */}
-                        <View className="bg-[#FDF2EE] px-5 py-4 border-b border-[#FADCD0] flex-row justify-between items-center">
+                        <View className="bg-pessego px-5 py-4 border-b border-pessego-borda flex-row justify-between items-center">
                           <View className="flex-1">
                             <Text className="text-lg font-extrabold text-[#C56A43]">
                               {gestacao.nome || "Minha Gestação"}
@@ -324,7 +326,7 @@ export default function DadosGravidezScreen() {
                           {gestacao.status !== 'finalizada' && (
                             <TouchableOpacity
                               onPress={() => openEditModal(gestacao)}
-                              className="w-10 h-10 rounded-full bg-white border border-[#FADCD0] items-center justify-center shadow-sm"
+                              className="w-10 h-10 rounded-full bg-cartao border border-pessego-borda items-center justify-center shadow-sm"
                             >
                               <Feather name="edit-2" size={16} color="#C56A43" />
                             </TouchableOpacity>
@@ -363,8 +365,8 @@ export default function DadosGravidezScreen() {
                           )}
 
                           {/* Divider */}
-                          <View className="w-full h-[1px] bg-[#F0EBE6] my-2" />
-                          <Text className="text-[11px] font-bold text-[#C2B2AC] uppercase tracking-wider mt-2 mb-1">
+                          <View className="w-full h-[1px] bg-borda my-2" />
+                          <Text className="text-[11px] font-bold text-texto-fraco uppercase tracking-wider mt-2 mb-1">
                             Bebês desta gestação
                           </Text>
 
@@ -374,26 +376,26 @@ export default function DadosGravidezScreen() {
                                 const isMenino = filho.sexo === 'masculino';
                                 const isMenina = filho.sexo === 'feminino';
                                 
-                                const bgColor = isMenino ? 'bg-[#EFF6FF]' : isMenina ? 'bg-[#FDF2F8]' : 'bg-[#FDF2EE]';
+                                const bgColor = isMenino ? 'bg-azul' : isMenina ? 'bg-rosa' : 'bg-pessego';
                                 const iconColor = isMenino ? '#3B82F6' : isMenina ? '#EC4899' : '#C56A43';
-                                const badgeBg = isMenino ? 'bg-[#DBEAFE]' : isMenina ? 'bg-[#FCE7F3]' : 'bg-[#FADCD0]';
-                                const badgeText = isMenino ? 'text-[#1D4ED8]' : isMenina ? 'text-[#BE185D]' : 'text-[#A37262]';
+                                const badgeBg = isMenino ? 'bg-azul-forte' : isMenina ? 'bg-rosa-forte' : 'bg-pessego-borda';
+                                const badgeText = isMenino ? 'text-[#1D4ED8]' : isMenina ? 'text-[#BE185D]' : 'text-marrom';
                                 const sexoLabel = isMenino ? 'Menino' : isMenina ? 'Menina' : 'Não informado';
 
                                 return (
                                   <TouchableOpacity 
                                     key={filho.id_filho || `f-${i}`} 
                                     activeOpacity={1}
-                                    className={`flex-row items-center p-3.5 rounded-2xl border border-white shadow-sm ${bgColor} mb-3`}
+                                    className={`flex-row items-center p-3.5 rounded-2xl border border-cartao shadow-sm ${bgColor} mb-3`}
                                   >
-                                    <View className="w-12 h-12 rounded-full bg-white items-center justify-center shadow-sm mr-3">
+                                    <View className="w-12 h-12 rounded-full bg-cartao items-center justify-center shadow-sm mr-3">
                                       <MaterialCommunityIcons name="baby-face-outline" size={26} color={iconColor} />
                                     </View>
                                     <View className="flex-1">
-                                      <Text className="text-[10px] font-bold text-[#8A7A75] uppercase tracking-wider mb-0.5">
+                                      <Text className="text-[10px] font-bold text-texto-suave uppercase tracking-wider mb-0.5">
                                         Bebê {i + 1}
                                       </Text>
-                                      <Text className="text-sm font-extrabold text-[#2C221E]">
+                                      <Text className="text-sm font-extrabold text-texto">
                                         {filho.nome || "Não definido"}
                                       </Text>
                                     </View>
@@ -405,7 +407,7 @@ export default function DadosGravidezScreen() {
                               })}
                             </View>
                           ) : (
-                            <Text className="text-sm text-[#8A7A75] font-medium mt-1 italic mb-3">
+                            <Text className="text-sm text-texto-suave font-medium mt-1 italic mb-3">
                               Nenhum filho registrado.
                             </Text>
                           )}
@@ -413,7 +415,7 @@ export default function DadosGravidezScreen() {
                           {(!gestacao.status || gestacao.status === 'ativa') && (
                             <TouchableOpacity
                               onPress={() => handleFinalizarGestacao(gestacao)}
-                              className="w-full bg-red-50 border border-red-100 rounded-xl py-3 mt-4 items-center justify-center shadow-sm"
+                              className="w-full bg-vermelho border border-vermelho-borda rounded-xl py-3 mt-4 items-center justify-center shadow-sm"
                             >
                               <Text className="text-red-500 font-bold text-sm">Finalizar Gestação</Text>
                             </TouchableOpacity>
@@ -456,7 +458,7 @@ export default function DadosGravidezScreen() {
           >
             {/* NOME DA GESTAÇÃO */}
             <View className="mb-4">
-              <Text className="text-xs font-bold text-[#2C221E] mb-2">
+              <Text className="text-xs font-bold text-texto mb-2">
                 Nome / Apelido da Gestação
               </Text>
               <TextInput
@@ -465,19 +467,19 @@ export default function DadosGravidezScreen() {
                   setEditingGestacao({ ...editingGestacao, nome: t })
                 }
                 placeholder="Ex: Minha Gestação, Gêmeos 2026..."
-                className="bg-white border border-[#E8DFDA] rounded-2xl px-4 py-3.5 text-sm text-[#2C221E]"
+                className="bg-cartao border border-borda-forte rounded-2xl px-4 py-3.5 text-sm text-texto"
               />
             </View>
 
             {/* SEMANAS */}
             <View className="mb-4">
-              <Text className="text-xs font-bold text-[#2C221E] mb-2">
+              <Text className="text-xs font-bold text-texto mb-2">
                 Semanas Atuais
               </Text>
-              <View className="flex-row items-center justify-between bg-white border border-[#E8DFDA] rounded-2xl p-2 w-full">
+              <View className="flex-row items-center justify-between bg-cartao border border-borda-forte rounded-2xl p-2 w-full">
                 <TouchableOpacity
                   onPress={() => setEditingGestacao({ ...editingGestacao, semanas: Math.max(1, (editingGestacao.semanas || 12) - 1) })}
-                  className="w-10 h-10 rounded-xl bg-[#FDF2EE] items-center justify-center"
+                  className="w-10 h-10 rounded-xl bg-pessego items-center justify-center"
                 >
                   <Text className="text-lg font-bold text-[#C56A43]">-</Text>
                 </TouchableOpacity>
@@ -488,11 +490,11 @@ export default function DadosGravidezScreen() {
                     const val = parseInt(t.replace(/[^0-9]/g, ""), 10);
                     if (!isNaN(val)) setEditingGestacao({ ...editingGestacao, semanas: Math.max(1, Math.min(45, val)) });
                   }}
-                  className="text-lg font-extrabold text-[#2C221E] text-center w-20 p-0"
+                  className="text-lg font-extrabold text-texto text-center w-20 p-0"
                 />
                 <TouchableOpacity
                   onPress={() => setEditingGestacao({ ...editingGestacao, semanas: Math.min(45, (editingGestacao.semanas || 12) + 1) })}
-                  className="w-10 h-10 rounded-xl bg-[#FDF2EE] items-center justify-center"
+                  className="w-10 h-10 rounded-xl bg-pessego items-center justify-center"
                 >
                   <Text className="text-lg font-bold text-[#C56A43]">+</Text>
                 </TouchableOpacity>
@@ -501,58 +503,58 @@ export default function DadosGravidezScreen() {
 
             {/* DPP */}
             <View className="mb-4">
-              <Text className="text-xs font-bold text-[#2C221E] mb-2">
+              <Text className="text-xs font-bold text-texto mb-2">
                 Data Provável do Parto (DPP)
               </Text>
               <TouchableOpacity
                 onPress={() => setIsCalendarVisible(true)}
                 activeOpacity={0.8}
-                className="flex-row items-center justify-between bg-white border border-[#E8DFDA] rounded-2xl px-4 py-3.5"
+                className="flex-row items-center justify-between bg-cartao border border-borda-forte rounded-2xl px-4 py-3.5"
               >
-                <Text className={`flex-1 text-sm ${editingGestacao.dpp ? 'text-[#2C221E]' : 'text-[#C2B2AC]'}`}>
+                <Text className={`flex-1 text-sm ${editingGestacao.dpp ? 'text-texto' : 'text-texto-fraco'}`}>
                   {editingGestacao.dpp
                     ? (editingGestacao.dpp.includes('/') ? editingGestacao.dpp : isoParaBR(editingGestacao.dpp))
                     : "dd / mm / aaaa"}
                 </Text>
                 <Feather name="calendar" size={18} color="#C56A43" />
               </TouchableOpacity>
-              <Text className="text-[10px] font-medium text-[#8A7A75] mt-1 ml-1">
+              <Text className="text-[10px] font-medium text-texto-suave mt-1 ml-1">
                 Toque para selecionar a data
               </Text>
             </View>
 
             {/* NOMES DOS BEBÊS */}
-            <Text className="text-[11px] font-bold text-[#C2B2AC] uppercase tracking-wider mt-4 mb-3">
+            <Text className="text-[11px] font-bold text-texto-fraco uppercase tracking-wider mt-4 mb-3">
               Dados dos Bebês
             </Text>
 
             {editingGestacao.filhos?.map((filho: any, idx: number) => (
-              <View key={filho.id_filho || idx} className="mb-4 bg-white border border-[#E8DFDA] p-4 rounded-2xl">
-                <Text className="text-xs font-bold text-[#2C221E] mb-1.5">
+              <View key={filho.id_filho || idx} className="mb-4 bg-cartao border border-borda-forte p-4 rounded-2xl">
+                <Text className="text-xs font-bold text-texto mb-1.5">
                   Nome do Bebê {idx + 1}
                 </Text>
                 <TextInput
                   value={filho.nome}
                   onChangeText={(t) => atualizarFilho(filho.id_filho, { nome: t })}
                   placeholder="Nome do bebê"
-                  className="bg-[#FBF9F6] border border-[#E8DFDA] rounded-xl px-4 py-3 text-sm text-[#2C221E] mb-3"
+                  className="bg-fundo border border-borda-forte rounded-xl px-4 py-3 text-sm text-texto mb-3"
                 />
 
-                <Text className="text-xs font-bold text-[#2C221E] mb-1.5">
+                <Text className="text-xs font-bold text-texto mb-1.5">
                   Sexo
                 </Text>
                 <SexoSelector
                   value={filho.sexo}
                   onChange={(sexo) => atualizarFilho(filho.id_filho, { sexo })}
-                  bg="#FBF9F6"
-                  borda="#E8DFDA"
+                  bg={cores.fundo}
+                  borda={cores.bordaForte}
                 />
               </View>
             ))}
           </ScrollView>
 
           {/* Botão Salvar (Fixo embaixo) */}
-          <View className="px-6 py-4 border-t border-[#F0EBE6] bg-white">
+          <View className="px-6 py-4 border-t border-borda bg-cartao">
             <TouchableOpacity
               onPress={saveGestacao}
               disabled={saving}
@@ -611,10 +613,10 @@ export default function DadosGravidezScreen() {
                   setSelectGestacaoModalVisible(false);
                 }}
                 className={`flex-row items-center justify-between p-4 mb-3 rounded-2xl border ${
-                  isSelected ? 'bg-[#FDF2EE] border-[#FADCD0]' : 'bg-white border-[#F0EBE6]'
+                  isSelected ? 'bg-pessego border-pessego-borda' : 'bg-cartao border-borda'
                 }`}
               >
-                <Text className={`text-base font-bold ${isSelected ? 'text-[#C56A43]' : 'text-[#2C221E]'}`}>
+                <Text className={`text-base font-bold ${isSelected ? 'text-[#C56A43]' : 'text-texto'}`}>
                   {g.nome || `Gestação ${idx + 1}`}
                 </Text>
                 {isSelected && <Feather name="check" size={20} color="#C56A43" />}

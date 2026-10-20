@@ -12,12 +12,10 @@ import {
 } from "react-native";
 import { createElement } from "react";
 import DateTimePicker from '@react-native-community/datetimepicker';
-import { Calendar } from "react-native-calendars";
-import { calendarTheme } from "../../constants/calendario";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useAuth } from "../../state/auth";
 import { BottomSheetModal } from "../../components/BottomSheetModal";
-import { CalendarModal } from "../../components/CalendarModal";
+import { CalendarModal, Calendario } from "../../components/CalendarModal";
 import { CalendarSkeleton, AppointmentItemSkeleton } from "../../components/Skeleton";
 
 import { Appointment } from "../../types/consultas";
@@ -25,12 +23,14 @@ import { atualizarConsulta, criarConsulta, excluirConsulta, listarConsultas } fr
 import { useDadosAtualizados } from "../../lib/sync";
 import { hojeISO, isoParaBR, parseData } from "../../lib/gestacao";
 import { BackButton } from "../../components/BackButton";
+import { useCores } from "../../lib/tema";
 
 // Fora do componente: se fosse criado dentro, seria um tipo novo a cada render
 // e o <input> remontaria (perdendo o foco) a cada tecla
 const WebDateInput = (props: any) => createElement('input', props);
 
 export default function ConsultasScreen() {
+  const cores = useCores();
   const { user, selectedGestacao } = useAuth();
 
   // Estados
@@ -255,29 +255,7 @@ export default function ConsultasScreen() {
   };
 
   // Prepara as marcações de datas no calendário (Bolotas de dias selecionados e pontinhos de consultas)
-  const calendarMarks: any = {};
-  
-  if (selectedDate) {
-    calendarMarks[selectedDate] = {
-      selected: true,
-      selectedColor: "#C56A43",
-      selectedTextColor: "#FFFFFF",
-    };
-  }
-
-  appointments.forEach(app => {
-    if (app.rawDate) {
-      if (calendarMarks[app.rawDate]) {
-        calendarMarks[app.rawDate].marked = true;
-        calendarMarks[app.rawDate].dotColor = "#FFFFFF"; // Ponto branco se o dia estiver selecionado
-      } else {
-        calendarMarks[app.rawDate] = {
-          marked: true,
-          dotColor: "#C56A43" // Ponto laranja nos dias normais que tem consulta
-        };
-      }
-    }
-  });
+  const diasComConsulta = new Set(appointments.flatMap((app) => app.rawDate ?? []));
 
   const appointmentsToShow = selectedDate 
     ? appointments.filter(app => app.rawDate === selectedDate)
@@ -287,29 +265,29 @@ export default function ConsultasScreen() {
   const camposDoForm = (
     <>
       <View className="mb-4">
-        <Text className="text-xs font-bold text-[#2C221E] mb-2">
+        <Text className="text-xs font-bold text-texto mb-2">
           Tipo de Consulta / Exame *
         </Text>
         <TextInput
           value={tipoConsulta}
           onChangeText={setTipoConsulta}
           placeholder="Ex: Consulta Pré-natal, Ultrassom..."
-          placeholderTextColor="#C2B2AC"
-          className="bg-[#FDF2EE] border border-[#FADCD0] rounded-2xl px-4 py-3.5 text-sm text-[#2C221E]"
+          placeholderTextColor={cores.textoFraco}
+          className="bg-pessego border border-pessego-borda rounded-2xl px-4 py-3.5 text-sm text-texto"
         />
       </View>
 
       <View className="flex-row justify-between mb-4">
         <View className="w-[48%]">
-          <Text className="text-xs font-bold text-[#2C221E] mb-2">
+          <Text className="text-xs font-bold text-texto mb-2">
             Data *
           </Text>
           <TouchableOpacity
             onPress={() => setIsCalendarVisible(true)}
             activeOpacity={0.8}
-            className="flex-row items-center bg-[#FDF2EE] border border-[#FADCD0] rounded-2xl px-4 py-3.5 h-12"
+            className="flex-row items-center bg-pessego border border-pessego-borda rounded-2xl px-4 py-3.5 h-12"
           >
-            <Text className={`flex-1 text-sm ${data ? 'text-[#2C221E]' : 'text-[#C2B2AC]'}`}>
+            <Text className={`flex-1 text-sm ${data ? 'text-texto' : 'text-texto-fraco'}`}>
               {data || "dd/mm/aaaa"}
             </Text>
             <Feather name="calendar" size={16} color="#C56A43" />
@@ -317,20 +295,20 @@ export default function ConsultasScreen() {
         </View>
 
         <View className="w-[48%]">
-          <Text className="text-xs font-bold text-[#2C221E] mb-2">
+          <Text className="text-xs font-bold text-texto mb-2">
             Horário
           </Text>
-          <View className="bg-[#FDF2EE] border border-[#FADCD0] rounded-2xl px-4 py-3.5 h-12 justify-center">
+          <View className="bg-pessego border border-pessego-borda rounded-2xl px-4 py-3.5 h-12 justify-center">
             {isWeb ? (
               <WebDateInput
                 type="time"
                 value={horario}
                 onChange={(e: any) => setHorario(e.target.value)}
-                style={{ width: '100%', border: 'none', background: 'transparent', outline: 'none', fontSize: 14, color: '#2C221E', cursor: 'pointer' }}
+                style={{ width: '100%', border: 'none', background: 'transparent', outline: 'none', fontSize: 14, color: cores.texto, cursor: 'pointer' }}
               />
             ) : (
               <TouchableOpacity onPress={() => setShowTimePicker(true)} className="w-full">
-                <Text className={`text-sm ${horario ? 'text-[#2C221E]' : 'text-[#C2B2AC]'}`}>
+                <Text className={`text-sm ${horario ? 'text-texto' : 'text-texto-fraco'}`}>
                   {horario || "10:00"}
                 </Text>
               </TouchableOpacity>
@@ -340,38 +318,38 @@ export default function ConsultasScreen() {
       </View>
 
       <View className="mb-4">
-        <Text className="text-xs font-bold text-[#2C221E] mb-2">
+        <Text className="text-xs font-bold text-texto mb-2">
           Médico / Especialista
         </Text>
         <TextInput
           value={medico}
           onChangeText={setMedico}
           placeholder="Nome do médico"
-          placeholderTextColor="#C2B2AC"
-          className="bg-[#FDF2EE] border border-[#FADCD0] rounded-2xl px-4 py-3.5 text-sm text-[#2C221E]"
+          placeholderTextColor={cores.textoFraco}
+          className="bg-pessego border border-pessego-borda rounded-2xl px-4 py-3.5 text-sm text-texto"
         />
       </View>
 
       <View className="mb-6">
-        <Text className="text-xs font-bold text-[#2C221E] mb-2">
+        <Text className="text-xs font-bold text-texto mb-2">
           Local / Clínica
         </Text>
         <TextInput
           value={local}
           onChangeText={setLocal}
           placeholder="Nome da clínica ou laboratório"
-          placeholderTextColor="#C2B2AC"
-          className="bg-[#FDF2EE] border border-[#FADCD0] rounded-2xl px-4 py-3.5 text-sm text-[#2C221E]"
+          placeholderTextColor={cores.textoFraco}
+          className="bg-pessego border border-pessego-borda rounded-2xl px-4 py-3.5 text-sm text-texto"
         />
       </View>
     </>
   );
 
   return (
-    <SafeAreaView className="flex-1 bg-[#FBF9F6] items-center overflow-hidden">
+    <SafeAreaView className="flex-1 bg-fundo items-center overflow-hidden">
       <View className="w-full max-w-xl flex-1 px-5 relative overflow-hidden">
         {/* Círculo Orgânico Decorativo */}
-        <View className="absolute top-[-40px] right-[-20px] w-48 h-48 rounded-full bg-[#F3E2D4] opacity-70 pointer-events-none" />
+        <View className="absolute top-[-40px] right-[-20px] w-48 h-48 rounded-full bg-areia opacity-70 pointer-events-none" />
         <ScrollView
           className="w-full"
           showsVerticalScrollIndicator={false}
@@ -382,21 +360,21 @@ export default function ConsultasScreen() {
           <BackButton fallback="/(tabs)" />
 
           {/* Cabeçalho */}
-          <Text className="text-3xl font-extrabold text-[#2C221E] tracking-tight">
+          <Text className="text-3xl font-extrabold text-texto tracking-tight">
             Agenda de Consultas
           </Text>
-          <Text className="text-sm font-medium text-[#8A7A75] mt-1 mb-6">
+          <Text className="text-sm font-medium text-texto-suave mt-1 mb-6">
             {appointments.length} {appointments.length === 1 ? 'consulta agendada' : 'consultas agendadas'} no total
           </Text>
 
-          {/* COMPONENTE DA BIBLIOTECA REACT-NATIVE-CALENDARS */}
+          {/* Calendário com um ponto nos dias que têm consulta */}
           {isInitialLoading ? (
             <CalendarSkeleton />
           ) : (
-            <View className="bg-white border border-[#F0EBE6] rounded-3xl p-3 mb-8 w-full overflow-hidden">
-              <Calendar
-                style={{ minHeight: 360 }}
-                current={todayISO}
+            <View className="bg-cartao border border-borda rounded-3xl p-3 mb-8 w-full overflow-hidden">
+              <Calendario
+                selectedDate={selectedDate}
+                marcados={diasComConsulta}
                 onDayPress={(day) => {
                   if (selectedDate === day.dateString) {
                     setSelectedDate(null); // Desmarca se clicar de novo
@@ -406,14 +384,12 @@ export default function ConsultasScreen() {
                   // Preenche automaticamente o campo de data do modal no formato dd/mm/aaaa
                   setData(isoParaBR(day.dateString));
                 }}
-                markedDates={calendarMarks}
-                theme={calendarTheme}
               />
             </View>
           )}
 
           {/* LISTA DE CONSULTAS */}
-          <Text className="text-lg font-bold text-[#2C221E] mb-4">
+          <Text className="text-lg font-bold text-texto mb-4">
             {selectedDate ? "Consultas do Dia" : "Todas as Consultas"}
           </Text>
 
@@ -427,11 +403,11 @@ export default function ConsultasScreen() {
             appointmentsToShow.map((item) => (
               <TouchableOpacity
                 key={item.id}
-                className="bg-white border border-[#F0EBE6] rounded-3xl p-4 mb-4 flex-row items-center w-full"
+                className="bg-cartao border border-borda rounded-3xl p-4 mb-4 flex-row items-center w-full"
                 activeOpacity={0.8}
                 onPress={() => openEditModal(item)}
               >
-                <View className="bg-[#FDF2EE] border border-[#FADCD0] w-14 h-14 rounded-2xl items-center justify-center mr-4 shrink-0">
+                <View className="bg-pessego border border-pessego-borda w-14 h-14 rounded-2xl items-center justify-center mr-4 shrink-0">
                   <Text className="text-lg font-extrabold text-[#C56A43] leading-none">
                     {item.day}
                   </Text>
@@ -441,20 +417,20 @@ export default function ConsultasScreen() {
                 </View>
 
                 <View className="flex-1">
-                  <Text className="text-base font-bold text-[#2C221E] mb-1">
+                  <Text className="text-base font-bold text-texto mb-1">
                     {item.title}
                   </Text>
                   <View className="flex-row items-center mb-1">
-                    <FontAwesome5 name="stethoscope" size={11} color="#A37262" />
-                    <Text className="text-xs text-[#8A7A75] font-medium ml-1.5">
+                    <FontAwesome5 name="stethoscope" size={11} color={cores.marrom} />
+                    <Text className="text-xs text-texto-suave font-medium ml-1.5">
                       {item.doctor}
                     </Text>
                   </View>
 
                   <View className="flex-row items-center flex-wrap">
                     <View className="flex-row items-center mr-3">
-                      <Feather name="clock" size={11} color="#A37262" />
-                      <Text className="text-xs text-[#8A7A75] font-medium ml-1">
+                      <Feather name="clock" size={11} color={cores.marrom} />
+                      <Text className="text-xs text-texto-suave font-medium ml-1">
                         {item.time}
                       </Text>
                     </View>
@@ -462,23 +438,23 @@ export default function ConsultasScreen() {
                       <Ionicons
                         name="location-outline"
                         size={12}
-                        color="#A37262"
+                        color={cores.marrom}
                       />
-                      <Text className="text-xs text-[#8A7A75] font-medium ml-0.5 flex-1" numberOfLines={1}>
+                      <Text className="text-xs text-texto-suave font-medium ml-0.5 flex-1" numberOfLines={1}>
                         {item.location}
                       </Text>
                     </View>
                   </View>
                 </View>
                 
-                <View className="ml-2 pl-2 border-l border-[#F0EBE6] justify-center shrink-0">
-                  <Feather name="edit-2" size={16} color="#A37262" />
+                <View className="ml-2 pl-2 border-l border-borda justify-center shrink-0">
+                  <Feather name="edit-2" size={16} color={cores.marrom} />
                 </View>
               </TouchableOpacity>
             ))
           ) : (
-            <View className="bg-white border border-[#F0EBE6] rounded-3xl p-6 mb-4 items-center justify-center">
-              <Text className="text-sm font-medium text-[#8A7A75] text-center">
+            <View className="bg-cartao border border-borda rounded-3xl p-6 mb-4 items-center justify-center">
+              <Text className="text-sm font-medium text-texto-suave text-center">
                 {selectedDate 
                   ? "Nenhuma consulta ou exame agendado para esta data."
                   : "Nenhuma consulta agendada ainda."}
@@ -544,7 +520,7 @@ export default function ConsultasScreen() {
             <TouchableOpacity
               onPress={handleDeletarConsulta}
               disabled={isLoading}
-              className="bg-red-50 border border-red-100 rounded-2xl py-4 items-center justify-center shadow-sm flex-1 mr-2"
+              className="bg-vermelho border border-vermelho-borda rounded-2xl py-4 items-center justify-center shadow-sm flex-1 mr-2"
               activeOpacity={0.9}
             >
               <Text className="text-red-500 font-extrabold text-base">
