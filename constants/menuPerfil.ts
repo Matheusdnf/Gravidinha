@@ -6,7 +6,7 @@ export const MENU_PERFIL: ProfileMenuOption[] = [
     subtitle: "Gerencie suas gestações",
     iconName: "baby-face-outline",
     iconColor: "#D97D54",
-    bgColor: "bg-[#FDF2EE]",
+    bgColor: "bg-pessego",
   },
   {
     id: "2",
@@ -14,7 +14,7 @@ export const MENU_PERFIL: ProfileMenuOption[] = [
     subtitle: "Acompanhe suas consultas",
     iconName: "calendar-month-outline",
     iconColor: "#9C27B0",
-    bgColor: "bg-[#F3E5F5]",
+    bgColor: "bg-lilas",
   },
   {
     id: "3",
@@ -22,7 +22,7 @@ export const MENU_PERFIL: ProfileMenuOption[] = [
     subtitle: "Registre seus sentimentos",
     iconName: "notebook-outline",
     iconColor: "#4FA3A5",
-    bgColor: "bg-[#EEF7F7]",
+    bgColor: "bg-agua",
   },
   {
     id: "4",
@@ -30,7 +30,7 @@ export const MENU_PERFIL: ProfileMenuOption[] = [
     subtitle: "Exercício de relaxamento",
     iconName: "flower-outline",
     iconColor: "#84CC16",
-    bgColor: "bg-[#F4FCE3]",
+    bgColor: "bg-lima",
   },
   {
     id: "5",
@@ -38,7 +38,7 @@ export const MENU_PERFIL: ProfileMenuOption[] = [
     subtitle: "Veja seus emblemas",
     iconName: "star-outline",
     iconColor: "#6366F1",
-    bgColor: "bg-[#EEF2FF]",
+    bgColor: "bg-azul",
   },
   {
     id: "6",
@@ -46,6 +46,6 @@ export const MENU_PERFIL: ProfileMenuOption[] = [
     subtitle: "Acompanhe as semanas",
     iconName: "human-pregnant",
     iconColor: "#C56A43",
-    bgColor: "bg-[#FADCD0]",
+    bgColor: "bg-pessego-borda",
   },
 ];
