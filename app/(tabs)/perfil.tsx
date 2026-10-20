@@ -8,12 +8,12 @@ import {
   ActivityIndicator,
   Alert,
 } from "react-native";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useAuth } from "../../state/auth";
-import { atualizarUsuario, buscarUsuario } from "../../lib/dados";
+import { atualizarUsuario, buscarUsuario, salvarFotoPerfil } from "../../lib/dados";
 import { useDadosAtualizados } from "../../lib/sync";
-import { mascaraCelular } from "../../lib/formato";
+import { idade, mascaraCelular } from "../../lib/formato";
 import * as ImagePicker from "expo-image-picker";
 import { Image } from "react-native";
 
@@ -23,15 +23,19 @@ import { BottomSheetModal } from "../../components/BottomSheetModal";
 
 // Mocks Isolados
 import { MENU_PERFIL } from "../../constants/menuPerfil";
+import { useCores } from "../../lib/tema";
 
 export default function PerfilScreen() {
+  const cores = useCores();
   const { user, signIn, signOut } = useAuth();
 
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [nome, setNome] = useState(user?.nome || "");
   const [celular, setCelular] = useState("");
   const [profileImage, setProfileImage] = useState<string | null>(null);
+  const [nascimento, setNascimento] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [enviandoFoto, setEnviandoFoto] = useState(false);
 
   // Busca as informações completas do usuário (incluindo celular e foto) do banco
   const carregar = () => {
@@ -45,6 +49,7 @@ export default function PerfilScreen() {
           if (data.profile_image) {
             setProfileImage(data.profile_image);
           }
+          setNascimento(data.data_nascimento);
         })
         .catch(console.error);
     }
@@ -60,17 +65,19 @@ export default function PerfilScreen() {
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,
       aspect: [1, 1],
-      quality: 0.5, // Reduz qualidade pra salvar no DB (idealmente seria S3/Cloudinary)
-      base64: true, // Vamos salvar como base64 pra facilitar já que não temos storage S3
     });
 
-    if (!result.canceled && result.assets[0].base64) {
-      const base64Uri = `data:image/jpeg;base64,${result.assets[0].base64}`;
-      setProfileImage(base64Uri);
-      
-      // Salva direto no banco pra atualizar a foto rápido (só a foto)
-      atualizarUsuario({ profile_image: base64Uri })
-        .catch(() => Alert.alert("Erro", "Não foi possível salvar a foto."));
+    if (!result.canceled) {
+      const { uri } = result.assets[0];
+      const anterior = profileImage;
+      setProfileImage(uri); // mostra na hora; volta à anterior se o envio falhar
+      setEnviandoFoto(true);
+      salvarFotoPerfil(uri)
+        .catch((e) => {
+          setProfileImage(anterior);
+          Alert.alert("Erro", e.message);
+        })
+        .finally(() => setEnviandoFoto(false));
     }
   };
 
@@ -82,7 +89,7 @@ export default function PerfilScreen() {
 
     setIsLoading(true);
     try {
-      // A foto já foi salva em pickImage — não reenvia o base64 aqui
+      // A foto já foi salva em pickImage
       await atualizarUsuario({ nome, celular });
       Alert.alert("Sucesso", "Informações atualizadas com sucesso!");
       setIsModalVisible(false);
@@ -97,7 +104,7 @@ export default function PerfilScreen() {
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-[#FBF9F6]">
+    <SafeAreaView className="flex-1 bg-fundo">
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{
@@ -113,13 +120,13 @@ export default function PerfilScreen() {
             {/* Avatar com ícone de câmera sobreposto */}
             <View style={{ position: 'relative' }}>
               <View
-                className="w-16 h-16 rounded-full bg-[#D97D54]/80 items-center justify-center border-2 border-white shadow-sm overflow-hidden"
+                className="w-16 h-16 rounded-full bg-[#D97D54]/80 items-center justify-center border-2 border-cartao shadow-sm overflow-hidden"
               >
-                {profileImage ? (
-                  <Image source={{ uri: profileImage }} className="w-full h-full" />
-                ) : (
-                  <Text className="text-3xl pt-1 pr-1">👩‍🍼 </Text>
-                )}
+                <FotoPerfil
+                  uri={profileImage}
+                  enviando={enviandoFoto}
+                  semFoto={<Text className="text-3xl pt-1 pr-1">👩‍🍼 </Text>}
+                />
               </View>
               {/* Ícone de câmera para trocar foto */}
               <TouchableOpacity
@@ -134,7 +141,7 @@ export default function PerfilScreen() {
                   borderRadius: 11,
                   backgroundColor: '#D97D54',
                   borderWidth: 1.5,
-                  borderColor: '#fff',
+                  borderColor: cores.cartao,
                   alignItems: 'center',
                   justifyContent: 'center',
                 }}
@@ -144,12 +151,17 @@ export default function PerfilScreen() {
             </View>
 
             <View className="ml-4 flex-1">
-              <Text className="text-xl font-extrabold text-gray-900 tracking-tight">
+              <Text className="text-xl font-extrabold text-texto tracking-tight">
                 {user?.nome}
               </Text>
-              <Text className="text-xs text-gray-500 font-medium mt-0.5">
+              <Text className="text-xs text-texto-suave font-medium mt-0.5">
                 {user?.email}
               </Text>
+              {nascimento && (
+                <Text className="text-xs text-texto-suave font-medium mt-0.5">
+                  {idade(nascimento)} anos
+                </Text>
+              )}
               <View className="flex-row items-center mt-1">
                 <View className="w-2 h-2 rounded-full bg-[#4FA3A5]" />
                 <Text className="text-[11px] text-[#4FA3A5] font-bold ml-1.5">
@@ -161,19 +173,19 @@ export default function PerfilScreen() {
 
           {/* Botão Editar Perfil — abre modal de informações */}
           <TouchableOpacity
-            className="w-10 h-10 rounded-full bg-white border border-[#F0EBE6] items-center justify-center ml-3 shadow-sm"
+            className="w-10 h-10 rounded-full bg-cartao border border-borda items-center justify-center ml-3 shadow-sm"
             activeOpacity={0.7}
             onPress={() => setIsModalVisible(true)}
           >
-            <Feather name="edit-2" size={16} color="#A37262" />
+            <Feather name="edit-2" size={16} color={cores.marrom} />
           </TouchableOpacity>
         </View>
 
         {/* 5. SEÇÃO: Menu de Opções */}
-        <Text className="text-xs font-extrabold text-gray-400 tracking-wider uppercase mb-2">
+        <Text className="text-xs font-extrabold text-texto-suave tracking-wider uppercase mb-2">
           Minha Gestação
         </Text>
-        <View className="bg-white border border-[#F0EBE6] rounded-[28px] px-5 py-2 w-full mb-6">
+        <View className="bg-cartao border border-borda rounded-[28px] px-5 py-2 w-full mb-6">
           {MENU_PERFIL.map((option) => (
             <ProfileMenuOptions
               key={option.id}
@@ -187,9 +199,23 @@ export default function PerfilScreen() {
           ))}
         </View>
 
+        <Text className="text-xs font-extrabold text-texto-suave tracking-wider uppercase mb-2">
+          Conta
+        </Text>
+        <View className="bg-cartao border border-borda rounded-[28px] px-5 py-2 w-full mb-6">
+          <ProfileMenuOptions
+            id="configuracoes"
+            title="Configurações"
+            subtitle="Aparência do app"
+            iconName="cog-outline"
+            iconColor="#78716C"
+            bgColor="bg-creme"
+          />
+        </View>
+
         {/* Botão Sair */}
         <TouchableOpacity
-          className="bg-red-50 border border-red-100 rounded-2xl py-4 flex-row items-center justify-center w-full shadow-sm"
+          className="bg-vermelho border border-vermelho-borda rounded-2xl py-4 flex-row items-center justify-center w-full shadow-sm"
           activeOpacity={0.7}
           // O _layout leva para o login quando a sessão acaba (signOut pode ser cancelado)
           onPress={signOut}
@@ -211,13 +237,13 @@ export default function PerfilScreen() {
             <TouchableOpacity 
               onPress={pickImage}
               activeOpacity={0.8}
-              className="w-20 h-20 rounded-full bg-[#D97D54]/80 items-center justify-center border-4 border-white shadow-sm overflow-hidden relative"
+              className="w-20 h-20 rounded-full bg-[#D97D54]/80 items-center justify-center border-4 border-cartao shadow-sm overflow-hidden relative"
             >
-              {profileImage ? (
-                <Image source={{ uri: profileImage }} className="w-full h-full" />
-              ) : (
-                <Text className="text-4xl pt-1">👩‍🍼</Text>
-              )}
+              <FotoPerfil
+                uri={profileImage}
+                enviando={enviandoFoto}
+                semFoto={<Text className="text-4xl pt-1">👩‍🍼</Text>}
+              />
               {/* Ícone de câmera por cima para deixar claro que é clicável */}
               <View className="absolute bottom-0 w-full h-1/3 bg-black/40 items-center justify-center">
                 <Feather name="camera" size={12} color="white" />
@@ -230,21 +256,21 @@ export default function PerfilScreen() {
 
           {/* Campo Nome */}
           <View className="mb-4">
-            <Text className="text-xs font-bold text-[#2C221E] mb-2">
+            <Text className="text-xs font-bold text-texto mb-2">
               Nome Completo
             </Text>
             <TextInput
               value={nome}
               onChangeText={setNome}
               placeholder="Seu nome"
-              placeholderTextColor="#C2B2AC"
-              className="bg-[#FDF2EE] border border-[#FADCD0] rounded-2xl px-4 py-3.5 text-sm text-[#2C221E]"
+              placeholderTextColor={cores.textoFraco}
+              className="bg-pessego border border-pessego-borda rounded-2xl px-4 py-3.5 text-sm text-texto"
             />
           </View>
 
           {/* Campo Celular */}
           <View className="mb-4">
-            <Text className="text-xs font-bold text-[#2C221E] mb-2">
+            <Text className="text-xs font-bold text-texto mb-2">
               Celular
             </Text>
             <TextInput
@@ -252,19 +278,19 @@ export default function PerfilScreen() {
               onChangeText={(t) => setCelular(mascaraCelular(t))}
               keyboardType="numeric"
               placeholder="(00) 00000-0000"
-              placeholderTextColor="#C2B2AC"
+              placeholderTextColor={cores.textoFraco}
               maxLength={15}
-              className="bg-[#FDF2EE] border border-[#FADCD0] rounded-2xl px-4 py-3.5 text-sm text-[#2C221E]"
+              className="bg-pessego border border-pessego-borda rounded-2xl px-4 py-3.5 text-sm text-texto"
             />
           </View>
           <View className="mb-4">
-            <Text className="text-xs font-bold text-[#2C221E] mb-2">
+            <Text className="text-xs font-bold text-texto mb-2">
               E-mail (Não editável)
             </Text>
             <TextInput
               value={user?.email || ''}
               editable={false}
-              className="bg-[#F3ECE6] border border-[#E8DFDA] rounded-2xl px-4 py-3.5 text-sm text-[#8A7A75]"
+              className="bg-creme border border-borda-forte rounded-2xl px-4 py-3.5 text-sm text-texto-suave"
             />
           </View>
 
@@ -285,5 +311,24 @@ export default function PerfilScreen() {
         </ScrollView>
       </BottomSheetModal>
     </SafeAreaView>
+  );
+}
+
+// Foto do avatar com um loading por cima enquanto ela é enviada ou baixada
+function FotoPerfil({ uri, enviando, semFoto }: { uri: string | null; enviando: boolean; semFoto: React.ReactNode }) {
+  const [baixando, setBaixando] = useState(false);
+  // Callbacks estáveis: no web o <Image> recarrega sempre que eles mudam (loop infinito)
+  const inicio = useCallback(() => setBaixando(true), []);
+  const fim = useCallback(() => setBaixando(false), []);
+  if (!uri) return semFoto;
+  return (
+    <>
+      <Image source={{ uri }} className="w-full h-full" onLoadStart={inicio} onLoadEnd={fim} />
+      {(enviando || baixando) && (
+        <View className="absolute inset-0 bg-black/30 items-center justify-center">
+          <ActivityIndicator size="small" color="#fff" />
+        </View>
+      )}
+    </>
   );
 }

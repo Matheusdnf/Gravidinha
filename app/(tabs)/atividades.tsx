@@ -18,7 +18,7 @@ export default function AtividadesScreen() {
   const { streakDays, currentWeekQuiz, pastQuizzes } = mockEngagementData;
 
   return (
-    <SafeAreaView className="flex-1 bg-[#FBF9F6]">
+    <SafeAreaView className="flex-1 bg-fundo">
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{
@@ -29,10 +29,10 @@ export default function AtividadesScreen() {
         className="w-full max-w-2xl mx-auto"
       >
         {/* Cabeçalho */}
-        <Text className="text-2xl font-extrabold text-gray-900 tracking-tight">
+        <Text className="text-2xl font-extrabold text-texto tracking-tight">
           Engajamento
         </Text>
-        <Text className="text-sm text-gray-500 mt-1">
+        <Text className="text-sm text-texto-suave mt-1">
           Quizzes, registros e suas conquistas
         </Text>
 
@@ -64,7 +64,7 @@ export default function AtividadesScreen() {
               </Text>
 
               <TouchableOpacity
-                className="bg-white rounded-full py-3 px-6 flex-row items-center justify-center self-start"
+                className="bg-cartao rounded-full py-3 px-6 flex-row items-center justify-center self-start"
                 activeOpacity={0.9}
               >
                 <Text className="text-[#D97D54] font-bold text-sm mr-2">
@@ -74,7 +74,7 @@ export default function AtividadesScreen() {
               </TouchableOpacity>
             </View>
 
-            <Text className="text-base font-bold text-gray-900 mb-3">
+            <Text className="text-base font-bold text-texto mb-3">
               Quizzes Anteriores
             </Text>
 

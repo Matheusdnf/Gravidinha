@@ -14,7 +14,7 @@ export default function JornadaScreen() {
 
   return (
     // Mudamos de "items-center" para uma estrutura de flex pira com background limpo
-    <SafeAreaView className="flex-1 bg-[#FBF9F6]">
+    <SafeAreaView className="flex-1 bg-fundo">
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{
@@ -25,20 +25,20 @@ export default function JornadaScreen() {
         className="w-full max-w-2xl mx-auto" // Centraliza perfeitamente o bloco inteiro no navegador
       >
         {/* Cabeçalho da Página */}
-        <Text className="text-2xl font-extrabold text-gray-900 tracking-tight">
+        <Text className="text-2xl font-extrabold text-texto tracking-tight">
           Jornada das 45 Semanas
         </Text>
-        <Text className="text-sm text-gray-500 mt-1">
+        <Text className="text-sm text-texto-suave mt-1">
           Acompanhe cada etapa da sua gravidez ao pós-parto
         </Text>
 
         {/* Filtros Horizontais */}
-        <View className="flex-row items-center justify-between mt-6 border-b border-gray-200/60 pb-3 w-full">
+        <View className="flex-row items-center justify-between mt-6 border-b border-borda/60 pb-3 w-full">
           {categories.map((cat) => (
             <TouchableOpacity key={cat} activeOpacity={0.7}>
               <Text
                 className={`text-xs font-bold tracking-wide ${
-                  cat === activeCategory ? "text-[#D97D54]" : "text-gray-400"
+                  cat === activeCategory ? "text-[#D97D54]" : "text-texto-suave"
                 }`}
               >
                 {cat}
@@ -49,13 +49,13 @@ export default function JornadaScreen() {
 
         {/* Barra de Progresso Geral */}
         <View className="mt-5 mb-6 w-full">
-          <View className="h-2 w-full bg-gray-200 rounded-full overflow-hidden">
+          <View className="h-2 w-full bg-borda-forte rounded-full overflow-hidden">
             <View
               className="h-full bg-[#D97D54] rounded-full"
               style={{ width: "27%" }}
             />
           </View>
-          <Text className="text-[11px] text-gray-400 font-bold mt-2">
+          <Text className="text-[11px] text-texto-suave font-bold mt-2">
             Semana 12 de 45 · 27% concluída
           </Text>
         </View>

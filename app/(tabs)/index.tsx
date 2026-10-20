@@ -17,8 +17,10 @@ import { calcularSemanaAtual, getTrimestre, parseData } from "../../lib/gestacao
 import { buscarDesenvolvimento, listarConsultas, listarGestacoes } from "../../lib/dados";
 import { useDadosAtualizados } from "../../lib/sync";
 import { PregnancyStatus } from "../../types/pregnancy";
+import { useCores } from "../../lib/tema";
 
 export default function DashboardScreen() {
+  const cores = useCores();
   const router = useRouter();
   const { user, selectedGestacao, setSelectedGestacao } = useAuth();
   const [desenvolvimento, setDesenvolvimento] = useState<any>(null);
@@ -151,7 +153,7 @@ export default function DashboardScreen() {
   const unreadCount = notificationsList.filter(n => n.isNew).length;
 
   return (
-    <SafeAreaView className="flex-1 bg-[#FBF9F6] items-center">
+    <SafeAreaView className="flex-1 bg-fundo items-center">
       <View className="w-full max-w-xl flex-1 px-5">
         <ScrollView
           showsVerticalScrollIndicator={false}
@@ -160,21 +162,21 @@ export default function DashboardScreen() {
           {/* Cabeçalho de Boas-vindas e Notificações */}
           <View className="flex-row justify-between items-center mb-6">
             <View>
-              <Text className="text-sm font-medium text-[#8A7A75]">
+              <Text className="text-sm font-medium text-texto-suave">
                 Olá,
               </Text>
-              <Text className="text-2xl font-extrabold text-[#2C221E]">
+              <Text className="text-2xl font-extrabold text-texto">
                 Bem-vindo(a), {user?.nome?.split(' ')[0] || "Usuário"}!
               </Text>
             </View>
             <TouchableOpacity 
               onPress={() => setIsNotificationModalVisible(true)}
-              className="w-12 h-12 bg-white rounded-full items-center justify-center border border-[#F0EBE6] shadow-sm relative"
+              className="w-12 h-12 bg-cartao rounded-full items-center justify-center border border-borda shadow-sm relative"
             >
               {unreadCount > 0 && (
-                <View className="absolute top-2.5 right-2.5 w-3 h-3 bg-[#C56A43] rounded-full z-10 border-2 border-white" />
+                <View className="absolute top-2.5 right-2.5 w-3 h-3 bg-[#C56A43] rounded-full z-10 border-2 border-cartao" />
               )}
-              <Ionicons name="notifications-outline" size={22} color="#2C221E" />
+              <Ionicons name="notifications-outline" size={22} color={cores.texto} />
             </TouchableOpacity>
           </View>
 
@@ -194,7 +196,7 @@ export default function DashboardScreen() {
           {/* Destaque da Sua Semana */}
           <View className="mt-8 mb-6 w-full">
             <View className="flex-row items-center justify-between mb-3">
-              <Text className="text-xl font-bold text-[#2C221E] tracking-tight">
+              <Text className="text-xl font-bold text-texto tracking-tight">
                 Destaque da Semana
               </Text>
               <TouchableOpacity activeOpacity={0.7} onPress={() => router.push('/artigos')}>
@@ -206,13 +208,13 @@ export default function DashboardScreen() {
               <WeekHighlightSkeleton />
             ) : (
               <TouchableOpacity 
-                className="w-full bg-white rounded-[28px] border border-[#F0EBE6] shadow-sm p-5"
+                className="w-full bg-cartao rounded-[28px] border border-borda shadow-sm p-5"
                 activeOpacity={0.9}
                 onPress={() => router.push('/desenvolvimento')}
               >
                 <View className="flex-row items-center mb-3">
                   {/* Quadrado com a imagem */}
-                  <View className="w-24 h-24 rounded-[20px] bg-[#FADCD0] overflow-hidden mr-4 relative items-center justify-center">
+                  <View className="w-24 h-24 rounded-[20px] bg-pessego-borda overflow-hidden mr-4 relative items-center justify-center">
                     {pregnancyData.currentWeek > 0 && imagensSemanas[pregnancyData.currentWeek] && (
                       <Image 
                         source={imagensSemanas[pregnancyData.currentWeek]} 
@@ -224,11 +226,11 @@ export default function DashboardScreen() {
 
                   {/* Textos ao lado */}
                   <View className="flex-1 justify-center">
-                    <View className="bg-[#FDF2EE] self-start px-3 py-1 rounded-full mb-2 flex-row items-center">
+                    <View className="bg-pessego self-start px-3 py-1 rounded-full mb-2 flex-row items-center">
                       <Ionicons name="calendar" size={12} color="#C56A43" />
                       <Text className="text-[#C56A43] text-[10px] font-bold ml-1.5 uppercase">Semana {pregnancyData.currentWeek}</Text>
                     </View>
-                    <Text className="text-lg font-extrabold text-[#2C221E] leading-tight">
+                    <Text className="text-lg font-extrabold text-texto leading-tight">
                       {desenvolvimento?.dados?.comparacao 
                         ? `Tamanho de ${desenvolvimento.dados.comparacao}!` 
                         : "Descobrindo destaques..."}
@@ -236,15 +238,15 @@ export default function DashboardScreen() {
                   </View>
                 </View>
 
-                <Text className="text-sm text-[#8A7A75] leading-relaxed mb-4" numberOfLines={2}>
+                <Text className="text-sm text-texto-suave leading-relaxed mb-4" numberOfLines={2}>
                   {desenvolvimento?.dados?.descricao_corpo || "Descubra como seu corpo e seu bebê estão mudando nesta etapa incrível da sua gestação."}
                 </Text>
                 
-                <View className="flex-row items-center justify-between pt-4 border-t border-[#F0EBE6]">
-                  <Text className="text-xs font-bold text-[#A37262] uppercase tracking-wider">
+                <View className="flex-row items-center justify-between pt-4 border-t border-borda">
+                  <Text className="text-xs font-bold text-marrom uppercase tracking-wider">
                     Ver Desenvolvimento Completo
                   </Text>
-                  <View className="w-8 h-8 rounded-full bg-[#FDF2EE] items-center justify-center">
+                  <View className="w-8 h-8 rounded-full bg-pessego items-center justify-center">
                     <Ionicons name="arrow-forward" size={16} color="#D97D54" />
                   </View>
                 </View>
@@ -253,7 +255,7 @@ export default function DashboardScreen() {
           </View>
 
           {/* Seção de Acesso Rápido */}
-          <Text className="text-lg font-bold text-[#222] mb-3 w-full">
+          <Text className="text-lg font-bold text-texto mb-3 w-full">
             Acesso Rápido
           </Text>
 
@@ -264,7 +266,7 @@ export default function DashboardScreen() {
               <QuickAccessButton
                 title="Meu Diário"
                 subtitle="Registre seu dia"
-                bgColor="bg-[#EEF7F7]"
+                bgColor="bg-agua"
                 icon={
                   <MaterialCommunityIcons
                     name="notebook-outline"
@@ -276,7 +278,7 @@ export default function DashboardScreen() {
               <QuickAccessButton
                 title="Consultas"
                 subtitle="Agende e acompanhe"
-                bgColor="bg-[#F3E5F5]"
+                bgColor="bg-lilas"
                 icon={
                   <MaterialCommunityIcons
                     name="calendar-month-outline"
@@ -288,7 +290,7 @@ export default function DashboardScreen() {
               <QuickAccessButton
                 title="Respiração"
                 subtitle="Exercício guiado"
-                bgColor="bg-[#F4FCE3]"
+                bgColor="bg-lima"
                 icon={
                   <MaterialCommunityIcons
                     name="flower-outline"
@@ -315,8 +317,8 @@ export default function DashboardScreen() {
             </View>
           ) : notificationsList.length === 0 ? (
             <View className="flex-1 justify-center items-center py-10">
-              <Ionicons name="notifications-off-outline" size={40} color="#E0D7D3" />
-              <Text className="text-[#8A7A75] mt-4 font-medium">
+              <Ionicons name="notifications-off-outline" size={40} color={cores.bordaForte} />
+              <Text className="text-texto-suave mt-4 font-medium">
                 Nenhuma notificação por enquanto
               </Text>
             </View>
@@ -325,18 +327,18 @@ export default function DashboardScreen() {
               {notificationsList.map((notif) => (
                 <View 
                   key={notif.id}
-                  className={`flex-row p-4 mb-3 rounded-2xl border ${notif.isNew ? 'bg-[#FDF2EE] border-[#FADCD0]' : 'bg-white border-[#E8DFDA]'}`}
+                  className={`flex-row p-4 mb-3 rounded-2xl border ${notif.isNew ? 'bg-pessego border-pessego-borda' : 'bg-cartao border-borda-forte'}`}
                 >
-                  <View className={`w-10 h-10 rounded-full items-center justify-center mr-3 ${notif.isNew ? 'bg-[#C56A43]' : 'bg-[#F0EBE6]'}`}>
+                  <View className={`w-10 h-10 rounded-full items-center justify-center mr-3 ${notif.isNew ? 'bg-[#C56A43]' : 'bg-borda'}`}>
                     <MaterialCommunityIcons 
                       name={notif.icon} 
                       size={20} 
-                      color={notif.isNew ? "#FFF" : "#8A7A75"} 
+                      color={notif.isNew ? "#FFF" : cores.textoSuave} 
                     />
                   </View>
                   <View className="flex-1 justify-center">
                     <View className="flex-row justify-between items-start mb-1">
-                      <Text className={`text-sm font-bold ${notif.isNew ? 'text-[#2C221E]' : 'text-[#8A7A75]'}`}>
+                      <Text className={`text-sm font-bold ${notif.isNew ? 'text-texto' : 'text-texto-suave'}`}>
                         {notif.title}
                       </Text>
                       {notif.isNew && (
@@ -345,10 +347,10 @@ export default function DashboardScreen() {
                         </View>
                       )}
                     </View>
-                    <Text className={`text-xs ${notif.isNew ? 'text-[#2C221E]' : 'text-[#8A7A75]'}`}>
+                    <Text className={`text-xs ${notif.isNew ? 'text-texto' : 'text-texto-suave'}`}>
                       {notif.message}
                     </Text>
-                    <Text className="text-[10px] text-[#A37262] mt-1.5 font-medium">
+                    <Text className="text-[10px] text-marrom mt-1.5 font-medium">
                       {notif.date.toLocaleDateString("pt-BR")}
                     </Text>
                   </View>
