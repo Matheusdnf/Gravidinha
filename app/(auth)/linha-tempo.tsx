@@ -20,8 +20,10 @@ import { getTrimestre, isoParaBR, paraISO } from "../../lib/gestacao";
 import { BackButton } from "../../components/BackButton";
 import { CalendarModal } from "../../components/CalendarModal";
 import { SexoSelector } from "../../components/SexoSelector";
+import { useCores } from "../../lib/tema";
 
 export default function LinhaTempoGestacaoScreen() {
+  const cores = useCores();
   const router = useRouter();
   const params = getRegistrationData();
   const { user, signIn, setSelectedGestacao } = useAuth();
@@ -136,9 +138,9 @@ export default function LinhaTempoGestacaoScreen() {
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-[#FBF9F6] items-center relative">
+    <SafeAreaView className="flex-1 bg-fundo items-center relative">
       {/* Círculo Orgânico Decorativo */}
-      <View className="absolute top-[-40px] right-[-40px] w-48 h-48 rounded-full bg-[#F3E2D4] opacity-70 pointer-events-none" />
+      <View className="absolute top-[-40px] right-[-40px] w-48 h-48 rounded-full bg-areia opacity-70 pointer-events-none" />
 
       <View className="w-full max-w-xl flex-1 px-6">
         <ScrollView
@@ -149,7 +151,7 @@ export default function LinhaTempoGestacaoScreen() {
           <View className="flex-row items-center justify-between mb-4">
             <BackButton fallback="/(auth)/gestacao" className="" />
 
-            <Text className="text-xs font-semibold text-[#8A7A75]">
+            <Text className="text-xs font-semibold text-texto-suave">
               Passo 2 de 2
             </Text>
 
@@ -157,7 +159,7 @@ export default function LinhaTempoGestacaoScreen() {
           </View>
 
           {/* BARRA DE PROGRESSO 100% */}
-          <View className="w-full h-2 bg-[#EFE6DF] rounded-full overflow-hidden mb-3">
+          <View className="w-full h-2 bg-creme rounded-full overflow-hidden mb-3">
             <View className="w-full h-full bg-[#C56A43] rounded-full" />
           </View>
 
@@ -168,29 +170,29 @@ export default function LinhaTempoGestacaoScreen() {
           </View>
 
           {/* TÍTULO E DESCRITIVO */}
-          <Text className="text-3xl font-extrabold text-[#2C221E] tracking-tight mb-2 leading-tight">
+          <Text className="text-3xl font-extrabold text-texto tracking-tight mb-2 leading-tight">
             Linha do tempo{"\n"}da sua gestação
           </Text>
-          <Text className="text-sm font-medium text-[#8A7A75] leading-relaxed mb-8">
+          <Text className="text-sm font-medium text-texto-suave leading-relaxed mb-8">
             Essas informações personalizam seus conteúdos e lembretes.
           </Text>
 
           {/* NOME DA GESTAÇÃO */}
           <View className="mb-6">
-            <Text className="text-sm font-bold text-[#2C221E] mb-2">
+            <Text className="text-sm font-bold text-texto mb-2">
               Nome da Gestação (Opcional)
             </Text>
             <TextInput
               value={nomeGestacao}
               onChangeText={setNomeGestacao}
               placeholder="Ex: Primeira Viagem, Gêmeos 2026..."
-              placeholderTextColor="#C2B2AC"
-              className="bg-[#FDF2EE] border border-[#FADCD0] rounded-2xl px-4 py-3.5 text-sm text-[#2C221E]"
+              placeholderTextColor={cores.textoFraco}
+              className="bg-pessego border border-pessego-borda rounded-2xl px-4 py-3.5 text-sm text-texto"
             />
           </View>
 
           {/* PERGUNTA 1: QUANTAS SEMANAS */}
-          <Text className="text-sm font-bold text-[#2C221E] mb-3">
+          <Text className="text-sm font-bold text-texto mb-3">
             De quantas semanas você está?
           </Text>
 
@@ -198,14 +200,14 @@ export default function LinhaTempoGestacaoScreen() {
           <View className="flex-row items-center justify-between mb-4">
             <TouchableOpacity
               onPress={decrementarSemanas}
-              className="w-12 h-12 rounded-2xl bg-white border border-[#F0EBE6] items-center justify-center shadow-sm"
+              className="w-12 h-12 rounded-2xl bg-cartao border border-borda items-center justify-center shadow-sm"
               activeOpacity={0.7}
             >
-              <Text className="text-xl font-bold text-[#8A7A75]">-</Text>
+              <Text className="text-xl font-bold text-texto-suave">-</Text>
             </TouchableOpacity>
 
             {/* BOX CENTRAL DO NÚMERO */}
-            <View className="flex-1 mx-3 bg-[#FDF2EE] border border-[#FADCD0] rounded-3xl py-4 items-center justify-center">
+            <View className="flex-1 mx-3 bg-pessego border border-pessego-borda rounded-3xl py-4 items-center justify-center">
               <TextInput
                 keyboardType="numeric"
                 value={semanas.toString()}
@@ -217,23 +219,23 @@ export default function LinhaTempoGestacaoScreen() {
                 }}
                 className="text-4xl font-extrabold text-[#C56A43] leading-none mb-1 text-center p-0"
               />
-              <Text className="text-xs font-bold text-[#8A7A75]">
+              <Text className="text-xs font-bold text-texto-suave">
                 {trimestreTexto}
               </Text>
             </View>
 
             <TouchableOpacity
               onPress={incrementarSemanas}
-              className="w-12 h-12 rounded-2xl bg-white border border-[#F0EBE6] items-center justify-center shadow-sm"
+              className="w-12 h-12 rounded-2xl bg-cartao border border-borda items-center justify-center shadow-sm"
               activeOpacity={0.7}
             >
-              <Text className="text-xl font-bold text-[#8A7A75]">+</Text>
+              <Text className="text-xl font-bold text-texto-suave">+</Text>
             </TouchableOpacity>
           </View>
 
           {/* SLIDER VISUAL / BARRA DE NÍVEL */}
           <View className="mb-8 px-2">
-            <View className="w-full h-1.5 bg-[#E2EDED] rounded-full relative justify-center">
+            <View className="w-full h-1.5 bg-agua-borda rounded-full relative justify-center">
               <View
                 style={{ width: `${Math.min(100, Math.max(0, (semanas / 45) * 100)).toFixed(1)}%` as any }}
                 className="h-full bg-[#C56A43] rounded-full"
@@ -243,14 +245,14 @@ export default function LinhaTempoGestacaoScreen() {
                   left: `${Math.min(100, Math.max(0, (semanas / 45) * 100)).toFixed(1)}%` as any,
                   transform: [{ translateX: -10 }]
                 }}
-                className="absolute w-5 h-5 rounded-full bg-[#8A7A75] border-2 border-white shadow-sm"
+                className="absolute w-5 h-5 rounded-full bg-texto-suave border-2 border-cartao shadow-sm"
               />
             </View>
             <View className="flex-row justify-between mt-2">
-              <Text className="text-[10px] font-bold text-[#8A7A75]">
+              <Text className="text-[10px] font-bold text-texto-suave">
                 1 semana
               </Text>
-              <Text className="text-[10px] font-bold text-[#8A7A75]">
+              <Text className="text-[10px] font-bold text-texto-suave">
                 45 semanas
               </Text>
             </View>
@@ -258,43 +260,43 @@ export default function LinhaTempoGestacaoScreen() {
 
           {/* CAMPO: DATA PROVÁVEL DO PARTO (DPP) */}
           <View className="mb-2">
-            <Text className="text-sm font-bold text-[#2C221E] mb-2">
+            <Text className="text-sm font-bold text-texto mb-2">
               Data Provável do Parto (DPP)
             </Text>
             <TouchableOpacity 
               onPress={() => setIsCalendarVisible(true)}
               activeOpacity={0.8}
-              className={`flex-row items-center justify-between bg-[#FDF2EE] border ${errors.dpp ? 'border-red-400' : 'border-[#FADCD0]'} rounded-2xl px-4 py-3.5`}
+              className={`flex-row items-center justify-between bg-pessego border ${errors.dpp ? 'border-red-400' : 'border-pessego-borda'} rounded-2xl px-4 py-3.5`}
             >
-              <Text className={`flex-1 text-sm ${dpp ? 'text-[#2C221E]' : 'text-[#C2B2AC]'}`}>
+              <Text className={`flex-1 text-sm ${dpp ? 'text-texto' : 'text-texto-fraco'}`}>
                 {dpp || "dd / mm / aaaa"}
               </Text>
-              <Feather name="calendar" size={18} color="#A37262" />
+              <Feather name="calendar" size={18} color={cores.marrom} />
             </TouchableOpacity>
             {errors.dpp && <Text className="text-red-500 text-xs mt-1.5 ml-1">{errors.dpp}</Text>}
           </View>
 
           {/* DICA AUTOMÁTICA */}
-          <Text className="text-xs text-[#8A7A75] font-medium leading-relaxed mb-8">
+          <Text className="text-xs text-texto-suave font-medium leading-relaxed mb-8">
             💡 Se não souber ao certo, calcularemos automaticamente pelas
             semanas informadas acima.
           </Text>
 
           {/* BEBÊS */}
           <View className="mb-8">
-            <Text className="text-sm font-bold text-[#2C221E] mb-2">
+            <Text className="text-sm font-bold text-texto mb-2">
               Detalhes do(s) bebê(s)
             </Text>
             {bebes.map((bebe, index) => (
-              <View key={index} className="bg-white border border-[#F0EBE6] rounded-2xl p-4 mb-4 shadow-sm">
-                <Text className="text-xs font-bold text-[#2C221E] mb-3">
+              <View key={index} className="bg-cartao border border-borda rounded-2xl p-4 mb-4 shadow-sm">
+                <Text className="text-xs font-bold text-texto mb-3">
                   {numBebes > 1 ? `Bebê ${index + 1}` : "Seu Bebê"}
                 </Text>
                 
                 {/* SWITCH: AINDA NÃO DECIDI O NOME */}
                 <View className="flex-row items-center justify-between mb-3">
                   <View className="flex-1 mr-3">
-                    <Text className="text-[11px] font-bold text-[#2C221E]">
+                    <Text className="text-[11px] font-bold text-texto">
                       Ainda não decidi o nome
                     </Text>
                   </View>
@@ -315,22 +317,22 @@ export default function LinhaTempoGestacaoScreen() {
                       value={bebe.nome}
                       onChangeText={(text) => atualizarBebe(index, { nome: text })}
                       placeholder="Ex: Sophia, Lucas..."
-                      placeholderTextColor="#C2B2AC"
-                      className={`bg-[#FDF2EE] border ${errors[`bebe_${index}_nome`] ? 'border-red-400' : 'border-[#FADCD0]'} rounded-xl px-4 py-3 text-sm text-[#2C221E]`}
+                      placeholderTextColor={cores.textoFraco}
+                      className={`bg-pessego border ${errors[`bebe_${index}_nome`] ? 'border-red-400' : 'border-pessego-borda'} rounded-xl px-4 py-3 text-sm text-texto`}
                     />
                     {errors[`bebe_${index}_nome`] && <Text className="text-red-500 text-[11px] mt-1.5 ml-1">{errors[`bebe_${index}_nome`]}</Text>}
                   </View>
                 )}
 
                 {/* SEXO DO BEBÊ */}
-                <Text className="text-[11px] font-bold text-[#8A7A75] mb-2 uppercase tracking-wider">
+                <Text className="text-[11px] font-bold text-texto-suave mb-2 uppercase tracking-wider">
                   Sexo do Bebê (Opcional)
                 </Text>
                 <SexoSelector
                   value={bebe.sexo}
                   onChange={(sexo) => atualizarBebe(index, { sexo: sexo as Bebe["sexo"] })}
-                  bg="#FDF2EE"
-                  borda="#FADCD0"
+                  bg={cores.pessego}
+                  borda={cores.pessegoBorda}
                 />
               </View>
             ))}

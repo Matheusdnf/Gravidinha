@@ -12,8 +12,10 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useAuth } from "../../state/auth";
 import { entrar } from "../../lib/dados";
+import { useCores } from "../../lib/tema";
 
 export default function LoginScreen() {
+  const cores = useCores();
   const router = useRouter();
   const { signIn } = useAuth();
 
@@ -46,9 +48,9 @@ export default function LoginScreen() {
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-[#FBF9F6] items-center relative">
+    <SafeAreaView className="flex-1 bg-fundo items-center relative">
       {/* Círculo Orgânico Decorativo no Canto Superior Direito — fica fixo */}
-      <View className="absolute top-[-40px] right-[-40px] w-48 h-48 rounded-full bg-[#F3E2D4] opacity-70 pointer-events-none" />
+      <View className="absolute top-[-40px] right-[-40px] w-48 h-48 rounded-full bg-areia opacity-70 pointer-events-none" />
 
       <KeyboardAvoidingView
         className="flex-1 w-full"
@@ -61,46 +63,46 @@ export default function LoginScreen() {
             keyboardShouldPersistTaps="handled"
           >
             {/* Título Principal */}
-            <Text className="text-3xl font-extrabold text-[#2C221E] tracking-tight mb-1">
+            <Text className="text-3xl font-extrabold text-texto tracking-tight mb-1">
               Boas-vindas de volta!
             </Text>
-            <Text className="text-sm font-medium text-[#8A7A75] mb-8">
+            <Text className="text-sm font-medium text-texto-suave mb-8">
               Acompanhe o seu bebê e sua jornada diária 🌸
             </Text>
 
             {/* Campo: E-mail */}
             <View className="mb-5">
-              <Text className="text-sm font-bold text-[#2C221E] mb-2">
+              <Text className="text-sm font-bold text-texto mb-2">
                 E-mail
               </Text>
               <TextInput
                 value={email}
                 onChangeText={setEmail}
                 placeholder="seuemail@exemplo.com"
-                placeholderTextColor="#C2B2AC"
+                placeholderTextColor={cores.textoFraco}
                 keyboardType="email-address"
                 autoCapitalize="none"
-                className="bg-[#FDF2EE] border border-[#FADCD0] rounded-2xl px-4 py-3.5 text-sm text-[#2C221E]"
+                className="bg-pessego border border-pessego-borda rounded-2xl px-4 py-3.5 text-sm text-texto"
               />
             </View>
 
             {/* Campo: Senha */}
             <View className="mb-3">
-              <Text className="text-sm font-bold text-[#2C221E] mb-2">Senha</Text>
-              <View className="flex-row items-center bg-[#FDF2EE] border border-[#FADCD0] rounded-2xl px-4 py-3.5">
+              <Text className="text-sm font-bold text-texto mb-2">Senha</Text>
+              <View className="flex-row items-center bg-pessego border border-pessego-borda rounded-2xl px-4 py-3.5">
                 <TextInput
                   value={senha}
                   onChangeText={setSenha}
                   placeholder="Digite sua senha"
-                  placeholderTextColor="#C2B2AC"
+                  placeholderTextColor={cores.textoFraco}
                   secureTextEntry={!showSenha}
-                  className="flex-1 text-sm text-[#2C221E] p-0"
+                  className="flex-1 text-sm text-texto p-0"
                 />
                 <TouchableOpacity onPress={() => setShowSenha(!showSenha)}>
                   <Ionicons
                     name={showSenha ? "eye-outline" : "eye-outline"}
                     size={20}
-                    color="#A37262"
+                    color={cores.marrom}
                   />
                 </TouchableOpacity>
               </View>
@@ -130,7 +132,7 @@ export default function LoginScreen() {
 
             {/* Link para Cadastro */}
             <View className="flex-row justify-center items-center">
-              <Text className="text-sm font-medium text-[#8A7A75]">
+              <Text className="text-sm font-medium text-texto-suave">
                 Ainda não tem conta?{" "}
               </Text>
               <TouchableOpacity onPress={() => router.push("/(auth)/registro")}>

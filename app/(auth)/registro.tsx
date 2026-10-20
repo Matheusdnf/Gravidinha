@@ -14,8 +14,10 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { useCores } from "../../lib/tema";
 
 export default function RegistroScreen() {
+  const cores = useCores();
   const router = useRouter();
 
   const [nome, setNome] = useState("");
@@ -84,9 +86,9 @@ export default function RegistroScreen() {
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-[#FBF9F6] items-center relative">
+    <SafeAreaView className="flex-1 bg-fundo items-center relative">
       {/* Círculo Orgânico Decorativo no Canto Superior Direito — fica fixo */}
-      <View className="absolute top-[-40px] right-[-40px] w-48 h-48 rounded-full bg-[#F3E2D4] opacity-70 pointer-events-none" />
+      <View className="absolute top-[-40px] right-[-40px] w-48 h-48 rounded-full bg-areia opacity-70 pointer-events-none" />
 
       <KeyboardAvoidingView
         className="flex-1 w-full"
@@ -104,104 +106,104 @@ export default function RegistroScreen() {
             className="flex-row items-center mb-6"
             activeOpacity={0.7}
           >
-            <Ionicons name="arrow-back" size={18} color="#A37262" />
-            <Text className="text-[#A37262] font-semibold text-sm ml-1.5">
+            <Ionicons name="arrow-back" size={18} color={cores.marrom} />
+            <Text className="text-marrom font-semibold text-sm ml-1.5">
               Voltar ao login
             </Text>
           </TouchableOpacity>
 
           {/* Título Principal */}
-          <Text className="text-3xl font-extrabold text-[#2C221E] tracking-tight mb-1">
+          <Text className="text-3xl font-extrabold text-texto tracking-tight mb-1">
             Criar minha conta
           </Text>
-          <Text className="text-sm font-medium text-[#8A7A75] mb-8">
+          <Text className="text-sm font-medium text-texto-suave mb-8">
             Junte-se a milhares de mães em jornada 🌸
           </Text>
 
           {/* Campo: Nome completo */}
           <View className="mb-5">
-            <Text className="text-sm font-bold text-[#2C221E] mb-2">
+            <Text className="text-sm font-bold text-texto mb-2">
               Nome completo
             </Text>
             <TextInput
               value={nome}
               onChangeText={setNome}
               placeholder="Como você se chama?"
-              placeholderTextColor="#C2B2AC"
-              className="bg-[#FDF2EE] border border-[#FADCD0] rounded-2xl px-4 py-3.5 text-sm text-[#2C221E]"
+              placeholderTextColor={cores.textoFraco}
+              className="bg-pessego border border-pessego-borda rounded-2xl px-4 py-3.5 text-sm text-texto"
             />
           </View>
 
           {/* Campo: E-mail */}
           <View className="mb-5">
-            <Text className="text-sm font-bold text-[#2C221E] mb-2">
+            <Text className="text-sm font-bold text-texto mb-2">
               E-mail
             </Text>
             <TextInput
               value={email}
               onChangeText={setEmail}
               placeholder="seuemail@exemplo.com"
-              placeholderTextColor="#C2B2AC"
+              placeholderTextColor={cores.textoFraco}
               keyboardType="email-address"
               autoCapitalize="none"
-              className="bg-[#FDF2EE] border border-[#FADCD0] rounded-2xl px-4 py-3.5 text-sm text-[#2C221E]"
+              className="bg-pessego border border-pessego-borda rounded-2xl px-4 py-3.5 text-sm text-texto"
             />
           </View>
 
           {/* Campo: Celular */}
           <View className="mb-5">
-            <Text className="text-sm font-bold text-[#2C221E] mb-2">
+            <Text className="text-sm font-bold text-texto mb-2">
               Celular
             </Text>
             <TextInput
               value={celular}
               onChangeText={(t) => setCelular(mascaraCelular(t))}
               placeholder="(11) 99999-9999"
-              placeholderTextColor="#C2B2AC"
+              placeholderTextColor={cores.textoFraco}
               keyboardType="phone-pad"
               maxLength={15}
-              className="bg-[#FDF2EE] border border-[#FADCD0] rounded-2xl px-4 py-3.5 text-sm text-[#2C221E]"
+              className="bg-pessego border border-pessego-borda rounded-2xl px-4 py-3.5 text-sm text-texto"
             />
           </View>
 
           {/* Campo: Data de Nascimento */}
           <View className="mb-5">
-            <Text className="text-sm font-bold text-[#2C221E] mb-2">
+            <Text className="text-sm font-bold text-texto mb-2">
               Data de Nascimento
             </Text>
-            <View className="flex-row items-center bg-[#FDF2EE] border border-[#FADCD0] rounded-2xl px-4 py-3.5">
+            <View className="flex-row items-center bg-pessego border border-pessego-borda rounded-2xl px-4 py-3.5">
               <TextInput
                 value={dataNascimento}
                 onChangeText={formatDataNascimento}
                 placeholder="DD/MM/AAAA"
-                placeholderTextColor="#C2B2AC"
+                placeholderTextColor={cores.textoFraco}
                 keyboardType="number-pad"
                 maxLength={10}
-                className="flex-1 text-sm text-[#2C221E] p-0"
+                className="flex-1 text-sm text-texto p-0"
               />
               <TouchableOpacity onPress={() => setIsCalendarVisible(true)}>
-                <Ionicons name="calendar-outline" size={20} color="#A37262" />
+                <Ionicons name="calendar-outline" size={20} color={cores.marrom} />
               </TouchableOpacity>
             </View>
           </View>
 
           {/* Campo: Senha */}
           <View className="mb-5">
-            <Text className="text-sm font-bold text-[#2C221E] mb-2">Senha</Text>
-            <View className="flex-row items-center bg-[#FDF2EE] border border-[#FADCD0] rounded-2xl px-4 py-3.5">
+            <Text className="text-sm font-bold text-texto mb-2">Senha</Text>
+            <View className="flex-row items-center bg-pessego border border-pessego-borda rounded-2xl px-4 py-3.5">
               <TextInput
                 value={senha}
                 onChangeText={setSenha}
                 placeholder="Mínimo 8 caracteres"
-                placeholderTextColor="#C2B2AC"
+                placeholderTextColor={cores.textoFraco}
                 secureTextEntry={!showSenha}
-                className="flex-1 text-sm text-[#2C221E] p-0"
+                className="flex-1 text-sm text-texto p-0"
               />
               <TouchableOpacity onPress={() => setShowSenha(!showSenha)}>
                 <Ionicons
                   name={showSenha ? "eye-outline" : "eye-outline"}
                   size={20}
-                  color="#A37262"
+                  color={cores.marrom}
                 />
               </TouchableOpacity>
             </View>
@@ -209,17 +211,17 @@ export default function RegistroScreen() {
 
           {/* Campo: Confirmar senha */}
           <View className="mb-6">
-            <Text className="text-sm font-bold text-[#2C221E] mb-2">
+            <Text className="text-sm font-bold text-texto mb-2">
               Confirmar senha
             </Text>
-            <View className="flex-row items-center bg-[#FDF2EE] border border-[#FADCD0] rounded-2xl px-4 py-3.5">
+            <View className="flex-row items-center bg-pessego border border-pessego-borda rounded-2xl px-4 py-3.5">
               <TextInput
                 value={confirmarSenha}
                 onChangeText={setConfirmarSenha}
                 placeholder="Repita sua senha"
-                placeholderTextColor="#C2B2AC"
+                placeholderTextColor={cores.textoFraco}
                 secureTextEntry={!showConfirmarSenha}
-                className="flex-1 text-sm text-[#2C221E] p-0"
+                className="flex-1 text-sm text-texto p-0"
               />
               <TouchableOpacity
                 onPress={() => setShowConfirmarSenha(!showConfirmarSenha)}
@@ -227,7 +229,7 @@ export default function RegistroScreen() {
                 <Ionicons
                   name={showConfirmarSenha ? "eye-outline" : "eye-outline"}
                   size={20}
-                  color="#A37262"
+                  color={cores.marrom}
                 />
               </TouchableOpacity>
             </View>
@@ -250,7 +252,7 @@ export default function RegistroScreen() {
                 <Ionicons name="checkmark" size={14} color="#FFF" />
               )}
             </View>
-            <Text className="text-xs text-[#8A7A75] leading-relaxed flex-1 font-medium">
+            <Text className="text-xs text-texto-suave leading-relaxed flex-1 font-medium">
               Li e aceito os{" "}
               <Text className="text-[#C56A43] font-bold">Termos de Uso</Text> e
               a{" "}
@@ -274,7 +276,7 @@ export default function RegistroScreen() {
 
           {/* Link para Login */}
           <View className="flex-row justify-center items-center">
-            <Text className="text-sm font-medium text-[#8A7A75]">
+            <Text className="text-sm font-medium text-texto-suave">
               Já tem conta?{" "}
             </Text>
             <TouchableOpacity onPress={() => router.push("/(auth)/login")}>
