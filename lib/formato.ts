@@ -5,3 +5,10 @@ export function mascaraCelular(text: string): string {
   if (val.length > 9) val = `${val.substring(0, 10)}-${val.substring(10)}`;
   return val;
 }
+
+// Anos completos a partir de "aaaa-mm-dd" (só faz aniversário quando chega o dia)
+export function idade(nascimento: string, hoje = new Date()): number {
+  const [a, m, d] = nascimento.split("-").map(Number);
+  const fezAniversario = hoje.getMonth() + 1 > m || (hoje.getMonth() + 1 === m && hoje.getDate() >= d);
+  return hoje.getFullYear() - a - (fezAniversario ? 0 : 1);
+}

@@ -6,6 +6,7 @@
 // Toda função lança Error com mensagem pronta para exibir em Alert.
 import { supabase } from './supabase';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { ImageManipulator, SaveFormat } from 'expo-image-manipulator';
 import { db, tabela, salvarLocal, agora, novoId, lerMeta, type Tabela } from './db';
 import { prepararBancoLocal, marcarAlterado } from './sync';
 import { normalizarHorario } from './syncRegras';
@@ -73,7 +74,7 @@ async function exigirGestacaoAtiva(id_gestacao: string, mensagem: string) {
 // Conta
 // ---------------------------------------------------------------------------
 
-export async function buscarUsuario(): Promise<User & { profile_image: string | null }> {
+export async function buscarUsuario(): Promise<User & { profile_image: string | null; data_nascimento: string | null }> {
   const { data } = await supabase.auth.getSession();
   const u = await db.getFirstAsync<Record<string, any>>('SELECT * FROM usuario WHERE id_user = ?', await meuId());
   if (!u) throw new Error('Erro ao carregar o perfil.');
@@ -85,12 +86,13 @@ export async function buscarUsuario(): Promise<User & { profile_image: string | 
     email,
     celular: String(u.cellphone),
     profile_image: u.profile_image,
+    data_nascimento: u.data_nascimento,
   };
 }
 
-// Usuário da sessão, sem a foto (o base64 não deve ir para o cache do AsyncStorage)
+// Usuário da sessão, sem a foto nem o nascimento (o tipo User do cache do AsyncStorage não os tem)
 async function usuarioDaSessao(): Promise<User> {
-  const { profile_image, ...user } = await buscarUsuario();
+  const { profile_image, data_nascimento, ...user } = await buscarUsuario();
   return user;
 }
 
@@ -152,6 +154,24 @@ export async function atualizarUsuario(d: { nome?: string; celular?: string; pro
 
   if ((await atualizar('usuario', await meuId(), patch)) === 0) throw new Error('Erro ao atualizar dados.');
   marcarAlterado();
+}
+
+// Comprime a foto (512px de largura, JPEG 70%: algumas dezenas de KB), envia ao Storage (precisa de
+// internet) e grava a URL pública no perfil.
+// Caminho fixo por usuária: a troca sobrescreve a anterior; o ?v= fura o cache da imagem antiga.
+export async function salvarFotoPerfil(uri: string): Promise<string> {
+  const caminho = `${await meuId()}/avatar`;
+  const imagem = await ImageManipulator.manipulate(uri).resize({ width: 512 }).renderAsync();
+  const comprimida = await imagem.saveAsync({ compress: 0.7, format: SaveFormat.JPEG });
+  const arquivo = await fetch(comprimida.uri).then((r) => r.arrayBuffer());
+  const { error } = await supabase.storage.from('avatars').upload(caminho, arquivo, { contentType: 'image/jpeg', upsert: true });
+  if (error) {
+    console.error(error);
+    throw new Error('Não foi possível enviar a foto. Verifique sua conexão.');
+  }
+  const url = `${supabase.storage.from('avatars').getPublicUrl(caminho).data.publicUrl}?v=${Date.now()}`;
+  await atualizarUsuario({ profile_image: url });
+  return url;
 }
 
 // ---------------------------------------------------------------------------

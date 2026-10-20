@@ -129,18 +129,19 @@ async function descartarLocal(t: Tabela, id: string) {
 
 // ponytail: cursor por updated_at pode perder uma linha cuja transação commitou depois com now() anterior;
 // aceitável para uma usuária com poucos aparelhos. Se aparecer, puxar com margem (ultimo_pull - 1 min).
+// Busca as tabelas em paralelo (sem foreign keys no banco local, a ordem não importa) e grava tudo
+// numa transação só: uma escrita em disco no lugar de uma por linha.
+// ponytail: withTransactionAsync não é exclusiva; uma gravação da usuária que caia nesses milissegundos
+// entra na transação (e um withTransactionAsync dela falha com "transaction within a transaction").
+// Só abre quando há novidade. Se aparecer, trocar por withExclusiveTransactionAsync no celular.
 async function pull(): Promise<boolean> {
-  let mudou = false;
-  for (const t of TABELAS) {
-    const chave = `ultimo_pull:${t.nome}`;
-    let cursor = await lerMeta(chave);
-    for (;;) {
-      let q = supabase.from(t.nome).select('*').order('updated_at').limit(PAGINA);
-      if (cursor) q = q.gt('updated_at', cursor);
-      const { data, error } = await q;
-      if (error) throw error;
+  const novas = await Promise.all(TABELAS.map(buscarNovidades));
+  if (novas.every((linhas) => linhas.length === 0)) return false;
 
-      for (const remota of data) {
+  let mudou = false;
+  await db.withTransactionAsync(async () => {
+    for (const [i, t] of TABELAS.entries()) {
+      for (const remota of novas[i]) {
         const local = await db.getFirstAsync<Record<string, any> & { pendente: number }>(
           `SELECT * FROM ${t.nome} WHERE ${t.pk} = ?`,
           remota[t.pk],
@@ -150,14 +151,25 @@ async function pull(): Promise<boolean> {
           mudou = true;
         }
       }
-      if (data.length > 0) {
-        cursor = data[data.length - 1].updated_at as string;
-        await gravarMeta(chave, cursor);
-      }
-      if (data.length < PAGINA) break;
+      if (novas[i].length > 0) await gravarMeta(`ultimo_pull:${t.nome}`, novas[i][novas[i].length - 1].updated_at);
     }
-  }
+  });
   return mudou;
+}
+
+// Tudo o que mudou na tabela desde o último pull, em ordem de updated_at
+async function buscarNovidades(t: Tabela): Promise<Record<string, any>[]> {
+  const linhas: Record<string, any>[] = [];
+  let cursor = await lerMeta(`ultimo_pull:${t.nome}`);
+  for (;;) {
+    let q = supabase.from(t.nome).select('*').order('updated_at').limit(PAGINA);
+    if (cursor) q = q.gt('updated_at', cursor);
+    const { data, error } = await q;
+    if (error) throw error;
+    linhas.push(...data);
+    if (data.length < PAGINA) return linhas;
+    cursor = data[data.length - 1].updated_at as string;
+  }
 }
 
 export async function contarPendentes(): Promise<number> {
