@@ -42,7 +42,7 @@ export function SexoSelector({
               className={`flex-1 py-3 rounded-xl items-center justify-center ${ativo ? "bg-[#C56A43]" : "bg-transparent"}`}
             >
               <Text
-                className={`${o.valor === "nao_informado" ? "text-[11px]" : "text-xs"} font-bold ${ativo ? "text-white" : "text-[#8A7A75]"}`}
+                className={`${o.valor === "nao_informado" ? "text-[11px]" : "text-xs"} font-bold ${ativo ? "text-white" : "text-texto-suave"}`}
               >
                 {o.label}
               </Text>

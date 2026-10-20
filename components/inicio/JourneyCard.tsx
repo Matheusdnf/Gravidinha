@@ -39,7 +39,7 @@ export const JourneyCard = React.memo(function JourneyCard({
       </View>
       <View className="h-2 w-full bg-white/30 rounded-full mb-4 overflow-hidden">
         <View
-          className="h-full bg-white rounded-full"
+          className="h-full bg-cartao rounded-full"
           style={{ width: `${progressPercentage}%` }}
         />
       </View>

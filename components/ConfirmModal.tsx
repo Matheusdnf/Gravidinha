@@ -2,6 +2,7 @@ import { Pressable, View, Text, TouchableOpacity } from "react-native";
 import { ConfirmModalProps } from "../types/components";
 import { Ionicons } from "@expo/vector-icons";
 import { FullScreenModal } from "./FullScreenModal";
+import { useCores } from "../lib/tema";
 
 export function ConfirmModal({
   visible,
@@ -13,6 +14,7 @@ export function ConfirmModal({
   onConfirm,
   isDestructive = false,
 }: ConfirmModalProps) {
+  const cores = useCores();
   return (
     <FullScreenModal visible={visible} onClose={onCancel} animationType="fade">
       <Pressable
@@ -21,7 +23,7 @@ export function ConfirmModal({
       >
         <Pressable
           style={{
-            backgroundColor: "#FFFDFB",
+            backgroundColor: cores.cartao,
             width: "100%",
             maxWidth: 384,
             borderRadius: 32,
@@ -33,7 +35,7 @@ export function ConfirmModal({
           <View style={{ alignItems: "center", marginBottom: 20, marginTop: 8 }}>
             <View style={{
               width: 64, height: 64, borderRadius: 32,
-              backgroundColor: isDestructive ? "#FEF2F2" : "#FDF2EE",
+              backgroundColor: isDestructive ? cores.vermelho : cores.pessego,
               alignItems: "center", justifyContent: "center", marginBottom: 16
             }}>
               <Ionicons
@@ -42,10 +44,10 @@ export function ConfirmModal({
                 color={isDestructive ? "#E25C5C" : "#D97D54"}
               />
             </View>
-            <Text style={{ fontSize: 20, fontWeight: "800", color: "#2C221E", textAlign: "center", marginBottom: 8 }}>
+            <Text style={{ fontSize: 20, fontWeight: "800", color: cores.texto, textAlign: "center", marginBottom: 8 }}>
               {title}
             </Text>
-            <Text style={{ fontSize: 14, fontWeight: "500", color: "#8A7A75", textAlign: "center", lineHeight: 20 }}>
+            <Text style={{ fontSize: 14, fontWeight: "500", color: cores.textoSuave, textAlign: "center", lineHeight: 20 }}>
               {message}
             </Text>
           </View>
@@ -66,12 +68,12 @@ export function ConfirmModal({
             onPress={onCancel}
             style={{
               width: "100%", borderRadius: 16, paddingVertical: 14,
-              alignItems: "center", backgroundColor: "#F9F6F3",
-              borderWidth: 1, borderColor: "#F0EBE6"
+              alignItems: "center", backgroundColor: cores.suave,
+              borderWidth: 1, borderColor: cores.borda
             }}
             activeOpacity={0.8}
           >
-            <Text style={{ color: "#8A7A75", fontWeight: "700", fontSize: 14 }}>{cancelText}</Text>
+            <Text style={{ color: cores.textoSuave, fontWeight: "700", fontSize: 14 }}>{cancelText}</Text>
           </TouchableOpacity>
         </Pressable>
       </Pressable>

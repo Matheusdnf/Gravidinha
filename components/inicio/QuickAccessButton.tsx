@@ -13,7 +13,7 @@ export const QuickAccessButton = React.memo(function QuickAccessButton({
 
   return (
     <TouchableOpacity
-      className={`${bgColor} flex-1 min-w-[47%] rounded-3xl p-5 mb-3 mx-1 border border-[#F0EBE6]/30`}
+      className={`${bgColor} flex-1 min-w-[47%] rounded-3xl p-5 mb-3 mx-1 border border-borda/30`}
       activeOpacity={0.8}
       onPress={() => {
         if (title === "Meu Diário") {
@@ -26,8 +26,8 @@ export const QuickAccessButton = React.memo(function QuickAccessButton({
       }}
     >
       <View className="mb-3">{icon}</View>
-      <Text className="text-base font-bold text-[#222]">{title}</Text>
-      <Text className="text-xs text-[#666] mt-1">{subtitle}</Text>
+      <Text className="text-base font-bold text-texto">{title}</Text>
+      <Text className="text-xs text-texto-2 mt-1">{subtitle}</Text>
     </TouchableOpacity>
   );
 });
