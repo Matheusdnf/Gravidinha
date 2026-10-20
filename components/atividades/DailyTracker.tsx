@@ -19,26 +19,26 @@ export function DailyTracker() {
   return (
     <View className="w-full">
       {/* 1. Seção: Semana Atual */}
-      <Text className="text-base font-bold text-gray-900 mb-3">
+      <Text className="text-base font-bold text-texto mb-3">
         Semana Atual
       </Text>
-      <View className="flex-row justify-between items-center bg-white border border-[#F0EBE6] rounded-3xl p-4 mb-5 w-full">
+      <View className="flex-row justify-between items-center bg-cartao border border-borda rounded-3xl p-4 mb-5 w-full">
         {mockWeeklyDays.map((day, i) => (
           <View key={i} className="items-center">
             <View
               className={`w-8 h-8 rounded-full items-center justify-center ${
                 day.isCompleted
-                  ? "bg-[#EEF6F6] border border-[#E2EDED]"
-                  : "bg-[#F3ECE6]/40"
+                  ? "bg-agua border border-agua-borda"
+                  : "bg-creme/40"
               }`}
             >
               {day.isCompleted ? (
                 <Ionicons name="checkmark" size={16} color="#4FA3A5" />
               ) : (
-                <View className="w-2 h-2 rounded-sm bg-[#8A7A75]/30" />
+                <View className="w-2 h-2 rounded-sm bg-texto-suave/30" />
               )}
             </View>
-            <Text className="text-[10px] text-gray-400 font-medium mt-1.5">
+            <Text className="text-[10px] text-texto-suave font-medium mt-1.5">
               {day.label}
             </Text>
           </View>
@@ -46,7 +46,7 @@ export function DailyTracker() {
       </View>
 
       {/* 2. Seção: Humor */}
-      <Text className="text-base font-bold text-gray-900 mb-3">
+      <Text className="text-base font-bold text-texto mb-3">
         Como você está hoje?
       </Text>
       <View className="flex-row justify-between items-center mb-5 w-full">
@@ -58,14 +58,14 @@ export function DailyTracker() {
               onPress={() => setSelectedMood(mood.id)}
               className={`p-3 rounded-2xl items-center justify-center border flex-1 mx-0.5 ${
                 isSelected
-                  ? "bg-[#FDF2EE] border-[#FADCD0]"
-                  : "bg-white border-[#F5F2EE]"
+                  ? "bg-pessego border-pessego-borda"
+                  : "bg-cartao border-borda"
               }`}
               activeOpacity={0.8}
             >
               <Text className="text-xl mb-1">{mood.emoji}</Text>
               <Text
-                className={`text-[10px] font-bold ${isSelected ? "text-[#D97D54]" : "text-gray-400"}`}
+                className={`text-[10px] font-bold ${isSelected ? "text-[#D97D54]" : "text-texto-suave"}`}
               >
                 {mood.label}
               </Text>
@@ -75,19 +75,19 @@ export function DailyTracker() {
       </View>
 
       {/* 3. Seção: Checklist */}
-      <Text className="text-base font-bold text-gray-900 mb-3">
+      <Text className="text-base font-bold text-texto mb-3">
         Checklist de Hoje
       </Text>
       {checklist.map((item) => (
         <TouchableOpacity
           key={item.id}
           onPress={() => toggleCheck(item.id)}
-          className="bg-white border border-[#F5F2EE] rounded-2xl p-4 flex-row items-center mb-3 w-full"
+          className="bg-cartao border border-borda rounded-2xl p-4 flex-row items-center mb-3 w-full"
           activeOpacity={0.8}
         >
           <View
             className={`w-6 h-6 rounded-full items-center justify-center border ${
-              item.isDone ? "bg-[#4FA3A5] border-[#4FA3A5]" : "border-[#CCC]"
+              item.isDone ? "bg-[#4FA3A5] border-[#4FA3A5]" : "border-borda-forte"
             }`}
           >
             {item.isDone && (
@@ -97,8 +97,8 @@ export function DailyTracker() {
           <Text
             className={`ml-3 text-sm flex-1 ${
               item.isDone
-                ? "text-gray-400 line-through"
-                : "text-gray-700 font-medium"
+                ? "text-texto-suave line-through"
+                : "text-texto font-medium"
             }`}
           >
             {item.text}

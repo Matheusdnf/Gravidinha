@@ -1,22 +1,24 @@
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { Text, View } from "react-native";
 import { mockBadges } from "../../state/mockEngagementData";
+import { useCores } from "../../lib/tema";
 
 export function BadgesGrid() {
+  const cores = useCores();
   // Cores dinâmicas para os planos de fundo baseadas na conquista
   const getTypeStyles = (type: string, isUnlocked: boolean) => {
-    if (!isUnlocked) return { bg: "bg-gray-100/80", color: "#8A7A75" };
+    if (!isUnlocked) return { bg: "bg-creme/80", color: cores.textoSuave };
     switch (type) {
       case "sprout":
-        return { bg: "bg-[#FDF2EE]", color: "#D97D54" };
+        return { bg: "bg-pessego", color: "#D97D54" };
       case "target":
-        return { bg: "bg-[#FDF0F0]", color: "#E25C5C" };
+        return { bg: "bg-vermelho", color: "#E25C5C" };
       case "book":
-        return { bg: "bg-[#EEF2FF]", color: "#6366F1" };
+        return { bg: "bg-azul", color: "#6366F1" };
       case "flower":
-        return { bg: "bg-[#FDF2F8]", color: "#EC4899" };
+        return { bg: "bg-rosa", color: "#EC4899" };
       default:
-        return { bg: "bg-gray-100", color: "#666" };
+        return { bg: "bg-creme", color: cores.texto2 };
     }
   };
 
@@ -24,7 +26,7 @@ export function BadgesGrid() {
     <View className="w-full">
       {/* Cabeçalho da Seção */}
       <View className="flex-row items-center justify-between mb-5 w-full">
-        <Text className="text-base font-bold text-gray-900">
+        <Text className="text-base font-bold text-texto">
           Suas Conquistas
         </Text>
         <Text className="text-xs font-semibold text-[#D97D54]">
@@ -41,7 +43,7 @@ export function BadgesGrid() {
               key={badge.id}
               // style={{ height: 210 }} garante tamanho uniforme absoluto na Web, iOS e Android
               style={{ height: 210 }}
-              className={`w-[48.5%] bg-white border border-[#F0EBE6] rounded-[24px] p-4 mb-4 justify-between items-center ${
+              className={`w-[48.5%] bg-cartao border border-borda rounded-[24px] p-4 mb-4 justify-between items-center ${
                 badge.isUnlocked ? "" : "opacity-70"
               }`}
             >
@@ -67,13 +69,13 @@ export function BadgesGrid() {
               {/* 2. MEIO: Textos centralizados com espaçamento fixo */}
               <View className="items-center justify-center flex-1 w-full my-2">
                 <Text
-                  className="text-sm font-bold text-gray-900 text-center px-1"
+                  className="text-sm font-bold text-texto text-center px-1"
                   numberOfLines={1}
                 >
                   {badge.title}
                 </Text>
                 <Text
-                  className="text-[11px] text-gray-400 text-center mt-1 font-medium leading-normal px-2"
+                  className="text-[11px] text-texto-suave text-center mt-1 font-medium leading-normal px-2"
                   numberOfLines={2}
                 >
                   {badge.description}
@@ -81,7 +83,7 @@ export function BadgesGrid() {
               </View>
 
               {/* 3. RODAPÉ: Status da Conquista com linha divisória limpa */}
-              <View className="flex-row items-center justify-center w-full border-t border-gray-100 pt-2.5 pb-1">
+              <View className="flex-row items-center justify-center w-full border-t border-borda pt-2.5 pb-1">
                 <Ionicons
                   name={
                     badge.isUnlocked ? "trophy-outline" : "lock-closed-outline"
@@ -90,7 +92,7 @@ export function BadgesGrid() {
                   color={badge.isUnlocked ? "#D97D54" : "#8A7A75"}
                 />
                 <Text
-                  className={`text-[10px] font-bold ml-1 ${badge.isUnlocked ? "text-[#D97D54]" : "text-gray-400"}`}
+                  className={`text-[10px] font-bold ml-1 ${badge.isUnlocked ? "text-[#D97D54]" : "text-texto-suave"}`}
                 >
                   {badge.isUnlocked ? "Conquistado" : "Bloqueado"}
                 </Text>
