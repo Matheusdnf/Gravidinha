@@ -3,6 +3,8 @@ import "./global.css";
 import { AuthProvider, useAuth } from "../state/auth";
 import { useEffect } from "react";
 import { View, ActivityIndicator, LogBox, Platform, Alert } from "react-native";
+import { instalarAlertas } from "../lib/alerta";
+import { AlertaHost } from "../components/AlertaHost";
 import { registerForPushNotificationsAsync } from "../lib/notifications";
 import { aoAvisar } from "../lib/sync";
 import { carregarTema, useCores } from "../lib/tema";
@@ -10,20 +12,8 @@ import { StatusBar } from "expo-status-bar";
 
 carregarTema();
 
-// No react-native-web o Alert.alert não faz nada: erros e confirmações sumiam em silêncio
-if (Platform.OS === "web") {
-  Alert.alert = (title, message, buttons) => {
-    const texto = [title, message].filter(Boolean).join("\n\n");
-    if (!buttons || buttons.length < 2) {
-      window.alert(texto);
-      buttons?.[0]?.onPress?.();
-      return;
-    }
-    const cancelar = buttons.find((b) => b.style === "cancel") ?? buttons[0];
-    const confirmar = buttons.filter((b) => b !== cancelar).pop();
-    (window.confirm(texto) ? confirmar : cancelar)?.onPress?.();
-  };
-}
+// Todo Alert.alert do app passa a abrir o alerta com o visual do app (components/AlertaHost.tsx)
+instalarAlertas();
 
 LogBox.ignoreLogs([
   "Warning: ScrollView doesn't take rejection well",
@@ -94,6 +84,7 @@ export default function RootLayout() {
     <AuthProvider>
       <StatusBar style="auto" />
       <RootLayoutNav />
+      <AlertaHost />
     </AuthProvider>
   );
 }

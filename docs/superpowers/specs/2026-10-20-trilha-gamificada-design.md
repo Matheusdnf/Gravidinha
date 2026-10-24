@@ -50,7 +50,7 @@ Máximo por fase: 50 pts; trilha: 500 pts por partida.
 - Quiz errado pode ser refeito (revisão da fase) e render os 10 que faltam. Quiz já pontuado mostra outra pergunta e não dá pontos.
 - Bônus de fase: uma vez por partida.
 - Pontos nunca diminuem por revisão.
-- Após a fase 10: **Refazer mantendo pontos** (revisar qualquer fase, completar o que falta) ou **Nova partida** (partida + 1, pontos zerados, volta à fase 1).
+- Após a fase 10: **Refazer mantendo pontos** (revisar qualquer fase, completar o que falta) ou **Nova partida** (grava a linha marcadora `fase 0 / casa 0` da partida seguinte; pontos zerados, volta à fase 1).
 - Conquistas são permanentes: valem se a fase par do tema foi completada em qualquer partida.
 
 ## Telas
@@ -80,9 +80,11 @@ trilha_progresso
   id_progresso text primary key        -- "{id_user}:{partida}:{fase}:{casa}"
   id_user uuid not null default auth.uid() references usuario
   partida int not null check (partida >= 1)
-  fase int not null check (fase between 1 and 10)
-  casa int not null check (casa between 1 and 5)
-  pontos int not null check (pontos in (0, 10))
+  fase int not null check (fase between 0 and 10)   -- 0 = marcador de início de partida
+  casa int not null check (casa between 0 and 5)
+  pontos int not null default 0 check (pontos in (0, 10))
+  check ((fase = 0) = (casa = 0))
+  check (id_progresso = id_user || ':' || partida || ':' || fase || ':' || casa)
   updated_at timestamptz not null default now()
   deleted_at timestamptz
 ```
@@ -90,17 +92,17 @@ trilha_progresso
 - PK determinística: duas gravações da mesma casa (dois aparelhos offline) caem na mesma linha em vez de violar unicidade.
 - Trigger `before update`: `new.pontos := greatest(old.pontos, new.pontos)` + o `tocar_updated_at` existente. Garante no servidor que pontos não diminuem mesmo com última-gravação-vence.
 - Índice em `updated_at` (pull incremental) e em `id_user`.
-- RLS: select/insert/update onde `id_user = auth.uid()`; sem delete; `revoke all from anon`.
-- `usuario`: `trilha_partida int not null default 1 check (trilha_partida >= 1)`.
+- RLS: select/insert/update onde `id_user = auth.uid()`; sem grant de delete; `revoke all from anon`.
+- **Revisado na implementação:** a partida atual não fica numa coluna `usuario.trilha_partida` (perfis já no aparelho ficariam com `null` e o push do perfil falharia), e sim na maior `partida` das linhas; "Nova partida" grava o marcador `{id_user}:{p+1}:0:0`. `usuario` não muda.
 
 ### SQLite (`lib/db.ts`)
 
-- Esquema v2: se `user_version < 2`, cria `trilha_progresso` (mesmas colunas + `pendente`) e `ALTER TABLE usuario ADD COLUMN trilha_partida INTEGER NOT NULL DEFAULT 1`; `user_version = 2`. A criação v1 existente continua igual.
-- `TABELAS`: adiciona `trilha_progresso` (pk `id_progresso`) e `trilha_partida` nas colunas de `usuario`. `ROTULOS` em `lib/sync.ts` ganha o rótulo da tabela.
+- Esquema v2: se `user_version < 2`, cria `trilha_progresso` (mesmas colunas + `pendente`); `user_version = 2`. A criação v1 existente continua igual.
+- `TABELAS`: adiciona `trilha_progresso` (pk `id_progresso`). `ROTULOS` em `lib/sync.ts` ganha o rótulo da tabela.
 
 ### Estado derivado (`lib/trilha.ts`, puro)
 
-A partir das linhas da partida atual + todas as partidas (para conquistas):
+A partir de todas as linhas (partida atual = maior `partida`, mínimo 1):
 - `pontos` = soma de `pontos` + 20 × fases completas.
 - `faseAtual` = primeira fase incompleta (11 = trilha concluída).
 - `casaRetomada(fase)` = primeira casa ausente.
@@ -109,9 +111,9 @@ A partir das linhas da partida atual + todas as partidas (para conquistas):
 
 ### `lib/dados.ts`
 
-- `lerTrilha()`: linhas do progresso da usuária + `trilha_partida`; devolve o estado derivado.
+- `lerTrilha()`: linhas do progresso da usuária; devolve o estado derivado.
 - `concluirCasa(fase, casa, pontos)`: grava/atualiza a linha com `max(pontos atual, novo)`, `pendente = 1`, chama `marcarAlterado()`.
-- `novaPartida()`: incrementa `usuario.trilha_partida`, `pendente = 1`, `marcarAlterado()`.
+- `novaPartida()`: grava o marcador da partida seguinte (fase 0 / casa 0).
 
 ## Conteúdo (`lib/trilhaConteudo.ts`)
 
@@ -121,7 +123,8 @@ Tipos: `Fase { numero, tema, titulo, conquista?, casas: [Explicacao, Quiz, Expli
 
 - `lib/trilha.test.mjs` (`npm test`): pontuação por casa, bônus de fase uma vez, desbloqueio sequencial, retomada no meio, revisão sem pontos extras, quiz errado pontuando depois, nova partida zerando pontos e mantendo conquistas, embaralhar preservando a correta, sorteio evitando a última vista.
 - Mesmo arquivo, integridade do conteúdo: 10 fases, 5 casas na ordem fixa, cada quiz com 4 variações de 4 alternativas e `correta` válida, conquista só em fases pares.
-- `supabase/tests/`: RLS (usuária não lê nem edita o progresso de outra) e trigger (update com pontos menores mantém o maior).
+- `supabase/tests/regras_trilha.sql`: RLS (usuária não lê, edita nem cria progresso de outra), sem delete, checks do id e dos pontos, e trigger (update com pontos menores mantém o maior).
+- `lib/sync.test.mjs`: casa feita offline sobe com id determinístico, revisão não tira pontos, pull de outro aparelho, nova partida.
 
 ## Fora do escopo
 

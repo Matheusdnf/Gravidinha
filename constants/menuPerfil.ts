@@ -40,12 +40,4 @@ export const MENU_PERFIL: ProfileMenuOption[] = [
     iconColor: "#6366F1",
     bgColor: "bg-azul",
   },
-  {
-    id: "6",
-    title: "Desenvolvimento da Gestação",
-    subtitle: "Acompanhe as semanas",
-    iconName: "human-pregnant",
-    iconColor: "#C56A43",
-    bgColor: "bg-pessego-borda",
-  },
 ];

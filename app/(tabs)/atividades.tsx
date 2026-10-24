@@ -1,99 +1,148 @@
-import { Ionicons } from "@expo/vector-icons";
-import { useState } from "react";
-import { ScrollView, Text, TouchableOpacity, View } from "react-native";
+import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
+import { useCallback, useEffect, useState } from "react";
+import { Alert, ScrollView, Text, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 // Componentes da Aba
 import { BadgesGrid } from "../../components/atividades/BadgesGrid";
-import { DailyTracker } from "../../components/atividades/DailyTracker";
-import { PastQuizzesList } from "../../components/atividades/PastQuizzesList";
-import { StreakCard } from "../../components/atividades/StreakCard";
+import { OfensivaSheet } from "../../components/atividades/OfensivaSheet";
 import { TabSwitcher } from "../../components/atividades/TabSwitcher";
+import { TrilhaMapa } from "../../components/atividades/TrilhaMapa";
 
-// Mocks
-import { mockEngagementData } from "../../state/mockEngagementData";
+import { lerJornada, lerTrilha, type Jornada } from "../../lib/dados";
+import { MARCOS } from "../../lib/jornada";
+import { useDadosAtualizados } from "../../lib/sync";
+import type { EstadoTrilha } from "../../lib/trilha";
+import { CHAVE_BOAS_VINDAS, FASES, TEMAS } from "../../lib/trilhaConteudo";
+import { useAuth } from "../../state/auth";
 
 export default function AtividadesScreen() {
-  const [activeTab, setActiveTab] = useState("Quiz");
-  const { streakDays, currentWeekQuiz, pastQuizzes } = mockEngagementData;
+  const router = useRouter();
+  const [activeTab, setActiveTab] = useState("Trilha");
+  const { aba } = useLocalSearchParams<{ aba?: string }>();
+  const [estado, setEstado] = useState<EstadoTrilha | null>(null);
+  const [verOfensiva, setVerOfensiva] = useState(false);
+  const { selectedGestacao } = useAuth();
+  const [jornada, setJornada] = useState<Jornada | null>(null);
+
+  // Um carregamento para a barra, a trilha e as conquistas; volta da lição com o progresso novo.
+  // A Jornada (gestação selecionada) entra só nas conquistas.
+  const carregar = useCallback(() => {
+    lerTrilha().then(setEstado).catch((e) => Alert.alert("Erro", e.message));
+    lerJornada(selectedGestacao?.id_gestacao).then(setJornada).catch(console.error);
+  }, [selectedGestacao?.id_gestacao]);
+  const totalConquistas = 5 + MARCOS.length + 1;
+  const ganhas = (estado?.conquistas.length ?? 0) + (jornada ? jornada.marcos.length + (jornada.albumCompleto ? 1 : 0) : 0);
+  useFocusEffect(carregar);
+  useDadosAtualizados(carregar);
+
+  // Aberta por outra tela já numa aba (Perfil → Minhas Conquistas). Limpa o parâmetro para que
+  // o próximo pedido igual mude a aba de novo, mesmo se ela tiver trocado de aba no meio.
+  useEffect(() => {
+    if (aba !== "Trilha" && aba !== "Conquistas") return;
+    setActiveTab(aba);
+    router.setParams({ aba: undefined });
+  }, [aba]);
+
+  // Primeira visita: explica a trilha antes da parte gamificada
+  useEffect(() => {
+    AsyncStorage.getItem(CHAVE_BOAS_VINDAS)
+      .then((visto) => !visto && router.push("/trilha/boas-vindas"))
+      .catch(console.error);
+  }, []);
+
+  const proxima = estado && !estado.concluida ? FASES[estado.faseAtual - 1] : null;
+  const corProxima = proxima ? TEMAS[proxima.tema - 1] : null;
 
   return (
-    <SafeAreaView className="flex-1 bg-fundo">
+    <SafeAreaView className="flex-1 bg-fundo" edges={["top"]}>
+      {/* Barra de status: sempre visível, como no Duolingo */}
+      <View className="w-full max-w-2xl mx-auto px-6 pt-4 pb-2 flex-row items-center justify-between">
+        <Text className="text-2xl font-extrabold text-texto tracking-tight">Atividades</Text>
+        <View className="flex-row items-center">
+          <Status
+            icone="fire"
+            cor="#F97316"
+            valor={estado?.ofensiva.atual ?? 0}
+            rotulo="dias seguidos. Toque para ver o calendário"
+            onPress={estado ? () => setVerOfensiva(true) : undefined}
+          />
+          <Status icone="star" cor="#F5B301" valor={estado?.pontos ?? 0} rotulo="pontos" />
+          <Status icone="trophy" cor="#D97D54" valor={`${ganhas}/${totalConquistas}`} rotulo="conquistas" />
+        </View>
+      </View>
+
       <ScrollView
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{
-          paddingHorizontal: 24,
-          paddingTop: 24,
-          paddingBottom: 40,
-        }}
+        contentContainerStyle={{ paddingHorizontal: 24, paddingBottom: proxima && activeTab === "Trilha" ? 120 : 40 }}
         className="w-full max-w-2xl mx-auto"
       >
-        {/* Cabeçalho */}
-        <Text className="text-2xl font-extrabold text-texto tracking-tight">
-          Engajamento
-        </Text>
-        <Text className="text-sm text-texto-suave mt-1">
-          Quizzes, registros e suas conquistas
-        </Text>
-
-        {/* Card do Streak/Ofensiva */}
-        <View className="mt-5 w-full">
-          <StreakCard days={streakDays} />
-        </View>
-
-        {/* Alternador de Abas */}
         <TabSwitcher activeTab={activeTab} setActiveTab={setActiveTab} />
 
-        {/* Renderização Dinâmica Conforme a Aba Selecionada */}
-        {activeTab === "Quiz" && (
-          <View className="w-full">
-            <View className="bg-[#D97D54] rounded-[28px] p-6 mb-6 w-full border border-white/10">
-              <View className="flex-row items-center mb-2">
-                <Ionicons name="star" size={14} color="#FFF" />
-                <Text className="text-white text-xs font-bold uppercase tracking-wider ml-1.5 opacity-90">
-                  Quiz Semanal
-                </Text>
-              </View>
+        {activeTab === "Trilha" && estado && <TrilhaMapa estado={estado} recarregar={carregar} />}
 
-              <Text className="text-white text-2xl font-bold">
-                Semana {currentWeekQuiz.weekNumber}
-              </Text>
-              <Text className="text-[#FFE6DC] text-sm mt-1 mb-6 font-medium">
-                {currentWeekQuiz.totalQuestions} perguntas · ~
-                {currentWeekQuiz.estimatedMinutes} minutos
-              </Text>
-
-              <TouchableOpacity
-                className="bg-cartao rounded-full py-3 px-6 flex-row items-center justify-center self-start"
-                activeOpacity={0.9}
-              >
-                <Text className="text-[#D97D54] font-bold text-sm mr-2">
-                  Iniciar Quiz
-                </Text>
-                <Ionicons name="chevron-forward" size={14} color="#D97D54" />
-              </TouchableOpacity>
-            </View>
-
-            <Text className="text-base font-bold text-texto mb-3">
-              Quizzes Anteriores
-            </Text>
-
-            {pastQuizzes.map((quiz) => (
-              <PastQuizzesList
-                key={quiz.id}
-                id={quiz.id}
-                weekTitle={quiz.weekTitle}
-                date={quiz.date}
-                score={quiz.score}
-              />
-            ))}
-          </View>
-        )}
-
-        {activeTab === "Registro" && <DailyTracker />}
-
-        {activeTab === "Conquistas" && <BadgesGrid />}
+        {activeTab === "Conquistas" && estado && <BadgesGrid conquistas={estado.conquistas} jornada={jornada} />}
       </ScrollView>
+
+      {/* Continuar de onde parou, com um toque */}
+      {activeTab === "Trilha" && proxima && corProxima && (
+        <View className="absolute bottom-0 left-0 right-0 px-6 pb-4 pt-3 bg-fundo/95 border-t border-borda">
+          <TouchableOpacity
+            onPress={() => router.push({ pathname: "/trilha/[fase]", params: { fase: String(proxima.numero) } })}
+            activeOpacity={0.9}
+            style={{ backgroundColor: corProxima.cor, borderBottomWidth: 4, borderColor: corProxima.sombra }}
+            className="w-full max-w-2xl mx-auto rounded-2xl px-5 py-3.5 flex-row items-center"
+          >
+            <View className="bg-white/25 w-10 h-10 rounded-xl items-center justify-center">
+              <MaterialCommunityIcons name={corProxima.icone as any} size={22} color="#FFF" />
+            </View>
+            <View className="flex-1 ml-3">
+              <Text className="text-white/80 text-[11px] font-bold uppercase tracking-wider">
+                {Object.keys(estado!.fases[proxima.numero - 1].pontosPorCasa).length ? "Continuar" : "Começar"} · Fase{" "}
+                {proxima.numero}
+              </Text>
+              <Text className="text-white text-base font-extrabold" numberOfLines={1}>
+                {proxima.titulo}
+              </Text>
+            </View>
+            <Ionicons name="play" size={22} color="#FFF" />
+          </TouchableOpacity>
+        </View>
+      )}
+      {estado && <OfensivaSheet visible={verOfensiva} onClose={() => setVerOfensiva(false)} ofensiva={estado.ofensiva} />}
     </SafeAreaView>
+  );
+}
+
+function Status({
+  icone,
+  cor,
+  valor,
+  rotulo,
+  onPress,
+}: {
+  icone: string;
+  cor: string;
+  valor: number | string;
+  rotulo: string;
+  onPress?: () => void;
+}) {
+  return (
+    <TouchableOpacity
+      onPress={onPress}
+      disabled={!onPress}
+      activeOpacity={0.7}
+      hitSlop={8}
+      className="flex-row items-center ml-3"
+      accessibilityRole={onPress ? "button" : "text"}
+      accessibilityLabel={`${valor} ${rotulo}`}
+    >
+      <MaterialCommunityIcons name={icone as any} size={20} color={cor} />
+      <Text style={{ color: cor }} className="font-extrabold text-sm ml-1">
+        {valor}
+      </Text>
+    </TouchableOpacity>
   );
 }

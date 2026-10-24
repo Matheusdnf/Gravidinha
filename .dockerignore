@@ -1,8 +1,0 @@
-node_modules
-.expo
-.git
-.vscode
-dist
-*.log
-.env
-.env*.local

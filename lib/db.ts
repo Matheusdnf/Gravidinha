@@ -25,8 +25,8 @@ export const db = {
 // Datas, horários e uuids como texto; booleanos como 0/1. Sem foreign keys:
 // o pull não garante a ordem de chegada entre tabelas.
 async function criarTabelas(d: SQLiteDatabase) {
-  if (((await d.getFirstAsync<{ user_version: number }>('PRAGMA user_version'))?.user_version ?? 0) >= 1) return;
-  await d.execAsync(`
+  const versao = (await d.getFirstAsync<{ user_version: number }>('PRAGMA user_version'))?.user_version ?? 0;
+  if (versao < 1) await d.execAsync(`
     CREATE TABLE IF NOT EXISTS usuario (
       id_user TEXT PRIMARY KEY, name TEXT, cellphone INTEGER, data_nascimento TEXT, profile_image TEXT,
       updated_at TEXT, deleted_at TEXT, pendente INTEGER NOT NULL DEFAULT 0);
@@ -47,10 +47,34 @@ async function criarTabelas(d: SQLiteDatabase) {
     CREATE TABLE IF NOT EXISTS meta (chave TEXT PRIMARY KEY, valor TEXT);
     PRAGMA user_version = 1;
   `);
+  if (versao < 2) await d.execAsync(`
+    CREATE TABLE IF NOT EXISTS trilha_progresso (
+      id_progresso TEXT PRIMARY KEY, id_user TEXT, partida INTEGER NOT NULL, fase INTEGER NOT NULL,
+      casa INTEGER NOT NULL, pontos INTEGER NOT NULL DEFAULT 0,
+      updated_at TEXT, deleted_at TEXT, pendente INTEGER NOT NULL DEFAULT 0);
+    PRAGMA user_version = 2;
+  `);
+  if (versao < 3) await d.execAsync(`
+    CREATE TABLE IF NOT EXISTS jornada_figurinha (
+      id_figurinha TEXT PRIMARY KEY, id_gestacao TEXT NOT NULL, semana INTEGER NOT NULL,
+      updated_at TEXT, deleted_at TEXT, pendente INTEGER NOT NULL DEFAULT 0);
+    PRAGMA user_version = 3;
+  `);
+  // Dias praticados na trilha; o histórico local sai do progresso (o servidor faz o mesmo na migration)
+  if (versao < 4) await d.execAsync(`
+    CREATE TABLE IF NOT EXISTS trilha_dia (
+      id_dia TEXT PRIMARY KEY, id_user TEXT, dia TEXT NOT NULL,
+      updated_at TEXT, deleted_at TEXT, pendente INTEGER NOT NULL DEFAULT 0);
+    INSERT OR IGNORE INTO trilha_dia (id_dia, id_user, dia, updated_at, pendente)
+      SELECT id_user || ':' || date(updated_at, 'localtime'), id_user, date(updated_at, 'localtime'), MAX(updated_at), 1
+      FROM trilha_progresso WHERE casa >= 1 AND updated_at IS NOT NULL
+      GROUP BY id_user, date(updated_at, 'localtime');
+    PRAGMA user_version = 4;
+  `);
 }
 
 export type Tabela = {
-  nome: 'usuario' | 'gestacao' | 'filho' | 'diario' | 'consulta';
+  nome: 'usuario' | 'gestacao' | 'filho' | 'diario' | 'consulta' | 'trilha_progresso' | 'jornada_figurinha' | 'trilha_dia';
   pk: string;
   colunas: string[]; // colunas do Supabase (sem "pendente")
   booleanas: string[];
@@ -76,6 +100,14 @@ export const TABELAS: Tabela[] = [
     colunas: ['id_consulta', 'id_gestacao', 'data', 'horario', 'local', 'descricao', 'medico', ...comuns],
     booleanas: [],
   },
+  {
+    nome: 'trilha_progresso',
+    pk: 'id_progresso',
+    colunas: ['id_progresso', 'id_user', 'partida', 'fase', 'casa', 'pontos', ...comuns],
+    booleanas: [],
+  },
+  { nome: 'jornada_figurinha', pk: 'id_figurinha', colunas: ['id_figurinha', 'id_gestacao', 'semana', ...comuns], booleanas: [] },
+  { nome: 'trilha_dia', pk: 'id_dia', colunas: ['id_dia', 'id_user', 'dia', ...comuns], booleanas: [] },
 ];
 
 export const tabela = (nome: Tabela['nome']) => TABELAS.find((t) => t.nome === nome)!;

@@ -45,7 +45,8 @@ export function Calendario({ selectedDate, onDayPress, maxDate, marcados }: Cale
               >
                 {dia.text}
               </Text>
-              {marcados.has(dia.date.slice(0, 10)) && (
+              {/* dia.date chega como objeto dayjs (o tipo da lib diz string, mas não é): formata em vez de slice */}
+              {marcados.has(dayjs(dia.date).format("YYYY-MM-DD")) && (
                 <View
                   style={{
                     width: 4,

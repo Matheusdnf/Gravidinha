@@ -41,3 +41,9 @@ yarn-error.*
 /ios
 /android
 .claude/settings.local.json
+.playwright-mcp
+supabase/migrations
+supabase/tests
+lib/testes
+lib/testes/*.mjs
+docs/Cartilha em saúde mental.pdf

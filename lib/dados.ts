@@ -11,6 +11,8 @@ import { db, tabela, salvarLocal, agora, novoId, lerMeta, type Tabela } from './
 import { prepararBancoLocal, marcarAlterado } from './sync';
 import { normalizarHorario } from './syncRegras';
 import { calcularSemanaAtual, hojeISO, paraISO } from './gestacao';
+import { diaISO, estadoTrilha, type LinhaTrilha } from './trilha';
+import { diasParaDpp, estadoJornada } from './jornada';
 import sintDb from '../sint_db.json';
 import type { Gestacao, User } from '../types/auth';
 
@@ -139,6 +141,16 @@ export async function cadastrar(d: { nome: string; email: string; senha: string;
 }
 
 // Atualização parcial: só altera os campos enviados (a foto vai sozinha, sem reenviar o resto)
+// Exclusão da conta (Edge Function excluir-conta: precisa de internet). Apaga o Auth e, em cascata,
+// todos os dados da usuária no servidor. Quem chama limpa o aparelho e encerra a sessão (state/auth.tsx).
+export async function excluirContaNoServidor() {
+  const { error } = await supabase.functions.invoke('excluir-conta', { method: 'POST' });
+  if (error) {
+    console.error(error);
+    throw new Error('Não foi possível excluir a conta. Verifique sua conexão e tente novamente.');
+  }
+}
+
 export async function atualizarUsuario(d: { nome?: string; celular?: string; profile_image?: string }) {
   const patch: Record<string, unknown> = {};
   if (d.nome !== undefined) {
@@ -313,6 +325,54 @@ export async function criarDiario(d: { id_gestacao?: string; data: string; hora?
 }
 
 // ---------------------------------------------------------------------------
+// Trilha gamificada (conteúdo em trilhaConteudo.ts, regras em trilha.ts)
+// ---------------------------------------------------------------------------
+
+export async function lerTrilha() {
+  const id_user = await meuId();
+  const linhas = await db.getAllAsync<LinhaTrilha>(
+    'SELECT partida, fase, casa, pontos FROM trilha_progresso WHERE id_user = ? AND deleted_at IS NULL',
+    id_user,
+  );
+  const dias = await db.getAllAsync<{ dia: string }>(
+    'SELECT dia FROM trilha_dia WHERE id_user = ? AND deleted_at IS NULL',
+    id_user,
+  );
+  return estadoTrilha(linhas, dias.map((d) => d.dia));
+}
+
+// Grava a casa na partida atual. Só regrava se for nova ou render mais pontos: revisão não tira pontos.
+async function gravarCasa(partida: number, fase: number, casa: number, pontos: number) {
+  const id_user = await meuId();
+  const { changes } = await db.runAsync(
+    `INSERT INTO trilha_progresso (id_progresso, id_user, partida, fase, casa, pontos, updated_at, pendente)
+     VALUES (?, ?, ?, ?, ?, ?, ?, 1)
+     ON CONFLICT(id_progresso) DO UPDATE SET pontos = excluded.pontos, updated_at = excluded.updated_at, pendente = 1
+     WHERE excluded.pontos > trilha_progresso.pontos`,
+    `${id_user}:${partida}:${fase}:${casa}`, id_user, partida, fase, casa, pontos, agora(),
+  );
+  // Dia praticado para a ofensiva: conta qualquer casa feita, mesmo revisão sem pontos novos
+  let novoDia = 0;
+  if (casa >= 1) {
+    const dia = diaISO(new Date());
+    ({ changes: novoDia } = await db.runAsync(
+      'INSERT OR IGNORE INTO trilha_dia (id_dia, id_user, dia, updated_at, pendente) VALUES (?, ?, ?, ?, 1)',
+      `${id_user}:${dia}`, id_user, dia, agora(),
+    ));
+  }
+  if (changes > 0 || novoDia > 0) marcarAlterado();
+}
+
+export async function concluirCasa(fase: number, casa: number, pontos: number) {
+  await gravarCasa((await lerTrilha()).partida, fase, casa, pontos);
+}
+
+// Nova partida: pontos e fases recomeçam; as conquistas continuam (valem de qualquer partida)
+export async function novaPartida() {
+  await gravarCasa((await lerTrilha()).partida + 1, 0, 0, 0);
+}
+
+// ---------------------------------------------------------------------------
 // Desenvolvimento do bebê (conteúdo estático em sint_db.json, semanas 1 a 40)
 // ---------------------------------------------------------------------------
 
@@ -321,12 +381,15 @@ const limitarSemana = (s: number) => Math.min(40, Math.max(1, s));
 // A gestação informada ou, sem id, a ativa da usuária (null se não houver)
 async function gestacaoParaSemana(id_gestacao?: string) {
   return db.getFirstAsync<{
+    id_gestacao: string;
+    nome: string | null;
     semanas: number;
     data_inicio: string;
     data_finalizacao: string | null;
     status: string;
+    dpp: string | null;
   }>(
-    `SELECT semanas, data_inicio, data_finalizacao, status FROM gestacao
+    `SELECT id_gestacao, nome, semanas, data_inicio, data_finalizacao, status, dpp FROM gestacao
      WHERE deleted_at IS NULL AND ${id_gestacao ? 'id_gestacao = ?' : "status = 'ativa'"}`,
     id_gestacao ? [id_gestacao] : [],
   );
@@ -360,4 +423,40 @@ export async function listarSemanas(id_gestacao?: string) {
     })),
     finalizada: g?.status === 'finalizada',
   };
+}
+
+// ---------------------------------------------------------------------------
+// Jornada gamificada (regras em jornada.ts): álbum de figurinhas por gestação
+// ---------------------------------------------------------------------------
+
+// A gestação informada ou a ativa; null se não houver
+export async function lerJornada(id_gestacao?: string) {
+  const g = await gestacaoParaSemana(id_gestacao);
+  if (!g) return null;
+  const linhas = await db.getAllAsync<{ semana: number }>(
+    'SELECT semana FROM jornada_figurinha WHERE id_gestacao = ? AND deleted_at IS NULL',
+    g.id_gestacao,
+  );
+  const e = estadoJornada(calcularSemanaAtual(g.semanas, g.data_inicio, g.data_finalizacao), linhas.map((l) => l.semana));
+  return {
+    ...e,
+    id_gestacao: g.id_gestacao,
+    nome: g.nome,
+    finalizada: g.status === 'finalizada',
+    diasParaDpp: diasParaDpp(g.dpp, e.semanaAtual),
+  };
+}
+
+export type Jornada = NonNullable<Awaited<ReturnType<typeof lerJornada>>>;
+
+// Ver a semana na tela de desenvolvimento coleciona a figurinha (só semanas já liberadas)
+export async function colecionarFigurinha(semana: number, id_gestacao?: string) {
+  const g = await gestacaoParaSemana(id_gestacao);
+  if (!g || !estadoJornada(calcularSemanaAtual(g.semanas, g.data_inicio, g.data_finalizacao), []).liberada(semana)) return;
+  const { changes } = await db.runAsync(
+    `INSERT INTO jornada_figurinha (id_figurinha, id_gestacao, semana, updated_at, pendente) VALUES (?, ?, ?, ?, 1)
+     ON CONFLICT(id_figurinha) DO NOTHING`,
+    `${g.id_gestacao}:${semana}`, g.id_gestacao, semana, agora(),
+  );
+  if (changes > 0) marcarAlterado();
 }

@@ -11,7 +11,7 @@ import {
   Platform
 } from "react-native";
 import { createElement } from "react";
-import DateTimePicker from '@react-native-community/datetimepicker';
+import DateTimePicker, { DateTimePickerAndroid } from '@react-native-community/datetimepicker';
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useAuth } from "../../state/auth";
 import { BottomSheetModal } from "../../components/BottomSheetModal";
@@ -44,6 +44,10 @@ export default function ConsultasScreen() {
   const [isEditModalVisible, setIsEditModalVisible] = useState(false);
   const [selectedAppointmentId, setSelectedAppointmentId] = useState<string | null>(null);
   const [showTimePicker, setShowTimePicker] = useState(false);
+  const [dialogAndroidAberto, setDialogAndroidAberto] = useState(false);
+  // Um modal por vez: calendário/relógio abertos por cima do formulário travam no Android,
+  // então o formulário some enquanto o seletor está aberto (os campos ficam no estado da tela).
+  const formEscondido = isCalendarVisible || showTimePicker || dialogAndroidAberto;
 
   const isWeb = Platform.OS === 'web';
   const todayISO = hojeISO();
@@ -109,6 +113,23 @@ export default function ConsultasScreen() {
     setMedico("");
     setLocal("");
     setSelectedAppointmentId(null);
+  };
+
+  // Android: o componente <DateTimePicker> reabre o diálogo a cada render (value={new Date()} muda sempre),
+  // então abrimos pela API imperativa, uma vez só.
+  const abrirSeletorDeHora = () => {
+    if (Platform.OS !== 'android') return setShowTimePicker(true);
+    const [h, m] = horario.split(':').map(Number);
+    const valor = new Date();
+    if (!isNaN(h) && !isNaN(m)) valor.setHours(h, m, 0, 0);
+    setDialogAndroidAberto(true);
+    DateTimePickerAndroid.open({
+      value: valor,
+      mode: 'time',
+      is24Hour: true,
+      onValueChange: (e, d) => { setDialogAndroidAberto(false); handleTimeChange(e, d); },
+      onDismiss: () => setDialogAndroidAberto(false),
+    });
   };
 
   const handleTimeChange = (_event: any, selectedDate?: Date) => {
@@ -307,7 +328,7 @@ export default function ConsultasScreen() {
                 style={{ width: '100%', border: 'none', background: 'transparent', outline: 'none', fontSize: 14, color: cores.texto, cursor: 'pointer' }}
               />
             ) : (
-              <TouchableOpacity onPress={() => setShowTimePicker(true)} className="w-full">
+              <TouchableOpacity onPress={abrirSeletorDeHora} className="w-full">
                 <Text className={`text-sm ${horario ? 'text-texto' : 'text-texto-fraco'}`}>
                   {horario || "10:00"}
                 </Text>
@@ -342,6 +363,7 @@ export default function ConsultasScreen() {
           className="bg-pessego border border-pessego-borda rounded-2xl px-4 py-3.5 text-sm text-texto"
         />
       </View>
+
     </>
   );
 
@@ -480,7 +502,7 @@ export default function ConsultasScreen() {
 
       {/* MODAL DE NOVA CONSULTA */}
       <BottomSheetModal
-        visible={isModalVisible}
+        visible={isModalVisible && !formEscondido}
         onClose={() => setIsModalVisible(false)}
         title="Adicionar Consulta"
       >
@@ -506,7 +528,7 @@ export default function ConsultasScreen() {
 
       {/* MODAL DE EDITAR CONSULTA */}
       <BottomSheetModal
-        visible={isEditModalVisible}
+        visible={isEditModalVisible && !formEscondido}
         onClose={() => {
           setIsEditModalVisible(false);
           resetForm();
@@ -546,7 +568,6 @@ export default function ConsultasScreen() {
         </ScrollView>
       </BottomSheetModal>
 
-      {/* Modal do Calendário para Nova Consulta */}
       <CalendarModal
         visible={isCalendarVisible}
         onClose={() => setIsCalendarVisible(false)}
@@ -558,7 +579,7 @@ export default function ConsultasScreen() {
       />
 
       {/* COMPONENTE NATIVO DE SELEÇÃO DE HORA */}
-      {showTimePicker && !isWeb && (
+      {showTimePicker && Platform.OS === 'ios' && (
         <DateTimePicker
           value={new Date()}
           mode="time"

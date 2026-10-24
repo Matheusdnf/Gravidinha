@@ -21,6 +21,9 @@ const ROTULOS: Record<Tabela['nome'], string> = {
   filho: 'os dados do bebê',
   diario: 'um registro do diário',
   consulta: 'uma consulta',
+  trilha_progresso: 'o progresso da trilha',
+  jornada_figurinha: 'uma figurinha da jornada',
+  trilha_dia: 'um dia da ofensiva',
 };
 
 const PAGINA = 1000;
@@ -195,9 +198,22 @@ export async function prepararBancoLocal(id_user: string) {
   await sincronizar();
 }
 
-// Ao voltar para o app, tenta sincronizar (no celular; a web não usa o modo offline)
+// Sincroniza sozinho (no celular; a web não usa o modo offline): ao voltar para o app e, com ele aberto,
+// a cada minuto. O intervalo também reenvia o que ficou pendente quando a internet volta.
+// shortcut: polling em vez de NetInfo/Realtime, atraso de até 1 min; trocar se precisar de resposta imediata.
+const INTERVALO_SYNC = 60_000;
 if (Platform.OS !== 'web') {
+  let timer: ReturnType<typeof setInterval> | null = null;
+  const parar = () => { if (timer) clearInterval(timer); timer = null; };
+  const iniciar = () => {
+    parar();
+    timer = setInterval(sincronizar, INTERVALO_SYNC);
+  };
+  if (AppState.currentState === 'active') iniciar();
   AppState.addEventListener('change', (state) => {
-    if (state === 'active') sincronizar();
+    if (state === 'active') {
+      sincronizar();
+      iniciar();
+    } else parar();
   });
 }

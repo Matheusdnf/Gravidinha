@@ -25,6 +25,7 @@
     "expo-sqlite": "~56.0.6",
     "expo-status-bar": "~56.0.4",
     "expo-symbols": "~56.0.7",
+    "expo-updates": "~56.0.28",
     "expo-web-browser": "~56.0.6",
     "nativewind": "^4.2.5",
     "postcss": "^8.4.31",
@@ -51,7 +52,7 @@
     "ios": "expo start --ios",
     "web": "expo start --web",
     "postinstall": "patch-package",
-    "test": "node --experimental-strip-types --disable-warning=ExperimentalWarning --import ./lib/testes/registrar.mjs --test lib/*.test.mjs"
+    "test": "node --experimental-strip-types --disable-warning=ExperimentalWarning --import ./lib/testes/registrar.mjs --test lib/testes/*.test.mjs"
   },
   "private": true
 }

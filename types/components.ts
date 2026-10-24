@@ -16,13 +16,10 @@ export interface CalendarModalProps {
   maxDate?: string;
 }
 
-export interface StreakCardProps {
-  days: number;
-}
-
 export interface TabSwitcherProps {
   activeTab: string;
   setActiveTab: (tab: string) => void;
+  tabs?: { nome: string; icone: string }[]; // icone: MaterialCommunityIcons; padrão = abas de Atividades
 }
 
 export interface QuickAccessButtonProps {

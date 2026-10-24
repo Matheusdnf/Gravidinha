@@ -4,6 +4,7 @@ import { User, Gestacao, AuthContextType } from '../types/auth';
 import { isAuthRetryableFetchError } from '@supabase/supabase-js';
 import { Alert } from 'react-native';
 import { supabase } from '../lib/supabase';
+import { excluirContaNoServidor } from '../lib/dados';
 import { contarPendentes, limparBancoLocal, prepararBancoLocal, sincronizar } from '../lib/sync';
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -82,11 +83,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       );
       if (!sair) return;
     }
+    await encerrarSessao();
+  };
+
+  // Nada da usuária fica no aparelho
+  const encerrarSessao = async (escopo: 'global' | 'local' = 'global') => {
     await limparBancoLocal();
-    await supabase.auth.signOut();
+    await supabase.auth.signOut({ scope: escopo });
     setUser(null);
     setSelectedGestacaoState(null);
     await AsyncStorage.multiRemove(['gravidinha_user', 'gravidinha_selected_gestacao']);
+  };
+
+  // Apaga a conta e todos os dados no servidor; o que estava pendente no aparelho some junto.
+  // Escopo local: a sessão já não existe no servidor depois da exclusão.
+  const excluirConta = async () => {
+    await excluirContaNoServidor();
+    await encerrarSessao('local');
   };
 
   const setSelectedGestacao = async (gestacao: Gestacao | null) => {
@@ -99,7 +112,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, isLoading, signIn, signOut, selectedGestacao, setSelectedGestacao }}>
+    <AuthContext.Provider value={{ user, isLoading, signIn, signOut, excluirConta, selectedGestacao, setSelectedGestacao }}>
       {children}
     </AuthContext.Provider>
   );

@@ -20,6 +20,9 @@ import { Image } from "react-native";
 // Componentes Modulares da Arquitetura
 import { ProfileMenuOptions } from "../../components/perfil/ProfileMenuOptions";
 import { BottomSheetModal } from "../../components/BottomSheetModal";
+import { AjudaSheet } from "../../components/AjudaSheet";
+import { ResumoGamificado } from "../../components/perfil/ResumoGamificado";
+import { StatusSync } from "../../components/perfil/StatusSync";
 
 // Mocks Isolados
 import { MENU_PERFIL } from "../../constants/menuPerfil";
@@ -27,7 +30,7 @@ import { useCores } from "../../lib/tema";
 
 export default function PerfilScreen() {
   const cores = useCores();
-  const { user, signIn, signOut } = useAuth();
+  const { user, signIn, signOut, excluirConta } = useAuth();
 
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [nome, setNome] = useState(user?.nome || "");
@@ -36,6 +39,38 @@ export default function PerfilScreen() {
   const [nascimento, setNascimento] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [enviandoFoto, setEnviandoFoto] = useState(false);
+  const [verAjuda, setVerAjuda] = useState(false);
+  const [verSobre, setVerSobre] = useState(false);
+  const [excluindo, setExcluindo] = useState(false);
+
+  // Irreversível: duas confirmações. Precisa de internet (a exclusão acontece no servidor).
+  const confirmarExclusao = () =>
+    Alert.alert(
+      "Excluir conta",
+      "Sua conta e todos os seus dados (gestações, diário, consultas, trilha e álbum) serão apagados para sempre. Isso não pode ser desfeito.",
+      [
+        { text: "Cancelar", style: "cancel" },
+        {
+          text: "Continuar",
+          style: "destructive",
+          onPress: () =>
+            Alert.alert("Tem certeza?", "Esta é a última confirmação. A conta será excluída agora.", [
+              { text: "Cancelar", style: "cancel" },
+              {
+                text: "Excluir minha conta",
+                style: "destructive",
+                onPress: () => {
+                  setExcluindo(true);
+                  // Deu certo: o _layout leva para o login quando a sessão acaba
+                  excluirConta()
+                    .catch((e) => Alert.alert("Erro", e.message))
+                    .finally(() => setExcluindo(false));
+                },
+              },
+            ]),
+        },
+      ],
+    );
 
   // Busca as informações completas do usuário (incluindo celular e foto) do banco
   const carregar = () => {
@@ -162,12 +197,7 @@ export default function PerfilScreen() {
                   {idade(nascimento)} anos
                 </Text>
               )}
-              <View className="flex-row items-center mt-1">
-                <View className="w-2 h-2 rounded-full bg-[#4FA3A5]" />
-                <Text className="text-[11px] text-[#4FA3A5] font-bold ml-1.5">
-                  Conteúdo offline atualizado
-                </Text>
-              </View>
+              <StatusSync />
             </View>
           </View>
 
@@ -179,6 +209,11 @@ export default function PerfilScreen() {
           >
             <Feather name="edit-2" size={16} color={cores.marrom} />
           </TouchableOpacity>
+        </View>
+
+        {/* Placar da trilha e da jornada */}
+        <View className="mt-5">
+          <ResumoGamificado />
         </View>
 
         {/* 5. SEÇÃO: Menu de Opções */}
@@ -200,6 +235,30 @@ export default function PerfilScreen() {
         </View>
 
         <Text className="text-xs font-extrabold text-texto-suave tracking-wider uppercase mb-2">
+          Suporte
+        </Text>
+        <View className="bg-cartao border border-borda rounded-[28px] px-5 py-2 w-full mb-6">
+          <ProfileMenuOptions
+            id="ajuda"
+            title="Precisa de ajuda?"
+            subtitle="Sinais de alerta e onde buscar apoio"
+            iconName="lifebuoy"
+            iconColor="#4FA3A5"
+            bgColor="bg-agua"
+            onPress={() => setVerAjuda(true)}
+          />
+          <ProfileMenuOptions
+            id="sobre"
+            title="Sobre o conteúdo"
+            subtitle="De onde vêm as informações do app"
+            iconName="information-outline"
+            iconColor="#6366F1"
+            bgColor="bg-azul"
+            onPress={() => setVerSobre(true)}
+          />
+        </View>
+
+        <Text className="text-xs font-extrabold text-texto-suave tracking-wider uppercase mb-2">
           Conta
         </Text>
         <View className="bg-cartao border border-borda rounded-[28px] px-5 py-2 w-full mb-6">
@@ -210,6 +269,16 @@ export default function PerfilScreen() {
             iconName="cog-outline"
             iconColor="#78716C"
             bgColor="bg-creme"
+          />
+          <ProfileMenuOptions
+            id="excluir"
+            title={excluindo ? "Excluindo conta..." : "Excluir conta"}
+            subtitle="Apaga sua conta e todos os seus dados"
+            iconName="account-remove-outline"
+            iconColor="#EF4444"
+            bgColor="bg-vermelho"
+            perigo
+            onPress={excluindo ? () => {} : confirmarExclusao}
           />
         </View>
 
@@ -224,6 +293,34 @@ export default function PerfilScreen() {
           <Text className="text-red-500 font-bold text-sm ml-2">Sair da conta</Text>
         </TouchableOpacity>
       </ScrollView>
+
+      <AjudaSheet visible={verAjuda} onClose={() => setVerAjuda(false)} />
+
+      <BottomSheetModal visible={verSobre} onClose={() => setVerSobre(false)} title="Sobre o conteúdo">
+        <ScrollView showsVerticalScrollIndicator={false}>
+          <Text className="text-sm font-bold text-texto mb-1">Trilha de saúde mental</Text>
+          <Text className="text-sm text-texto-2 leading-relaxed mb-4">
+            Baseada na cartilha “Cuidando da saúde mental na gestação e puerpério”, de Gleiciane Ingrith Lins de
+            Morais e Ana Carine Arruda Rolim (Universidade Federal do Rio Grande do Norte, Escola Multicampi de
+            Ciências Médicas).
+          </Text>
+          <Text className="text-sm font-bold text-texto mb-1">Jornada e desenvolvimento do bebê</Text>
+          <Text className="text-sm text-texto-2 leading-relaxed mb-4">
+            Informações gerais sobre cada semana da gestação: tamanho aproximado do bebê, mudanças no corpo e
+            sintomas comuns.
+          </Text>
+          <Text className="text-sm font-bold text-texto mb-1">Desenvolvimento</Text>
+          <Text className="text-sm text-texto-2 leading-relaxed mb-4">
+            Aplicativo desenvolvido por Matheus Diniz Fernandes.
+          </Text>
+          <View className="bg-pessego border border-pessego-borda rounded-2xl p-4">
+            <Text className="text-sm text-[#C56A43] font-semibold leading-relaxed">
+              O conteúdo do app é informativo e não substitui consultas, diagnóstico ou tratamento. Na dúvida, procure
+              a sua Unidade de Saúde. Em urgência, o hospital ou o SAMU (192).
+            </Text>
+          </View>
+        </ScrollView>
+      </BottomSheetModal>
 
       {/* ================= MODAL DE EDITAR PERFIL ================= */}
       <BottomSheetModal

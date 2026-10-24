@@ -11,6 +11,8 @@ export const ProfileMenuOptions = React.memo(function ProfileMenuOptions({
   iconName,
   iconColor,
   bgColor,
+  onPress,
+  perigo,
 }: ProfileMenuOption) {
   const cores = useCores();
   const router = useRouter();
@@ -19,6 +21,7 @@ export const ProfileMenuOptions = React.memo(function ProfileMenuOptions({
       className="flex-row items-center justify-between py-4 border-b border-borda/70 w-full"
       activeOpacity={0.7}
       onPress={() => {
+        if (onPress) return onPress();
         if (title === "Agenda de Consultas") {
           router.push("/consultas" as any);
         } else if (title === "Meu Diário") {
@@ -27,8 +30,8 @@ export const ProfileMenuOptions = React.memo(function ProfileMenuOptions({
           router.push("/dados-gravidez" as any);
         } else if (title === "Respiração Guiada") {
           router.push("/respiracao" as any);
-        } else if (title === "Desenvolvimento da Gestação") {
-          router.push("/desenvolvimento/lista" as any);
+        } else if (title === "Minhas Conquistas") {
+          router.push({ pathname: "/atividades", params: { aba: "Conquistas" } } as any);
         } else if (title === "Configurações") {
           router.push("/configuracoes" as any);
         }
@@ -39,7 +42,7 @@ export const ProfileMenuOptions = React.memo(function ProfileMenuOptions({
           <MaterialCommunityIcons name={iconName as any} size={20} color={iconColor} />
         </View>
         <View>
-          <Text className="text-[15px] font-bold text-texto">{title}</Text>
+          <Text className={`text-[15px] font-bold ${perigo ? "text-red-500" : "text-texto"}`}>{title}</Text>
           <Text className="text-xs text-texto-suave mt-0.5">{subtitle}</Text>
         </View>
       </View>

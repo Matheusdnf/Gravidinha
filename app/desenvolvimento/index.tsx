@@ -4,7 +4,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { useAuth } from "../../state/auth";
-import { buscarDesenvolvimento } from "../../lib/dados";
+import { buscarDesenvolvimento, colecionarFigurinha } from "../../lib/dados";
 import { imagensSemanas } from "../../constants/imagesSemanas";
 import { useCores } from "../../lib/tema";
 
@@ -27,7 +27,11 @@ export default function DesenvolvimentoScreen() {
 
     // Semana específica passada pela lista; senão a semana atual da gestação (ou da ativa, sem id)
     buscarDesenvolvimento(semana ? Number(semana) : undefined, gestacaoId ? String(gestacaoId) : undefined)
-      .then(setData)
+      .then((d) => {
+        setData(d);
+        // Ver a semana coleciona a figurinha dela no álbum da Jornada
+        if (d) colecionarFigurinha(d.semana_atual, gestacaoId ? String(gestacaoId) : undefined).catch(console.error);
+      })
       .catch(console.error)
       .finally(() => setLoading(false));
   }, [user?.id, semana, id_gestacao, selectedGestacao?.id_gestacao]);

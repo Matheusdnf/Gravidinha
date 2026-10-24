@@ -573,18 +573,19 @@ export default function DadosGravidezScreen() {
           </View>
           </>
         )}
-      </BottomSheetModal>
 
-      {/* Modal do Calendário (já existia fade) */}
-      <CalendarModal
-        visible={isCalendarVisible}
-        onClose={() => setIsCalendarVisible(false)}
-        selectedDate={editingGestacao?.dpp || ""}
-        onDayPress={(day: any) => {
-          setEditingGestacao({ ...editingGestacao, dpp: isoParaBR(day.dateString) });
-          setIsCalendarVisible(false);
-        }}
-      />
+        {/* Dentro do formulário (que já é um Modal): no iOS um Modal declarado ao lado de outro aberto
+            não aparece; declarado dentro, ele abre por cima do formulário */}
+        <CalendarModal
+          visible={isCalendarVisible}
+          onClose={() => setIsCalendarVisible(false)}
+          selectedDate={editingGestacao?.dpp || ""}
+          onDayPress={(day: any) => {
+            setEditingGestacao({ ...editingGestacao, dpp: isoParaBR(day.dateString) });
+            setIsCalendarVisible(false);
+          }}
+        />
+      </BottomSheetModal>
 
       <ConfirmModal
         visible={confirmModalVisible}

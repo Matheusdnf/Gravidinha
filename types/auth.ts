@@ -19,6 +19,7 @@ export type AuthContextType = {
   isLoading: boolean;
   signIn: (user: User) => void;
   signOut: () => Promise<void>;
+  excluirConta: () => Promise<void>; // lança Error com mensagem pronta (ex.: sem internet)
   selectedGestacao: Gestacao | null;
   setSelectedGestacao: (gestacao: Gestacao | null) => void;
 };

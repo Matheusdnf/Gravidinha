@@ -27,7 +27,7 @@ Destoam do padrão e valem regerar depois: **semana 4** (tem texto escrito na im
 kawaii, people, hands, dark background, harsh shadows, multiple objects, cropped bubble`
 
 Dica de consistência: gere a semana 11 primeiro e, se o gerador aceitar imagem de referência, use a
-**semana 10** (`semana-10.png`) como referência de estilo em todas.
+**semana 10** (`semana-10.jpeg`) como referência de estilo em todas.
 
 ## Assunto de cada semana
 
