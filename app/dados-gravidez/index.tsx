@@ -23,6 +23,7 @@ import { SexoSelector } from "../../components/SexoSelector";
 import { atualizarGestacao, listarGestacoes } from "../../lib/dados";
 import { useDadosAtualizados } from "../../lib/sync";
 import { useCores } from "../../lib/tema";
+import { LIMITES, validarDpp, validarNomeBebe, validarNomeGestacao, validarSemanas } from "../../lib/validacao";
 
 
 export default function DadosGravidezScreen() {
@@ -85,12 +86,21 @@ export default function DadosGravidezScreen() {
   };
 
   const saveGestacao = async () => {
+    const erro =
+      validarNomeGestacao(editingGestacao.nome) ||
+      validarSemanas(editingGestacao.semanas || 12) ||
+      validarDpp(editingGestacao.dpp) ||
+      (editingGestacao.filhos ?? []).map((f: any) => validarNomeBebe(f.nome, false)).find(Boolean);
+    if (erro) {
+      Alert.alert("Atenção", erro);
+      return;
+    }
     setSaving(true);
     try {
       await atualizarGestacao({
         id_gestacao: editingGestacao.id_gestacao,
         nome: editingGestacao.nome,
-        semanas: editingGestacao.semanas,
+        semanas: editingGestacao.semanas || 12, // o campo mostra 12 quando vazio
         dpp: editingGestacao.dpp,
         filhos: editingGestacao.filhos,
       });
@@ -466,6 +476,7 @@ export default function DadosGravidezScreen() {
                 onChangeText={(t) =>
                   setEditingGestacao({ ...editingGestacao, nome: t })
                 }
+                maxLength={LIMITES.nomeGestacao}
                 placeholder="Ex: Minha Gestação, Gêmeos 2026..."
                 className="bg-cartao border border-borda-forte rounded-2xl px-4 py-3.5 text-sm text-texto"
               />
@@ -488,12 +499,12 @@ export default function DadosGravidezScreen() {
                   value={String(editingGestacao.semanas || 12)}
                   onChangeText={(t) => {
                     const val = parseInt(t.replace(/[^0-9]/g, ""), 10);
-                    if (!isNaN(val)) setEditingGestacao({ ...editingGestacao, semanas: Math.max(1, Math.min(45, val)) });
+                    if (!isNaN(val)) setEditingGestacao({ ...editingGestacao, semanas: Math.max(1, Math.min(LIMITES.semanas.max, val)) });
                   }}
                   className="text-lg font-extrabold text-texto text-center w-20 p-0"
                 />
                 <TouchableOpacity
-                  onPress={() => setEditingGestacao({ ...editingGestacao, semanas: Math.min(45, (editingGestacao.semanas || 12) + 1) })}
+                  onPress={() => setEditingGestacao({ ...editingGestacao, semanas: Math.min(LIMITES.semanas.max, (editingGestacao.semanas || 12) + 1) })}
                   className="w-10 h-10 rounded-xl bg-pessego items-center justify-center"
                 >
                   <Text className="text-lg font-bold text-[#C56A43]">+</Text>
@@ -536,6 +547,7 @@ export default function DadosGravidezScreen() {
                 <TextInput
                   value={filho.nome}
                   onChangeText={(t) => atualizarFilho(filho.id_filho, { nome: t })}
+                  maxLength={LIMITES.nomeBebe}
                   placeholder="Nome do bebê"
                   className="bg-fundo border border-borda-forte rounded-xl px-4 py-3 text-sm text-texto mb-3"
                 />

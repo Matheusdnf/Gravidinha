@@ -15,6 +15,7 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useCores } from "../../lib/tema";
+import { LIMITES, validarCelular, validarDataNascimento, validarEmail, validarNomePessoa, validarSenha } from "../../lib/validacao";
 
 export default function RegistroScreen() {
   const cores = useCores();
@@ -44,35 +45,25 @@ export default function RegistroScreen() {
     setDataNascimento(val);
   };
 
+  const [erros, setErros] = useState<Record<string, boolean>>({});
+  const limpaErro = (campo: string) => setErros((p) => ({ ...p, [campo]: false }));
+  const borda = (campo: string) => (erros[campo] ? "border-red-400" : "border-pessego-borda");
+
   const handleRegister = async () => {
-    if (!nome || !email || !senha || !confirmarSenha || !celular || !dataNascimento) {
-      Alert.alert("Atenção", "Por favor, preencha todos os campos.");
-      return;
-    }
-    if (nome.trim().length < 3) {
-      Alert.alert("Atenção", "O nome deve ter pelo menos 3 caracteres.");
-      return;
-    }
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      Alert.alert("Atenção", "Por favor, insira um e-mail válido.");
-      return;
-    }
-    const celularLimpo = celular.replace(/\D/g, "");
-    if (celularLimpo.length < 10 || celularLimpo.length > 11) {
-      Alert.alert("Atenção", "Por favor, insira um celular válido (com DDD).");
-      return;
-    }
-    if (senha.length < 8) {
-      Alert.alert("Atenção", "A senha deve ter no mínimo 8 caracteres.");
-      return;
-    }
-    if (senha !== confirmarSenha) {
-      Alert.alert("Atenção", "As senhas não coincidem.");
-      return;
-    }
-    if (dataNascimento.length !== 10) {
-      Alert.alert("Atenção", "Por favor, insira uma data de nascimento válida (DD/MM/AAAA).");
+    const msgs: Record<string, string | null> = {
+      nome: validarNomePessoa(nome),
+      email: validarEmail(email),
+      celular: validarCelular(celular),
+      dataNascimento: validarDataNascimento(dataNascimento),
+      senha: validarSenha(senha),
+      confirmarSenha: senha !== confirmarSenha ? "As senhas não coincidem." : null,
+    };
+    setErros(Object.fromEntries(Object.entries(msgs).map(([k, m]) => [k, !!m])));
+    // Mantém a ordem de prioridade da mensagem exibida
+    const erro =
+      msgs.nome || msgs.email || msgs.celular || msgs.senha || msgs.confirmarSenha || msgs.dataNascimento;
+    if (erro) {
+      Alert.alert("Atenção", erro);
       return;
     }
     if (!aceitouTermos) {
@@ -81,7 +72,7 @@ export default function RegistroScreen() {
     }
 
     // Não salvamos no banco ainda, apenas guardamos na memória
-    setRegistrationData({ nome, email, senha, celular, dataNascimento });
+    setRegistrationData({ nome: nome.trim(), email: email.trim(), senha, celular, dataNascimento });
     router.replace("/(auth)/gestacao");
   };
 
@@ -127,10 +118,11 @@ export default function RegistroScreen() {
             </Text>
             <TextInput
               value={nome}
-              onChangeText={setNome}
+              onChangeText={(t) => { setNome(t); limpaErro("nome"); }}
+              maxLength={LIMITES.nomePessoa.max}
               placeholder="Como você se chama?"
               placeholderTextColor={cores.textoFraco}
-              className="bg-pessego border border-pessego-borda rounded-2xl px-4 py-3.5 text-sm text-texto"
+              className={`bg-pessego border ${borda("nome")} rounded-2xl px-4 py-3.5 text-sm text-texto`}
             />
           </View>
 
@@ -141,12 +133,13 @@ export default function RegistroScreen() {
             </Text>
             <TextInput
               value={email}
-              onChangeText={setEmail}
+              onChangeText={(t) => { setEmail(t); limpaErro("email"); }}
+              maxLength={LIMITES.email}
               placeholder="seuemail@exemplo.com"
               placeholderTextColor={cores.textoFraco}
               keyboardType="email-address"
               autoCapitalize="none"
-              className="bg-pessego border border-pessego-borda rounded-2xl px-4 py-3.5 text-sm text-texto"
+              className={`bg-pessego border ${borda("email")} rounded-2xl px-4 py-3.5 text-sm text-texto`}
             />
           </View>
 
@@ -157,12 +150,12 @@ export default function RegistroScreen() {
             </Text>
             <TextInput
               value={celular}
-              onChangeText={(t) => setCelular(mascaraCelular(t))}
+              onChangeText={(t) => { setCelular(mascaraCelular(t)); limpaErro("celular"); }}
               placeholder="(11) 99999-9999"
               placeholderTextColor={cores.textoFraco}
               keyboardType="phone-pad"
               maxLength={15}
-              className="bg-pessego border border-pessego-borda rounded-2xl px-4 py-3.5 text-sm text-texto"
+              className={`bg-pessego border ${borda("celular")} rounded-2xl px-4 py-3.5 text-sm text-texto`}
             />
           </View>
 
@@ -171,10 +164,10 @@ export default function RegistroScreen() {
             <Text className="text-sm font-bold text-texto mb-2">
               Data de Nascimento
             </Text>
-            <View className="flex-row items-center bg-pessego border border-pessego-borda rounded-2xl px-4 py-3.5">
+            <View className={`flex-row items-center bg-pessego border ${borda("dataNascimento")} rounded-2xl px-4 py-3.5`}>
               <TextInput
                 value={dataNascimento}
-                onChangeText={formatDataNascimento}
+                onChangeText={(t) => { formatDataNascimento(t); limpaErro("dataNascimento"); }}
                 placeholder="DD/MM/AAAA"
                 placeholderTextColor={cores.textoFraco}
                 keyboardType="number-pad"
@@ -190,10 +183,11 @@ export default function RegistroScreen() {
           {/* Campo: Senha */}
           <View className="mb-5">
             <Text className="text-sm font-bold text-texto mb-2">Senha</Text>
-            <View className="flex-row items-center bg-pessego border border-pessego-borda rounded-2xl px-4 py-3.5">
+            <View className={`flex-row items-center bg-pessego border ${borda("senha")} rounded-2xl px-4 py-3.5`}>
               <TextInput
                 value={senha}
-                onChangeText={setSenha}
+                onChangeText={(t) => { setSenha(t); limpaErro("senha"); }}
+                maxLength={LIMITES.senha.max}
                 placeholder="Mínimo 8 caracteres"
                 placeholderTextColor={cores.textoFraco}
                 secureTextEntry={!showSenha}
@@ -214,10 +208,11 @@ export default function RegistroScreen() {
             <Text className="text-sm font-bold text-texto mb-2">
               Confirmar senha
             </Text>
-            <View className="flex-row items-center bg-pessego border border-pessego-borda rounded-2xl px-4 py-3.5">
+            <View className={`flex-row items-center bg-pessego border ${borda("confirmarSenha")} rounded-2xl px-4 py-3.5`}>
               <TextInput
                 value={confirmarSenha}
-                onChangeText={setConfirmarSenha}
+                onChangeText={(t) => { setConfirmarSenha(t); limpaErro("confirmarSenha"); }}
+                maxLength={LIMITES.senha.max}
                 placeholder="Repita sua senha"
                 placeholderTextColor={cores.textoFraco}
                 secureTextEntry={!showConfirmarSenha}

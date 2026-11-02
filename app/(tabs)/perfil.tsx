@@ -27,6 +27,7 @@ import { StatusSync } from "../../components/perfil/StatusSync";
 // Mocks Isolados
 import { MENU_PERFIL } from "../../constants/menuPerfil";
 import { useCores } from "../../lib/tema";
+import { LIMITES, validarCelular, validarNomePessoa } from "../../lib/validacao";
 
 export default function PerfilScreen() {
   const cores = useCores();
@@ -117,8 +118,9 @@ export default function PerfilScreen() {
   };
 
   const handleSave = async () => {
-    if (!nome) {
-      Alert.alert("Atenção", "O nome não pode ficar vazio.");
+    const erro = validarNomePessoa(nome) || validarCelular(celular);
+    if (erro) {
+      Alert.alert("Atenção", erro);
       return;
     }
 
@@ -359,6 +361,7 @@ export default function PerfilScreen() {
             <TextInput
               value={nome}
               onChangeText={setNome}
+              maxLength={LIMITES.nomePessoa.max}
               placeholder="Seu nome"
               placeholderTextColor={cores.textoFraco}
               className="bg-pessego border border-pessego-borda rounded-2xl px-4 py-3.5 text-sm text-texto"

@@ -5,7 +5,6 @@ import { useEffect } from "react";
 import { View, ActivityIndicator, LogBox, Platform, Alert } from "react-native";
 import { instalarAlertas } from "../lib/alerta";
 import { AlertaHost } from "../components/AlertaHost";
-import { registerForPushNotificationsAsync } from "../lib/notifications";
 import { aoAvisar } from "../lib/sync";
 import { carregarTema, useCores } from "../lib/tema";
 import { StatusBar } from "expo-status-bar";
@@ -28,11 +27,6 @@ function RootLayoutNav() {
   const { user, isLoading } = useAuth();
   const segments = useSegments();
   const router = useRouter();
-
-  // Registra notificações uma única vez, não a cada navegação
-  useEffect(() => {
-    registerForPushNotificationsAsync().catch(console.error);
-  }, []);
 
   // Alteração feita offline que o servidor recusou ao sincronizar
   useEffect(

@@ -21,6 +21,7 @@ import { BackButton } from "../../components/BackButton";
 import { CalendarModal } from "../../components/CalendarModal";
 import { SexoSelector } from "../../components/SexoSelector";
 import { useCores } from "../../lib/tema";
+import { LIMITES, validarDpp, validarNomeBebe, validarNomeGestacao } from "../../lib/validacao";
 
 export default function LinhaTempoGestacaoScreen() {
   const cores = useCores();
@@ -53,7 +54,7 @@ export default function LinhaTempoGestacaoScreen() {
 
   // Controles do contador
   const incrementarSemanas = () => {
-    if (semanas < 45) setSemanas((prev) => prev + 1);
+    if (semanas < LIMITES.semanas.max) setSemanas((prev) => prev + 1);
   };
 
   const decrementarSemanas = () => {
@@ -63,28 +64,16 @@ export default function LinhaTempoGestacaoScreen() {
   const handleFinalizar = async () => {
     const newErrors: Record<string, string> = {};
 
-    let formattedDpp: string | null = null;
-    if (dpp.trim() !== "") {
-      const dppRegex = /^\d{2}\/\d{2}\/\d{4}$/;
-      const cleanedDpp = dpp.replace(/\s/g, "");
-      if (!dppRegex.test(cleanedDpp)) {
-        newErrors.dpp = "Formato inválido. Use dd/mm/aaaa";
-      } else {
-        const parts = cleanedDpp.split('/');
-        const day = parseInt(parts[0], 10);
-        const month = parseInt(parts[1], 10);
-        if (day < 1 || day > 31 || month < 1 || month > 12) {
-          newErrors.dpp = "Data inválida.";
-        } else {
-          formattedDpp = `${parts[2]}-${parts[1]}-${parts[0]}`;
-        }
-      }
-    }
+    const erroDpp = validarDpp(dpp);
+    if (erroDpp) newErrors.dpp = erroDpp;
+    const formattedDpp = dpp.trim() ? paraISO(dpp) : null;
+
+    const erroNomeGestacao = validarNomeGestacao(nomeGestacao);
+    if (erroNomeGestacao) newErrors.nomeGestacao = erroNomeGestacao;
 
     bebes.forEach((bebe, index) => {
-      if (!bebe.aindaNaoDecidiuNome && bebe.nome.trim() === "") {
-        newErrors[`bebe_${index}_nome`] = "Por favor, insira o nome do bebê.";
-      }
+      const erro = validarNomeBebe(bebe.nome, !bebe.aindaNaoDecidiuNome);
+      if (erro) newErrors[`bebe_${index}_nome`] = erro;
     });
 
     if (Object.keys(newErrors).length > 0) {
@@ -185,6 +174,7 @@ export default function LinhaTempoGestacaoScreen() {
             <TextInput
               value={nomeGestacao}
               onChangeText={setNomeGestacao}
+              maxLength={LIMITES.nomeGestacao}
               placeholder="Ex: Primeira Viagem, Gêmeos 2026..."
               placeholderTextColor={cores.textoFraco}
               className="bg-pessego border border-pessego-borda rounded-2xl px-4 py-3.5 text-sm text-texto"
@@ -214,7 +204,7 @@ export default function LinhaTempoGestacaoScreen() {
                 onChangeText={(text) => {
                   const val = parseInt(text.replace(/[^0-9]/g, ""), 10);
                   if (!isNaN(val)) {
-                    setSemanas(Math.max(1, Math.min(45, val)));
+                    setSemanas(Math.max(1, Math.min(LIMITES.semanas.max, val)));
                   }
                 }}
                 className="text-4xl font-extrabold text-[#C56A43] leading-none mb-1 text-center p-0"
@@ -237,12 +227,12 @@ export default function LinhaTempoGestacaoScreen() {
           <View className="mb-8 px-2">
             <View className="w-full h-1.5 bg-agua-borda rounded-full relative justify-center">
               <View
-                style={{ width: `${Math.min(100, Math.max(0, (semanas / 45) * 100)).toFixed(1)}%` as any }}
+                style={{ width: `${Math.min(100, Math.max(0, (semanas / LIMITES.semanas.max) * 100)).toFixed(1)}%` as any }}
                 className="h-full bg-[#C56A43] rounded-full"
               />
               <View
                 style={{
-                  left: `${Math.min(100, Math.max(0, (semanas / 45) * 100)).toFixed(1)}%` as any,
+                  left: `${Math.min(100, Math.max(0, (semanas / LIMITES.semanas.max) * 100)).toFixed(1)}%` as any,
                   transform: [{ translateX: -10 }]
                 }}
                 className="absolute w-5 h-5 rounded-full bg-texto-suave border-2 border-cartao shadow-sm"
@@ -253,7 +243,7 @@ export default function LinhaTempoGestacaoScreen() {
                 1 semana
               </Text>
               <Text className="text-[10px] font-bold text-texto-suave">
-                45 semanas
+                {LIMITES.semanas.max} semanas
               </Text>
             </View>
           </View>
@@ -316,6 +306,7 @@ export default function LinhaTempoGestacaoScreen() {
                     <TextInput
                       value={bebe.nome}
                       onChangeText={(text) => atualizarBebe(index, { nome: text })}
+                      maxLength={LIMITES.nomeBebe}
                       placeholder="Ex: Sophia, Lucas..."
                       placeholderTextColor={cores.textoFraco}
                       className={`bg-pessego border ${errors[`bebe_${index}_nome`] ? 'border-red-400' : 'border-pessego-borda'} rounded-xl px-4 py-3 text-sm text-texto`}

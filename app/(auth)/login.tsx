@@ -13,6 +13,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useAuth } from "../../state/auth";
 import { entrar } from "../../lib/dados";
 import { useCores } from "../../lib/tema";
+import { LIMITES, validarEmail } from "../../lib/validacao";
 
 export default function LoginScreen() {
   const cores = useCores();
@@ -24,15 +25,20 @@ export default function LoginScreen() {
   const [showSenha, setShowSenha] = useState(false);
   const [loading, setLoading] = useState(false);
 
+  const [erroEmail, setErroEmail] = useState(false);
+  const [erroSenha, setErroSenha] = useState(false);
+  const borda = (erro: boolean) => (erro ? "border-red-400" : "border-pessego-borda");
+
   const handleLogin = async () => {
+    const emailInvalido = !email || !!validarEmail(email);
+    setErroEmail(emailInvalido);
+    setErroSenha(!senha);
     if (!email || !senha) {
       Alert.alert("Atenção", "Preencha todos os campos.");
       return;
     }
-
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      Alert.alert("Atenção", "Por favor, insira um e-mail válido.");
+    if (emailInvalido) {
+      Alert.alert("Atenção", validarEmail(email)!);
       return;
     }
 
@@ -41,6 +47,9 @@ export default function LoginScreen() {
       await signIn(await entrar(email, senha));
       router.replace("/(tabs)");
     } catch (error: any) {
+      // Credenciais erradas: não dizemos qual campo, então marca os dois
+      setErroEmail(true);
+      setErroSenha(true);
       Alert.alert("Erro", error.message);
     } finally {
       setLoading(false);
@@ -77,22 +86,24 @@ export default function LoginScreen() {
               </Text>
               <TextInput
                 value={email}
-                onChangeText={setEmail}
+                onChangeText={(t) => { setEmail(t); setErroEmail(false); }}
+                maxLength={LIMITES.email}
                 placeholder="seuemail@exemplo.com"
                 placeholderTextColor={cores.textoFraco}
                 keyboardType="email-address"
                 autoCapitalize="none"
-                className="bg-pessego border border-pessego-borda rounded-2xl px-4 py-3.5 text-sm text-texto"
+                className={`bg-pessego border ${borda(erroEmail)} rounded-2xl px-4 py-3.5 text-sm text-texto`}
               />
             </View>
 
             {/* Campo: Senha */}
             <View className="mb-3">
               <Text className="text-sm font-bold text-texto mb-2">Senha</Text>
-              <View className="flex-row items-center bg-pessego border border-pessego-borda rounded-2xl px-4 py-3.5">
+              <View className={`flex-row items-center bg-pessego border ${borda(erroSenha)} rounded-2xl px-4 py-3.5`}>
                 <TextInput
                   value={senha}
-                  onChangeText={setSenha}
+                  onChangeText={(t) => { setSenha(t); setErroSenha(false); }}
+                  maxLength={LIMITES.senha.max}
                   placeholder="Digite sua senha"
                   placeholderTextColor={cores.textoFraco}
                   secureTextEntry={!showSenha}
@@ -108,19 +119,9 @@ export default function LoginScreen() {
               </View>
             </View>
 
-            {/* Esqueci minha senha */}
-            <TouchableOpacity
-              className="align-self-end mb-8 self-end"
-              onPress={() => router.push("/(auth)/esqueci_senha")}
-            >
-              <Text className="text-xs font-bold text-[#C56A43]">
-                Esqueceu a senha?
-              </Text>
-            </TouchableOpacity>
-
             {/* Botão Entrar */}
             <TouchableOpacity
-              className={`bg-[#D97D54] active:bg-[#C56A43] rounded-2xl py-4 items-center justify-center mb-6 shadow-sm ${loading ? 'opacity-70' : ''}`}
+              className={`mt-4 bg-[#D97D54] active:bg-[#C56A43] rounded-2xl py-4 items-center justify-center mb-6 shadow-sm ${loading ? 'opacity-70' : ''}`}
               activeOpacity={0.9}
               onPress={handleLogin}
               disabled={loading}

@@ -22,6 +22,7 @@ import { BackButton } from "../../components/BackButton";
 import { DiarioEntry } from "../../types/diario";
 import { HUMOR_OPTIONS } from "../../constants/humores";
 import { useCores } from "../../lib/tema";
+import { LIMITES, validarRegistroDiario } from "../../lib/validacao";
 
 const POR_PAGINA = 20;
 
@@ -88,7 +89,11 @@ export default function DiarioScreen() {
   useDadosAtualizados(fetchDiarios);
 
   const handleSalvar = async () => {
-    if (!textoRegistro.trim()) return;
+    const erro = validarRegistroDiario({ reacao: selectedHumorId, descricao: textoRegistro });
+    if (erro) {
+      Alert.alert("Atenção", erro);
+      return;
+    }
 
     setIsLoading(true);
     try {
@@ -171,6 +176,7 @@ export default function DiarioScreen() {
                 <TextInput
                   value={textoRegistro}
                   onChangeText={setTextoRegistro}
+                  maxLength={LIMITES.diario}
                   placeholder="Escreva aqui seus pensamentos, sentimentos, sintomas ou qualquer coisa que queira guardar de hoje..."
                   placeholderTextColor={cores.textoFraco}
                   multiline

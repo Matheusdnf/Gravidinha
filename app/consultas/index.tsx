@@ -24,6 +24,7 @@ import { useDadosAtualizados } from "../../lib/sync";
 import { hojeISO, isoParaBR, parseData } from "../../lib/gestacao";
 import { BackButton } from "../../components/BackButton";
 import { useCores } from "../../lib/tema";
+import { LIMITES, validarConsulta } from '../../lib/validacao';
 
 // Fora do componente: se fosse criado dentro, seria um tipo novo a cada render
 // e o <input> remontaria (perdendo o foco) a cada tecla
@@ -143,17 +144,19 @@ export default function ConsultasScreen() {
 
   // Valida o formulário; devolve null (e avisa) se faltar campo obrigatório
   const dadosDoForm = () => {
-    if (!tipoConsulta.trim() || !data.trim()) {
-      Alert.alert("Atenção", "Preencha o tipo de consulta e a data.");
-      return null;
-    }
-    return {
+    const form = {
       data,
-      consulta: tipoConsulta,
+      consulta: tipoConsulta.trim(),
       horario: horario.trim() || "10:00",
       local: local.trim() || "A definir",
       medico: medico.trim(),
     };
+    const erro = validarConsulta(form);
+    if (erro) {
+      Alert.alert("Atenção", erro);
+      return null;
+    }
+    return form;
   };
 
   const handleEditarConsulta = async () => {
@@ -215,9 +218,8 @@ export default function ConsultasScreen() {
 
       Alert.alert("Sucesso", "Consulta agendada com sucesso!");
       
-      // --- INÍCIO DA INTEGRAÇÃO DE NOTIFICAÇÕES ---
+      // --- Calendário do aparelho ---
       try {
-        const { scheduleLocalNotification } = require("../../lib/notifications");
         const [day, month, year] = data.split('/');
         const [hour, minute] = form.horario.split(':');
         
@@ -226,16 +228,6 @@ export default function ConsultasScreen() {
         
         // Data de término (1 hora depois por padrão)
         const appointmentEndDate = new Date(appointmentDate.getTime() + 60 * 60 * 1000);
-        
-        // Notificação: 1 dia antes
-        const dayBefore = new Date(appointmentDate.getTime() - 24 * 60 * 60 * 1000);
-        if (dayBefore > new Date()) {
-          scheduleLocalNotification(
-            "Consulta Amanhã!",
-            `Lembrete: você tem ${tipoConsulta} amanhã às ${hour}:${minute}.`,
-            dayBefore
-          );
-        }
         
         // --- INTEGRAÇÃO COM GOOGLE CALENDAR / APPLE CALENDAR ---
         try {
@@ -250,20 +242,9 @@ export default function ConsultasScreen() {
         } catch (calErr) {
           console.log("Erro ao salvar no calendário silencioso:", calErr);
         }
-        
-        // Notificação: 1 hora antes
-        const hourBefore = new Date(appointmentDate.getTime() - 60 * 60 * 1000);
-        if (hourBefore > new Date()) {
-          scheduleLocalNotification(
-            "Sua consulta é em 1 hora!",
-            `Prepare-se para: ${tipoConsulta}.`,
-            hourBefore
-          );
-        }
       } catch (e) {
-        console.error("Erro ao agendar notificação:", e);
+        console.error("Erro ao agendar no calendário:", e);
       }
-      // --- FIM DA INTEGRAÇÃO DE NOTIFICAÇÕES ---
 
       resetForm();
       setIsModalVisible(false);
@@ -292,6 +273,7 @@ export default function ConsultasScreen() {
         <TextInput
           value={tipoConsulta}
           onChangeText={setTipoConsulta}
+          maxLength={LIMITES.consulta}
           placeholder="Ex: Consulta Pré-natal, Ultrassom..."
           placeholderTextColor={cores.textoFraco}
           className="bg-pessego border border-pessego-borda rounded-2xl px-4 py-3.5 text-sm text-texto"
@@ -345,6 +327,7 @@ export default function ConsultasScreen() {
         <TextInput
           value={medico}
           onChangeText={setMedico}
+          maxLength={LIMITES.medico}
           placeholder="Nome do médico"
           placeholderTextColor={cores.textoFraco}
           className="bg-pessego border border-pessego-borda rounded-2xl px-4 py-3.5 text-sm text-texto"
@@ -358,6 +341,7 @@ export default function ConsultasScreen() {
         <TextInput
           value={local}
           onChangeText={setLocal}
+          maxLength={LIMITES.local}
           placeholder="Nome da clínica ou laboratório"
           placeholderTextColor={cores.textoFraco}
           className="bg-pessego border border-pessego-borda rounded-2xl px-4 py-3.5 text-sm text-texto"

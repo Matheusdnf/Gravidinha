@@ -15,8 +15,14 @@ import Animated, {
   Easing,
   cancelAnimation,
 } from "react-native-reanimated";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { setAudioModeAsync, useAudioPlayer } from "expo-audio";
 import * as Haptics from "expo-haptics";
 import { useCores } from "../../lib/tema";
+
+// Preferências do aparelho: voz e música ligam/desligam cada uma por conta própria
+const CHAVE_VOZ = "gravidinha_respiracao_voz";
+const CHAVE_MUSICA = "gravidinha_respiracao_musica";
 
 export default function RespiracaoScreen() {
   const cores = useCores();
@@ -37,6 +43,58 @@ export default function RespiracaoScreen() {
 
   const timeoutsRef = useRef<ReturnType<typeof setTimeout>[]>([]);
 
+  const [vozLigada, setVozLigada] = useState(true);
+  const [musicaLigada, setMusicaLigada] = useState(true);
+  const vozRef = useRef(true);
+  const musica = useAudioPlayer(require("../../assets/audio/lofi.wav"));
+  // Voz: locuções gravadas em português do Brasil (voz neural), uma por momento do exercício
+  const vozes = {
+    inspire: useAudioPlayer(require("../../assets/audio/inspire.mp3")),
+    segure: useAudioPlayer(require("../../assets/audio/segure.mp3")),
+    expire: useAudioPlayer(require("../../assets/audio/expire.mp3")),
+    fim: useAudioPlayer(require("../../assets/audio/fim.mp3")),
+  };
+
+  const calarVoz = () => Object.values(vozes).forEach((p) => p.pause());
+  const falar = (fala: keyof typeof vozes) => {
+    if (!vozRef.current) return;
+    calarVoz();
+    vozes[fala].seekTo(0);
+    vozes[fala].play();
+  };
+
+  useEffect(() => {
+    musica.loop = true;
+    musica.volume = 0.35; // abaixo da voz, para a locução ficar clara
+    setAudioModeAsync({ playsInSilentMode: true }).catch(() => {});
+    Promise.all([AsyncStorage.getItem(CHAVE_VOZ), AsyncStorage.getItem(CHAVE_MUSICA)])
+      .then(([voz, mus]) => {
+        if (voz === "0") { setVozLigada(false); vozRef.current = false; }
+        if (mus === "0") setMusicaLigada(false);
+      })
+      .catch(() => {});
+  }, []);
+
+  // Música toca só durante o exercício e só se estiver ligada
+  useEffect(() => {
+    if (isActive && musicaLigada) musica.play();
+    else musica.pause();
+  }, [isActive, musicaLigada]);
+
+  const alternarVoz = () => {
+    const novo = !vozLigada;
+    setVozLigada(novo);
+    vozRef.current = novo;
+    if (!novo) calarVoz();
+    AsyncStorage.setItem(CHAVE_VOZ, novo ? "1" : "0").catch(() => {});
+  };
+
+  const alternarMusica = () => {
+    const novo = !musicaLigada;
+    setMusicaLigada(novo);
+    AsyncStorage.setItem(CHAVE_MUSICA, novo ? "1" : "0").catch(() => {});
+  };
+
   const startBreathingAnimation = () => {
     // Ciclo 4-7-8
     const INHALE_TIME = 4000;
@@ -48,6 +106,7 @@ export default function RespiracaoScreen() {
       if (!isActiveRef.current) return;
       
       setInstruction("Inspirar");
+      falar("inspire");
       if (Platform.OS !== "web") Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
       
       scale.value = withTiming(1.8, { duration: INHALE_TIME, easing: Easing.inOut(Easing.ease) });
@@ -56,6 +115,7 @@ export default function RespiracaoScreen() {
       const t1 = setTimeout(() => {
         if (!isActiveRef.current) return;
         setInstruction("Segurar");
+        falar("segure");
         if (Platform.OS !== "web") Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
         
         // Segura a animação onde está
@@ -63,6 +123,7 @@ export default function RespiracaoScreen() {
         const t2 = setTimeout(() => {
           if (!isActiveRef.current) return;
           setInstruction("Expirar");
+          falar("expire");
           if (Platform.OS !== "web") Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
           
           scale.value = withTiming(1, { duration: EXHALE_TIME, easing: Easing.inOut(Easing.ease) });
@@ -93,6 +154,7 @@ export default function RespiracaoScreen() {
       if ((timerRef as any).animInterval) clearInterval((timerRef as any).animInterval);
       timeoutsRef.current.forEach(clearTimeout);
       timeoutsRef.current = [];
+      calarVoz();
       
       cancelAnimation(scale);
       cancelAnimation(opacity);
@@ -118,6 +180,7 @@ export default function RespiracaoScreen() {
             setIsActive(false);
             isActiveRef.current = false;
             setInstruction("Exercício concluído!");
+            falar("fim");
             if (Platform.OS !== "web") Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
             cancelAnimation(scale);
             cancelAnimation(opacity);
@@ -138,6 +201,7 @@ export default function RespiracaoScreen() {
       if (timerRef.current) clearInterval(timerRef.current);
       if ((timerRef as any).animInterval) clearInterval((timerRef as any).animInterval);
       timeoutsRef.current.forEach(clearTimeout);
+      calarVoz();
       cancelAnimation(scale);
       cancelAnimation(opacity);
     };
@@ -253,9 +317,38 @@ export default function RespiracaoScreen() {
           </View>
         )}
 
+        {/* Voz e música: cada uma liga/desliga sozinha, antes e durante o exercício */}
+        <View className="flex-row justify-between mb-4 w-full z-20">
+          {[
+            { rotulo: "Voz", ligado: vozLigada, alternar: alternarVoz, on: "account-voice", off: "account-voice-off" },
+            { rotulo: "Música", ligado: musicaLigada, alternar: alternarMusica, on: "music", off: "music-off" },
+          ].map((o) => (
+            <TouchableOpacity
+              key={o.rotulo}
+              onPress={o.alternar}
+              accessibilityRole="switch"
+              accessibilityState={{ checked: o.ligado }}
+              accessibilityLabel={`${o.rotulo} ${o.ligado ? "ligada" : "desligada"}`}
+              className={`flex-1 mx-1.5 py-3 rounded-[20px] flex-row items-center justify-center border ${
+                o.ligado ? "bg-pessego border-[#C56A43]" : "bg-cartao border-borda"
+              }`}
+              activeOpacity={0.7}
+            >
+              <MaterialCommunityIcons
+                name={(o.ligado ? o.on : o.off) as any}
+                size={20}
+                color={o.ligado ? "#C56A43" : cores.textoSuave}
+              />
+              <Text className={`font-bold text-sm ml-2 ${o.ligado ? "text-[#C56A43]" : "text-texto-suave"}`}>
+                {o.rotulo}: {o.ligado ? "ligada" : "desligada"}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+
         <TouchableOpacity
           onPress={toggleTimer}
-          className={`rounded-3xl py-4 items-center justify-center shadow-sm w-full mb-10 z-20 ${isActive ? 'bg-texto' : 'bg-[#C56A43]'}`}
+          className={`rounded-3xl py-4 items-center justify-center shadow-sm w-full mb-10 z-20 ${isActive ? 'bg-[#7A5C50]' : 'bg-[#C56A43]'}`}
           activeOpacity={0.9}
         >
           <Text className="text-white font-extrabold text-lg">
