@@ -487,6 +487,7 @@ export default function ConsultasScreen() {
       {/* MODAL DE NOVA CONSULTA */}
       <BottomSheetModal
         visible={isModalVisible && !formEscondido}
+        animationType={formEscondido ? "none" : "fade"}
         onClose={() => setIsModalVisible(false)}
         title="Adicionar Consulta"
       >
@@ -513,6 +514,7 @@ export default function ConsultasScreen() {
       {/* MODAL DE EDITAR CONSULTA */}
       <BottomSheetModal
         visible={isEditModalVisible && !formEscondido}
+        animationType={formEscondido ? "none" : "fade"}
         onClose={() => {
           setIsEditModalVisible(false);
           resetForm();

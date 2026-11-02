@@ -195,7 +195,7 @@ export default function RegistroScreen() {
               />
               <TouchableOpacity onPress={() => setShowSenha(!showSenha)}>
                 <Ionicons
-                  name={showSenha ? "eye-outline" : "eye-outline"}
+                  name={showSenha ? "eye-outline" : "eye-off-outline"}
                   size={20}
                   color={cores.marrom}
                 />
@@ -222,7 +222,7 @@ export default function RegistroScreen() {
                 onPress={() => setShowConfirmarSenha(!showConfirmarSenha)}
               >
                 <Ionicons
-                  name={showConfirmarSenha ? "eye-outline" : "eye-outline"}
+                  name={showConfirmarSenha ? "eye-outline" : "eye-off-outline"}
                   size={20}
                   color={cores.marrom}
                 />

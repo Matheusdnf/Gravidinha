@@ -111,7 +111,7 @@ export default function LoginScreen() {
                 />
                 <TouchableOpacity onPress={() => setShowSenha(!showSenha)}>
                   <Ionicons
-                    name={showSenha ? "eye-outline" : "eye-outline"}
+                    name={showSenha ? "eye-outline" : "eye-off-outline"}
                     size={20}
                     color={cores.marrom}
                   />

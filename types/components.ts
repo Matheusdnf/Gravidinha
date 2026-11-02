@@ -5,6 +5,7 @@ export interface BottomSheetModalProps {
   onClose: () => void;
   title: string;
   children: ReactNode;
+  animationType?: "slide" | "fade" | "none";
 }
 
 export interface CalendarModalProps {

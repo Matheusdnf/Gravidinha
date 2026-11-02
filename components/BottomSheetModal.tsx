@@ -4,10 +4,10 @@ import { BottomSheetModalProps } from "../types/components";
 import { FullScreenModal } from "./FullScreenModal";
 import { useCores } from "../lib/tema";
 
-export function BottomSheetModal({ visible, onClose, title, children }: BottomSheetModalProps) {
+export function BottomSheetModal({ visible, onClose, title, children, animationType = "fade" }: BottomSheetModalProps) {
   const cores = useCores();
   return (
-    <FullScreenModal visible={visible} onClose={onClose} animationType="fade">
+    <FullScreenModal visible={visible} onClose={onClose} animationType={animationType}>
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : "height"}
         style={{ flex: 1 }}
