@@ -11,6 +11,13 @@ import { db, tabela, salvarLocal, agora, novoId, lerMeta, type Tabela } from './
 import { prepararBancoLocal, marcarAlterado } from './sync';
 import { normalizarHorario } from './syncRegras';
 import { calcularSemanaAtual, hojeISO, paraISO } from './gestacao';
+import * as v from './validacao';
+
+// Lança o primeiro erro de validação encontrado (null/undefined = tudo certo)
+function exigir(...erros: (string | null | undefined)[]) {
+  const erro = erros.find(Boolean);
+  if (erro) throw new Error(erro);
+}
 import { diaISO, estadoTrilha, type LinhaTrilha } from './trilha';
 import { diasParaDpp, estadoJornada } from './jornada';
 import sintDb from '../sint_db.json';
@@ -109,6 +116,7 @@ async function carregarDadosDaConta(id_user: string, mensagem: string): Promise<
 }
 
 export async function entrar(email: string, senha: string) {
+  exigir(v.validarEmail(email), !senha || senha.length > v.LIMITES.senha.max ? 'Senha inválida.' : null);
   const { data, error } = await supabase.auth.signInWithPassword({ email: email.trim().toLowerCase(), password: senha });
   if (error) {
     // Mesma mensagem para e-mail inexistente e senha errada, para não revelar quais e-mails existem
@@ -122,6 +130,7 @@ export async function entrar(email: string, senha: string) {
 
 // dataNascimento em "aaaa-mm-dd". O perfil (tabela usuario) é criado por trigger a partir de options.data.
 export async function cadastrar(d: { nome: string; email: string; senha: string; celular: string; dataNascimento: string }) {
+  exigir(v.validarNomePessoa(d.nome), v.validarEmail(d.email), v.validarCelular(d.celular), v.validarSenha(d.senha), v.validarDataNascimento(d.dataNascimento));
   const { data, error } = await supabase.auth.signUp({
     email: d.email.trim().toLowerCase(),
     password: d.senha,
@@ -130,6 +139,7 @@ export async function cadastrar(d: { nome: string; email: string; senha: string;
     },
   });
   if (error) {
+    if (error.name === 'AuthRetryableFetchError') throw new Error('Você precisa estar com o Wi-Fi ligado para fazer o seu cadastro inicial.');
     if (error.code === 'user_already_exists' || error.code === 'email_exists') throw new Error('Este e-mail já está em uso');
     if (error.code === 'weak_password') throw new Error('Senha fraca. Use no mínimo 8 caracteres.');
     console.error(error);
@@ -154,12 +164,12 @@ export async function excluirContaNoServidor() {
 export async function atualizarUsuario(d: { nome?: string; celular?: string; profile_image?: string }) {
   const patch: Record<string, unknown> = {};
   if (d.nome !== undefined) {
-    if (d.nome.trim() === '') throw new Error('O nome não pode ficar vazio');
+    exigir(v.validarNomePessoa(d.nome));
     patch.name = d.nome.trim();
   }
   if (d.celular !== undefined) {
     const celular = d.celular.replace(/\D/g, '');
-    if (celular.length < 10 || celular.length > 11) throw new Error('Número de celular inválido');
+    exigir(v.validarCelular(celular));
     patch.cellphone = Number(celular);
   }
   if (d.profile_image !== undefined) patch.profile_image = d.profile_image;
@@ -209,6 +219,13 @@ export async function criarGestacao(d: {
     throw new Error('Você já possui uma gestação ativa. Finalize-a antes de criar uma nova.');
   }
   const bebes = d.bebes ?? [];
+  exigir(
+    v.validarSemanas(d.semanas),
+    v.validarDpp(d.dpp),
+    v.validarNomeGestacao(d.nomeGestacao),
+    v.validarQtdBebes(d.qtdBebes),
+    ...bebes.flatMap((b) => [v.validarNomeBebe(b.nome, false), v.validarSexo(b.sexo)]),
+  );
   const id_gestacao = novoId();
   const id_user = await meuId();
 
@@ -250,7 +267,13 @@ export async function atualizarGestacao(d: {
   status?: string;
   filhos?: { id_filho?: string; nome?: string; sexo?: string }[];
 }) {
-  const patch: Record<string, unknown> = { nome: d.nome, semanas: d.semanas, dpp: paraISO(d.dpp) };
+  exigir(
+    v.validarSemanas(d.semanas),
+    v.validarDpp(d.dpp),
+    v.validarNomeGestacao(d.nome),
+    ...(d.filhos ?? []).flatMap((f) => [v.validarNomeBebe(f.nome, false), v.validarSexo(f.sexo)]),
+  );
+  const patch: Record<string, unknown> = { nome: d.nome.trim(), semanas: d.semanas, dpp: paraISO(d.dpp) };
   if (d.status) {
     if (d.status === 'ativa' && (await gestacaoAtiva(d.id_gestacao))) throw new Error('Você já possui uma gestação ativa.');
     patch.status = d.status;
@@ -273,13 +296,16 @@ export async function atualizarGestacao(d: {
 
 type ConsultaForm = { data: string; consulta: string; horario: string; local: string; medico?: string };
 
-const consultaParaLinha = (c: ConsultaForm) => ({
-  data: paraISO(c.data),
-  descricao: c.consulta,
-  horario: normalizarHorario(c.horario),
-  local: c.local,
-  medico: c.medico || null,
-});
+const consultaParaLinha = (c: ConsultaForm) => {
+  exigir(v.validarConsulta(c));
+  return {
+    data: paraISO(c.data),
+    descricao: c.consulta.trim(),
+    horario: normalizarHorario(c.horario.trim()),
+    local: c.local.trim(),
+    medico: c.medico?.trim() || null,
+  };
+};
 
 export async function listarConsultas(id_gestacao: string) {
   return db.getAllAsync<Record<string, any>>(
@@ -320,7 +346,8 @@ export async function listarDiario(id_gestacao: string) {
 export async function criarDiario(d: { id_gestacao?: string; data: string; hora?: string; reacao: string; descricao: string }) {
   if (!d.id_gestacao) throw new Error('Nenhuma gestação selecionada.');
   await exigirGestacaoAtiva(d.id_gestacao, 'Gestação finalizada. Não é possível adicionar novos registros.');
-  await inserir('diario', { ...d, id_diario: novoId(), data: paraISO(d.data), hora: d.hora || null });
+  exigir(v.validarRegistroDiario(d), v.lerData(d.data) ? null : 'Data inválida.');
+  await inserir('diario', { ...d, descricao: d.descricao.trim(), id_diario: novoId(), data: paraISO(d.data), hora: d.hora || null });
   marcarAlterado();
 }
 

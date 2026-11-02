@@ -6,12 +6,12 @@
 // Em todas as perguntas a alternativa correta é a primeira (correta: 0); o app embaralha na exibição.
 // Regras de pontuação e progressão: lib/trilha.ts.
 
-export type Topico = { icone: string; titulo: string; texto: string }; // icone: MaterialCommunityIcons
-export type Explicacao = { tipo: 'explicacao'; titulo: string; texto: string; topicos?: Topico[] };
-export type Variacao = { pergunta: string; alternativas: string[]; correta: number; explicacao: string };
+type Topico = { icone: string; titulo: string; texto: string }; // icone: MaterialCommunityIcons
+type Explicacao = { tipo: 'explicacao'; titulo: string; texto: string; topicos?: Topico[] };
+type Variacao = { pergunta: string; alternativas: string[]; correta: number; explicacao: string };
 export type Quiz = { tipo: 'quiz'; variacoes: Variacao[] };
-export type Situacao = { tipo: 'situacao'; cenario: string; escolhas: { texto: string; retorno: string }[] };
-export type Casa = Explicacao | Quiz | Situacao;
+type Situacao = { tipo: 'situacao'; cenario: string; escolhas: { texto: string; retorno: string }[] };
+type Casa = Explicacao | Quiz | Situacao;
 export type Conquista = { titulo: string; descricao: string; icone: string }; // icone: MaterialCommunityIcons
 export type Fase = { numero: number; tema: number; titulo: string; conquista?: Conquista; casas: Casa[] };
 
@@ -65,12 +65,12 @@ export const FASES: Fase[] = [
           v(
             'Qual destes fatores contribui para o sofrimento comum no pós-parto (puerpério)?',
             ['As mudanças no corpo', 'Ter feito o pré-natal', 'Dormir demais', 'Ter recebido visitas'],
-            'Estudos citados pela cartilha apontam as mudanças corporais como um dos fatores que contribuem para esse sofrimento.',
+            'Estudos apontam as mudanças corporais como um dos fatores que contribuem para esse sofrimento.',
           ),
           v(
             'Uma amiga grávida diz: “Todo mundo só pergunta do bebê, ninguém pergunta de mim”. O que isso mostra?',
             ['Que o cuidado com a gestante costuma ser esquecido, e ele importa', 'Que ela está exagerando', 'Que gestantes não precisam de atenção', 'Que só depois do parto alguém precisa de cuidado'],
-            'É justamente o que a cartilha alerta: o cuidado com a gestante não deve ser esquecido.',
+            'É um alerta importante: o cuidado com a gestante não deve ser esquecido.',
           ),
         ],
       },
@@ -82,7 +82,7 @@ export const FASES: Fase[] = [
         topicos: [
           { icone: 'account-multiple', titulo: 'Duas pessoas em adaptação', texto: 'A mãe se adapta ao papel de maternar; o bebê, ao mundo.' },
           { icone: 'earth', titulo: 'Cada uma do seu jeito', texto: 'Cada pessoa materna de forma única, conforme as construções sociais e culturais que viveu.' },
-          { icone: 'gender-non-binary', titulo: '“Mãe” inclui todas', texto: 'A cartilha usa “mãe” e pronomes femininos para todas as pessoas que engravidam.' },
+          { icone: 'gender-non-binary', titulo: '“Mãe” inclui todas', texto: '“Mãe” e os pronomes femininos incluem todas as pessoas que engravidam.' },
         ],
       },
       {
@@ -94,7 +94,7 @@ export const FASES: Fase[] = [
             'Duas pessoas estão em adaptação: a mãe, ao papel de maternar, e o bebê, ao mundo.',
           ),
           v(
-            'Quem está incluído quando a cartilha fala em “mãe”?',
+            'Neste conteúdo, quem está incluído na palavra “mãe”?',
             ['Todas as pessoas que engravidam', 'Só quem já tem outros filhos', 'Só mulheres casadas', 'Só quem planejou a gravidez'],
             'A palavra “mãe” e os pronomes femininos incluem todas as pessoas que engravidam, não só um gênero.',
           ),
@@ -106,7 +106,7 @@ export const FASES: Fase[] = [
           v(
             'Além de cuidar do bebê, o que também é importante para a mãe?',
             ['Ter a própria identidade preservada', 'Abrir mão de quem era', 'Esconder o que sente', 'Dar conta de tudo sozinha'],
-            'A cartilha reforça que o cuidado com a gestante não seja esquecido e que sua identidade seja preservada.',
+            'O cuidado com a gestante não deve ser esquecido, e a identidade dela precisa ser preservada.',
           ),
         ],
       },
@@ -151,7 +151,7 @@ export const FASES: Fase[] = [
         tipo: 'quiz',
         variacoes: [
           v(
-            'Quais atividades a cartilha recomenda manter durante a maternidade?',
+            'Quais atividades vale manter durante a maternidade?',
             ['As que já te faziam bem antes de você descobrir-se mãe', 'Só as que envolvem o bebê', 'Apenas as caras e elaboradas', 'Nenhuma, até o bebê crescer'],
             'A orientação é continuar as atividades que, antes mesmo de descobrir-se mãe, faziam você se sentir bem.',
           ),
@@ -163,7 +163,7 @@ export const FASES: Fase[] = [
           v(
             'Qual é o objetivo de manter essas atividades?',
             ['Que você se sinta bem e conectada a si mesma', 'Ocupar todo o tempo livre', 'Mostrar aos outros que está tudo bem', 'Substituir o pré-natal'],
-            'O importante, diz a cartilha, é que você se sinta bem.',
+            'O importante é que você se sinta bem.',
           ),
           v(
             'Marina acha que só vale “cuidar de si” se for algo grandioso, como uma viagem. O que dizer a ela?',
@@ -175,7 +175,7 @@ export const FASES: Fase[] = [
       {
         tipo: 'explicacao',
         titulo: 'Ideias para se cuidar',
-        texto: 'A cartilha sugere algumas ideias e convida você a aumentar a lista do seu jeito. O importante é você se sentir bem!',
+        texto: 'Aqui vão algumas ideias, e você pode aumentar a lista do seu jeito. O importante é você se sentir bem!',
         topicos: [
           { icone: 'account-group', titulo: 'Encontrar amigos ou familiares', texto: 'Estar com pessoas de quem você gosta.' },
           { icone: 'food-apple', titulo: 'Comer algo de que goste', texto: 'Um pequeno prazer à mesa.' },
@@ -189,24 +189,24 @@ export const FASES: Fase[] = [
         tipo: 'quiz',
         variacoes: [
           v(
-            'Qual destas é uma ideia de autocuidado sugerida pela cartilha?',
+            'Qual destas é uma ideia de autocuidado?',
             ['Ter um momento a sós', 'Evitar encontrar amigos', 'Ficar sem dormir para adiantar tarefas', 'Deixar de comer o que gosta'],
             'Ter um momento a sós está na lista. Também: encontrar amigos ou familiares, comer algo de que goste, caminhar, ouvir música e assistir a um filme.',
           ),
           v(
-            'Sobre exercício físico durante a gravidez e o pós-parto, o que a cartilha sugere?',
+            'Sobre exercício físico durante a gravidez e o pós-parto, o que é indicado?',
             ['Escolher um exercício seguro para a sua condição', 'Fazer o mais intenso possível', 'Evitar qualquer movimento', 'Treinar só com o bebê no colo'],
             'A sugestão é uma caminhada ou outro exercício físico seguro para a sua condição.',
           ),
           v(
-            'Qual das opções é uma forma simples de cuidar de si, segundo a cartilha?',
+            'Qual das opções é uma forma simples de cuidar de si?',
             ['Ouvir músicas', 'Reorganizar a casa inteira', 'Comparar-se com outras mães', 'Adiar todo prazer'],
             'Ouvir músicas é uma das sugestões. A lista é aberta: você pode acrescentar o que te faz bem.',
           ),
           v(
-            'A lista de ideias da cartilha é:',
+            'A lista de ideias de autocuidado é:',
             ['Aberta: você pode aumentar com o que gosta', 'Fechada: só vale o que está nela', 'Obrigatória, com todos os itens', 'Só para quem tem tempo livre'],
-            'A cartilha convida: “Sinta-se à vontade para aumentar esta lista”.',
+            'Sinta-se à vontade para aumentar a lista com o que você gosta.',
           ),
         ],
       },
@@ -225,7 +225,7 @@ export const FASES: Fase[] = [
           },
           {
             texto: 'Ouvir uma música de que gosta enquanto descansa um pouco',
-            retorno: 'Perfeito! Ouvir músicas é uma das ideias da cartilha. Pequenos prazeres contam.',
+            retorno: 'Perfeito! Ouvir músicas é uma ótima ideia. Pequenos prazeres contam.',
           },
         ],
       },
@@ -577,7 +577,7 @@ export const FASES: Fase[] = [
       {
         tipo: 'explicacao',
         titulo: 'Dicas para se apoiar',
-        texto: 'A cartilha deixa três orientações para quem está nessa fase. Guarde-as com carinho.',
+        texto: 'Aqui vão três orientações para quem está nessa fase. Guarde-as com carinho.',
         topicos: [
           { icone: 'hand-wave-outline', titulo: 'Peça ajuda', texto: 'Não precisa dar conta de tudo, principalmente no pós-parto. Divida as tarefas com companheiro(a), acompanhante ou alguém disposto.' },
           { icone: 'flower-outline', titulo: 'Não espere ser perfeita', texto: 'Ninguém é. Você não está só, e não existe culpa em ter baby blues: qualquer pessoa no puerpério pode passar por isso.' },

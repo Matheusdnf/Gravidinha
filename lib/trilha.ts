@@ -3,7 +3,7 @@
 // saem delas. Regras da proposta de gamificação: erro não bloqueia, cada casa pontua uma vez por
 // partida, fase completa vale +20 e libera a próxima, conquistas ficam mesmo após zerar a partida.
 
-export const TOTAL_FASES = 10;
+const TOTAL_FASES = 10;
 export const CASAS_POR_FASE = 5;
 export const BONUS_FASE = 20;
 export const PONTOS_CASA = 10;

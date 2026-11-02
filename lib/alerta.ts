@@ -20,7 +20,7 @@ export function aoMudarAlerta(cb: (atual: PedidoAlerta | null) => void): () => v
 }
 
 // Um alerta por vez; os demais esperam na fila
-export function mostrarAlerta(
+function mostrarAlerta(
   titulo: string,
   mensagem?: string,
   botoes?: AlertButton[],

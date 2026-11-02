@@ -1,3 +1,5 @@
+import { diaISO } from './trilha';
+
 /**
  * Converte 'YYYY-MM-DD' (ou ISO com hora) em Date no fuso LOCAL.
  * `new Date('YYYY-MM-DD')` interpreta como UTC e, no Brasil, cai no dia anterior.
@@ -9,10 +11,7 @@ export function parseData(data: string | Date): Date {
 }
 
 /** Data de hoje (fuso local) como 'YYYY-MM-DD'. */
-export function hojeISO(): string {
-  const d = new Date();
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-}
+export const hojeISO = (): string => diaISO(new Date());
 
 /** "dd/mm/aaaa" (com ou sem espaços) vira "aaaa-mm-dd"; outros formatos passam como estão. */
 export function paraISO(data?: string | null): string | null {

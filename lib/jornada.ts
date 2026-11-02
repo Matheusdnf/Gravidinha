@@ -39,7 +39,7 @@ export function estadoJornada(semana: number, figurinhas: number[]) {
   };
 }
 
-export type EstadoJornada = ReturnType<typeof estadoJornada>;
+type EstadoJornada = ReturnType<typeof estadoJornada>;
 
 // Dias até a data provável do parto (nunca negativo); sem DPP cadastrada, estima pelas semanas que faltam
 export function diasParaDpp(dpp: string | null | undefined, semanaAtual: number, hoje = new Date()): number {
