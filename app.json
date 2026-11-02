@@ -1,8 +1,8 @@
 {
   "expo": {
-    "name": "meu-app-gravidinha",
+    "name": "Gravidamente",
     "slug": "meu-app-gravidinha",
-    "version": "1.0.0",
+    "version": "1.1.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "meuappgravidinha",
@@ -12,7 +12,7 @@
     },
     "android": {
       "adaptiveIcon": {
-        "backgroundColor": "#E6F4FE",
+        "backgroundColor": "#D082C8",
         "foregroundImage": "./assets/images/android-icon-foreground.png",
         "backgroundImage": "./assets/images/android-icon-background.png",
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
@@ -38,7 +38,8 @@
       ],
       "expo-sqlite",
       "expo-web-browser",
-      "@react-native-community/datetimepicker"
+      "@react-native-community/datetimepicker",
+      ["expo-audio", { "microphonePermission": false }]
     ],
     "experiments": {
       "typedRoutes": true

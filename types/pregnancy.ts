@@ -1,9 +1,3 @@
-export interface BabyDevelopment {
-  estimatedSize: string;
-  estimatedWeight: string;
-  weeklyMilestone: string;
-}
-
 export interface PregnancyStatus {
   currentWeek: number;
   totalWeeks: number;
